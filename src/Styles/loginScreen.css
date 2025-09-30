@@ -1,0 +1,9 @@
+.login-background {
+    background-color: #2F97FF;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    /*filled background for the login screen.*/
+}
