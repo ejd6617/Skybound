@@ -1,6 +1,8 @@
 
 import './App.css';
 import './Styles/loginScreen.css'
+import SkyboundItemHolder from './Components/SkyboundItemholder'
+import SkyboundButton from './Components/SkyboundButton.js'
 
 function Hello() {
   return <h1>Hello World!QQ!!!!!!</h1>
@@ -10,9 +12,10 @@ function Hello() {
 function App() {
   return (
     <div className='login-background'>
-      <Hello> 
-
-      </Hello>
+      <SkyboundItemHolder className ='login-itemHolder'>
+        <Hello></Hello>
+        <SkyboundButton className = 'login-skyboundButton'>Click Me</SkyboundButton>
+      </SkyboundItemHolder>
     </div>
   );
 }
