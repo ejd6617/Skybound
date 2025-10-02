@@ -1,0 +1,70 @@
+.background {
+    background-color: #2F97FF;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    /*filled background for the login screen.*/
+}
+
+.itemHolder {
+    background-Color: white;
+    border-Radius: 16px; 
+    padding: 16px;
+    box-Shadow: 0 2px 8px rgba(0, 0, 0, 2);
+    box-Sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center
+    /*Item holder box for things*/
+}
+
+.skyboundButton {
+    border-radius: 100px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
+    border: none; 
+    transition: background-color 0.2s;
+} 
+
+/*button variants*/
+.skyboundButton.primary {
+    color: white;
+    background-color: #0071E2;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    
+}
+
+.skyboundButton.primary:hover {
+    background-color: darkblue;
+}
+
+.skyboundTextBox {
+    border: 2px solid #ccc;
+    border-radius: 6px;
+    padding: 0 0.5rem;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.skyboundTextBox:focus
+{
+    border-color: #3b82f6; 
+}
+
+.skybound-text {
+  font-family: 'Poppins', sans-serif;
+  color: #111827;
+}
+
+/* text variants */
+.skybound-text.primary { color: #111827; }
+.skybound-text.secondary { color: #585858; }
+.skybound-text.error { color: #ef4444; }
+

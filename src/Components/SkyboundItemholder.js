@@ -1,8 +1,13 @@
 
 
-const SkyboundItemHolder = ({children, className})  => {
+const SkyboundItemHolder = ({children, className, width, height})  => {
     return (
-        <div className={`${className}`}>
+        <div className={`${className}`} 
+        style= {{
+          width: width, 
+          height: height,
+        }}
+        >
           {children}
         </div>
       );
