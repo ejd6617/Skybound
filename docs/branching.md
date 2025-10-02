@@ -83,7 +83,7 @@ git push origin main
 
 ### GUI:
 
-
+Open the command palette with `Ctrl+Shift+P`, search for "git: push", select it.
 
 ## 5. Merge your branch back into main
 
