@@ -1,6 +1,9 @@
 import SkyboundButton from '@components/ui/SkyboundButton';
 import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
+import SkyboundText from '@components/ui/SkyboundText'
+import SkyboundTextBox from '@components/ui/SkyboundTextBox'
 import basicStyles from '@constants/BasicComponents';
+import SkyboundLabelledTextBox from '@/components/ui/SkyboundLabelledTextBox';  
 import { useFonts } from 'expo-font';
 import React from 'react';
 import { GestureResponderEvent, Text, TextInput, View } from 'react-native';
@@ -34,18 +37,18 @@ const App: React.FC = () => {
 
   return (
     <View style={[basicStyles.background, {width: "100%", height: "100%"}]}>
-      <SkyboundItemHolder style={basicStyles.itemHolder}>
-        <Text style={[basicStyles.skyboundTextPrimary, {width: 200, height: 100}]}>Login</Text>
-        <SkyboundButton
-          style={[[basicStyles.skyboundButtonPrimary, basicStyles.skyboundButton],{width: 80, height: 50}]}
-          textStyle={basicStyles.skyboundTextPrimary}
+      <SkyboundItemHolder style={basicStyles.itemHolder} width={300} height={500}>
+        <SkyboundText variant = 'primary' size = {60}>Help</SkyboundText>
+        <SkyboundButton style={[basicStyles.skyboundButton, basicStyles.skyboundButtonPrimary]} width={200} height={100} textVariant='primaryButton'
           onPress={function (event: GestureResponderEvent): void {
             console.log("Button pressed!");
           } }
         >
           Click Me
         </SkyboundButton>
-        <TextInput placeholder="Type here" style={basicStyles.skyboundTextBox} />
+        <SkyboundTextBox placeholderText="Type Here..." width={250} height={50}></SkyboundTextBox>
+
+        <SkyboundLabelledTextBox placeholderText="this is a labelled text box" width={250} height={50} label="Label:"></SkyboundLabelledTextBox>
       </SkyboundItemHolder>
     </View>
   );

@@ -1,0 +1,68 @@
+import React, { useState } from 'react';
+import {TextInput, View, Image, StyleSheet } from 'react-native';
+import BasicStyles from '../../constants/BasicComponents'
+
+//this custom text box component creates a text box with an optional icon placed on the right hand side.
+
+interface SkyboundTextBoxProps {
+    placeholderText: string;
+    width?: number;
+    height: number;
+    icon?: any;
+    
+}
+
+const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
+    placeholderText,
+    width,
+    height,
+    icon,
+}) => {
+
+    const [isFocused, setIsFocused] = useState(false)
+
+    return (
+    <View style={[styles.container, { width, height, borderColor: isFocused ? '#3b82f6' : '#E5E7EB' }]}>
+  <TextInput
+    style={[BasicStyles.skyboundTextBox, { flex: 1, height: undefined }]}
+    placeholder={placeholderText}
+    placeholderTextColor="#585858"
+    onFocus={() => setIsFocused(true)}
+    onBlur={() => setIsFocused(false)}
+   
+  />
+  {icon && (
+    <Image
+      source={icon}
+      style={[
+        styles.icon,
+        { right: 8, width: height * 0.6, height: height * 0.6 },
+      ]}
+      resizeMode="contain"
+    />
+  )}
+</View>
+  );
+};
+
+
+//local stylesheet for the icon and text box to fit nicely togather
+const styles = StyleSheet.create({
+  container: {
+    position: 'relative', // important for absolute positioning of icon
+    justifyContent: 'center',
+    borderWidth: 0,
+    borderColor: 'transparent',
+    borderRadius: 5,
+    backgroundColor: '#fff',
+  },
+  icon: {
+    position: 'absolute',
+    top: '50%',
+    marginTop: -12, // half of icon height to vertically center
+  },
+});
+
+
+export default SkyboundTextBox;
+

@@ -15,6 +15,7 @@ export default StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
+    gap: 10,
     // boxShadow is not supported directly in RN; we emulate it below
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -59,11 +60,12 @@ export default StyleSheet.create({
 
   skyboundTextBox: {
     borderWidth: 2,
-    borderColor: '#ccc',
-    borderRadius: 6,
+    borderRadius: 12,
+    borderColor: '#E5E7EB',
     paddingHorizontal: 8,
     fontFamily: 'Regular',
     fontSize: 16,
+    
     // outline: none – not applicable in RN
     // transition: border-color not supported directly
   },
@@ -90,4 +92,9 @@ export default StyleSheet.create({
     fontFamily: 'Regular',
     color: '#ef4444',
   },
+
+  skyboundButtonTextPrimary: {
+    fontFamily: 'Regular',
+    color: '#FFFFFF'
+  }
 });
