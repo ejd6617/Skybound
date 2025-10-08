@@ -4,9 +4,13 @@ import SkyboundText from '@components/ui/SkyboundText'
 import SkyboundTextBox from '@components/ui/SkyboundTextBox'
 import basicStyles from '@constants/BasicComponents';
 import SkyboundLabelledTextBox from '@/components/ui/SkyboundLabelledTextBox';  
+import SkyboundNotification from '@/components/ui/SkyboundNotification'
 import { useFonts } from 'expo-font';
 import React from 'react';
-import { GestureResponderEvent, Text, TextInput, View } from 'react-native';
+import { GestureResponderEvent, Text, TextInput, View, Image } from 'react-native';
+import SkyboundNavBar from '@components/ui/SkyboundNavBar'
+import { StatusBar } from 'expo-status-bar'
+import SimplifiedFlightDetails  from '@/components/ui/SimplifiedFlightDetails';
 
 const App: React.FC = () => {
   const [fontsLoaded] = useFonts({
@@ -36,8 +40,20 @@ const App: React.FC = () => {
   }
 
   return (
+    
     <View style={[basicStyles.background, {width: "100%", height: "100%"}]}>
-      <SkyboundItemHolder style={basicStyles.itemHolder} width={300} height={500}>
+
+      <StatusBar style='dark' translucent={false}></StatusBar>
+    <SkyboundNavBar leftHandIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+    leftHandIconOnPressEvent={() => console.log("left hand icon pressed")}
+    rightHandFirstIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+    rightHandFirstIconOnPressEvent={() => console.log("first right hand icon pressed")}
+    rightHandSecondIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+    rightHandSecondIconOnPressEvent={()=> console.log("right hand second icon pressed")}
+    title={"Nav Bar Test"}></SkyboundNavBar>
+
+
+      <SkyboundItemHolder style={basicStyles.itemHolder} width={300}>
         <SkyboundText variant = 'primary' size = {60}>Help</SkyboundText>
         <SkyboundButton style={[basicStyles.skyboundButton, basicStyles.skyboundButtonPrimary]} width={200} height={100} textVariant='primaryButton'
           onPress={function (event: GestureResponderEvent): void {
@@ -49,7 +65,20 @@ const App: React.FC = () => {
         <SkyboundTextBox placeholderText="Type Here..." width={250} height={50}></SkyboundTextBox>
 
         <SkyboundLabelledTextBox placeholderText="this is a labelled text box" width={250} height={50} label="Label:"></SkyboundLabelledTextBox>
+          <SkyboundItemHolder style={basicStyles.subItemHolder}> 
+              <SkyboundText variant='primary'>
+                sub item holder test
+              </SkyboundText>
+          </SkyboundItemHolder>
+
+          <SimplifiedFlightDetails sourceCode='ERI' sourceName='Erie' totalDistance={1} totalTime={2} destCode='LAX' destName='Los Angeles Airport'></SimplifiedFlightDetails>
+
+
+      
       </SkyboundItemHolder>
+
+          
+
     </View>
   );
 };

@@ -22,9 +22,9 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
     const [isFocused, setIsFocused] = useState(false)
 
     return (
-    <View style={[styles.container, { width, height, borderColor: isFocused ? '#3b82f6' : '#E5E7EB' }]}>
+    <View style={[styles.container, { width, height, }]}>
   <TextInput
-    style={[BasicStyles.skyboundTextBox, { flex: 1, height: undefined }]}
+    style={[BasicStyles.skyboundTextBox, { flex: 1, height: undefined, borderColor: isFocused ? '#3b82f6' : '#E5E7EB' }]}
     placeholder={placeholderText}
     placeholderTextColor="#585858"
     onFocus={() => setIsFocused(true)}

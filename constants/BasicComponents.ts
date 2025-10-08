@@ -2,12 +2,12 @@ import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   background: {
-    backgroundColor: '#2F97FF',
-    height: '100%', // 100vh is not directly supported, use flex or Dimensions for full height
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
+  flex: 1,
+  width: '100%',
+  backgroundColor: '#2F97FF',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'flex-start', // start at top
     // filled background for the login screen.
   },
 
@@ -30,6 +30,22 @@ export default StyleSheet.create({
     // Item holder box for things
   },
 
+  subItemHolder: {
+    backgroundColor: '#E8EFF0',
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+    // boxShadow is not supported directly in RN; we emulate it below
+    
+    shadowRadius: 8,
+    elevation: 4, // for Android
+    // boxSizing is not applicable in React Native
+    display: 'flex',
+    flexDirection: 'column',
+    // gap is not supported in RN – use marginBottom or spacing components
+    alignItems: 'center',
+  },
+
   skyboundButton: {
     borderRadius: 20,
     // React Native doesn't support box-shadow like web; use shadow props
@@ -45,11 +61,24 @@ export default StyleSheet.create({
     // transition not supported – use Reanimated or Pressable feedback
   },
 
+  //button Variants
   skyboundButtonPrimary: {
     color: 'white',
     backgroundColor: '#0071E2',
     fontFamily: 'Regular',
     fontSize: 16, // 1rem ≈ 16px
+  },
+
+  skyboundButtonDelete: {
+    backgroundColor: 'transparent',
+    fontFamily: 'Regular',
+    fontSize: 16
+  },
+
+  skyboundButtonLogin: {
+    color: 'black',
+    fontFamily: 'Regular',
+    fontSize: 16,
   },
 
   // hover state cannot be defined in RN styles directly
@@ -84,6 +113,12 @@ export default StyleSheet.create({
     fontFamily: 'Regular',
     color: '#111827',
   },
+
+  skyboundTextPrimaryBold: {
+    fontFamily: 'Regular',
+    color: '#111827',
+    fontWeight: 'bold',
+  },
   skyboundTextSecondary: {
     fontFamily: 'Regular',
     color: '#585858',
@@ -93,8 +128,19 @@ export default StyleSheet.create({
     color: '#ef4444',
   },
 
+  skyboundNavBarText: {
+    color: '#0071E2',
+    fontWeight: 'bold',
+    fontSize: 20
+  },
+
   skyboundButtonTextPrimary: {
     fontFamily: 'Regular',
     color: '#FFFFFF'
+  },
+
+  skyboundDeleteButtonText: {
+    fontFamily: 'Regular',
+    color: '#3b82f6',
   }
 });

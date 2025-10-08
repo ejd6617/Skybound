@@ -10,7 +10,7 @@ interface CustomButtonProps {
   children: ReactNode; // children
   width: number; // width of the button
   height: number; //height of the button
-  textVariant: TextVariant// type of SkyboundText that is displayed on the button
+  textVariant?: TextVariant// type of SkyboundText that is displayed on the button
   textSize?: number // optional text size override 
 }
 
@@ -18,7 +18,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   width = 100,
   height = 40,
   textSize,
-  textVariant = 'primary',
+  textVariant = 'primaryButton',
   children,
   style,
   onPress,

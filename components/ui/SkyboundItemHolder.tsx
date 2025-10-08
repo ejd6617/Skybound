@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { StyleProp, View, ViewStyle } from 'react-native';
+import BasicStyles from '../../constants/BasicComponents'
 
 interface SkyboundItemHolderProps {
   style?: StyleProp<ViewStyle>;
@@ -9,7 +10,7 @@ interface SkyboundItemHolderProps {
 }
 
 const SkyboundItemHolder: React.FC<SkyboundItemHolderProps> = ({
-  style,
+  style = BasicStyles.itemHolder,
   children,
   width,
   height,

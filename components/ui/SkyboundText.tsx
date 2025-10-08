@@ -10,7 +10,8 @@ interface SkyboundTextProps {
     variant: TextVariant //which Skybound text style it is
 }
 
-export type TextVariant = 'primary' | 'secondary' | 'error' | 'primaryButton' // enum of the various styles
+export type TextVariant = 'primary' | 'secondary' | 'error' | 'primaryButton'
+| 'deleteButton' | 'navBar' | 'primaryBold' // enum of the various styles
 
 const SkyboundText: React.FC<SkyboundTextProps> = ({
     children,
@@ -25,6 +26,12 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
         ? basicStyles.skyboundTextError
         : variant === 'primaryButton' //else if variant is equal to primaryButton
         ? basicStyles.skyboundButtonTextPrimary
+        : variant === 'deleteButton' // else if variant is equal to deleteButton
+        ? basicStyles.skyboundDeleteButtonText
+        : variant === 'navBar' //else if variant is equal to navBar
+        ? basicStyles.skyboundNavBarText
+        : variant === 'primaryBold' //else if variant is pirmaryBold
+        ? basicStyles.skyboundTextPrimaryBold
         : basicStyles.skyboundTextPrimary
 
     return (
