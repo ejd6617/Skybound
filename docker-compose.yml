@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  expo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "19000:19000"   # Metro bundler
+      - "19001:19001"   # Web
+      - "19002:19002"   # Devtools UI
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - appnet
+    environment:
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+      - API_URL=http://api:4000
+    stdin_open: true   # Needed for interactive Expo CLI
+    tty: true
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    networks:
+      - appnet
+    environment:
+      - PORT=4000
+
+networks:
+  appnet:
