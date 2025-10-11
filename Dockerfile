@@ -1,5 +1,5 @@
 FROM node:22
-RUN npm install -g expo-cli
+RUN npm install -g expo-cli @expo/ngrok
 WORKDIR /app
 COPY package.json ./
 COPY package-lock.json ./

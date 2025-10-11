@@ -1,8 +1,11 @@
 {
-  "name": "scraping-test",
+  "name": "api",
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
+  "scripts": {
+    "start": "ts-node -r tsconfig-paths/register --log-error --project tsconfig.json index.ts"
+  },
   "dependencies": {
     "acorn": "^8.15.0",
     "acorn-jsx": "^5.3.2",
@@ -62,6 +65,7 @@
     "devtools-protocol": "^0.0.1508733",
     "diff": "^4.0.2",
     "doctrine": "^2.1.0",
+    "dotenv": "^17.2.3",
     "dunder-proto": "^1.0.1",
     "emoji-regex": "^8.0.0",
     "end-of-stream": "^1.4.5",
@@ -111,6 +115,7 @@
     "flat-cache": "^4.0.1",
     "flatted": "^3.3.3",
     "for-each": "^0.3.5",
+    "fs-extra": "^11.3.2",
     "function-bind": "^1.1.2",
     "function.prototype.name": "^1.1.8",
     "functions-have-names": "^1.2.3",
@@ -309,14 +314,15 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@ngrok/ngrok": "^1.5.2",
     "@types/express": "^5.0.3",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.7.1",
     "ts-node": "^10.9.2",
+    "ts-patch": "^3.3.0",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.3"
-  },
-  "scripts": {
-    "start": "ts-node -r tsconfig-paths/register --project tsconfig.json index.ts"
+    "typescript": "^5.9.3",
+    "typescript-transform-paths": "^3.5.5"
   },
   "keywords": [],
   "author": "",

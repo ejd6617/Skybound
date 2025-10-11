@@ -1,13 +1,23 @@
-import GenericAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@src/GenericAPI';
-import ITAMatrixAPI from "@src/ITAMatrixAPI";
+import GenericAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/src/GenericAPI';
+import ITAMatrixAPI from '@/src/ITAMatrixAPI';
+import exposeServer from '@/src/ngrok';
 import express, { Request, Response } from 'express';
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 const api: GenericAPI = new ITAMatrixAPI();
+
+// Expose the local dev server
+(async () => {
+  await exposeServer("127.0.0.1", PORT); 
+})();
 
 // index.ts
 app.use(express.json()); // add this before any routes
+
+app.get('/hello', (_: Request, res: Response) => {
+  res.send('Hello world!');
+});
 
 app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
   try {
@@ -42,10 +52,9 @@ app.post('/api/searchFlightsMultiCity', async (req: Request, res: Response) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`API server is listening on port ${PORT} on all network interfaces`);
 });
-
 
 // const queryType: QueryType = "roundTrip"; 
 // const fieldInputs: FieldInputs = {

@@ -1,9 +1,9 @@
+import { Flight, FlightSection } from "@/src/GenericAPI";
 import puppeteer, { Browser, Page } from 'puppeteer';
-import { Flight, FlightSection } from "@src/GenericAPI";
 export type FlightQueryType = "roundTrip" | "oneWay" | "multiCity";
 
 // Displays the browser window if true
-const DEV_MODE = true;
+const DEV_MODE = false;
 
 // URL of website
 const URL: string = "https://matrix.itasoftware.com/search";
@@ -363,6 +363,7 @@ export async function runQuery(queryType: FlightQueryType, fieldInputs: FieldInp
   const browser: Browser = await puppeteer.launch({
     ...(browserExecPath ? { executablePath: browserExecPath } : {}),
     headless: !DEV_MODE,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
   const page: Page = await browser.newPage();
