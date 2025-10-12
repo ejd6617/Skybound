@@ -1,4 +1,5 @@
 import SkyboundFlashDeal from '@/components/ui/SkyboundFlashDeal';
+import SkyboundFlightDetails from '@/components/ui/SkyboundFlightDetails';
 import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
 import SkyboundNavBar from '@components/ui/SkyboundNavBar';
 import SkyboundText from '@components/ui/SkyboundText';
@@ -66,7 +67,29 @@ const App: React.FC = () => {
        onPress={() => console.log('What a great deal!')}>
        </SkyboundFlashDeal>
 
+
+
     </SkyboundItemHolder>
+
+    <SkyboundFlightDetails airlineLogo={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>}
+    airlineName='test airline'
+    airlineDescription='test Description'
+    price='$ 100'
+    tripType='round trip'
+    departureTime='1:11 AM'
+    arrivalTime='2:22 PM'
+    sourceCode='ERI'
+    destCode='LAX'
+    departureDate='10/12'
+    arrivalDate='10/12'
+    travelTime='1h 11m'
+    stops='1 stop'
+    onPress={() => console.log('flight pressed')}>
+
+
+    </SkyboundFlightDetails>
+
+   
 
 
       
