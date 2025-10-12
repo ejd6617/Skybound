@@ -1,6 +1,6 @@
 import React from 'react';
-import { Text, StyleSheet, StyleProp, TextStyle } from 'react-native';
-import basicStyles from '../../constants/BasicComponents'; 
+import { StyleProp, Text, TextStyle } from 'react-native';
+import basicStyles from '../../constants/BasicComponents';
 
 
 interface SkyboundTextProps {
@@ -11,7 +11,7 @@ interface SkyboundTextProps {
 }
 
 export type TextVariant = 'primary' | 'secondary' | 'error' | 'primaryButton'
-| 'deleteButton' | 'navBar' | 'primaryBold' // enum of the various styles
+| 'deleteButton' | 'blue' | 'primaryBold' // enum of the various styles
 
 const SkyboundText: React.FC<SkyboundTextProps> = ({
     children,
@@ -28,8 +28,8 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
         ? basicStyles.skyboundButtonTextPrimary
         : variant === 'deleteButton' // else if variant is equal to deleteButton
         ? basicStyles.skyboundDeleteButtonText
-        : variant === 'navBar' //else if variant is equal to navBar
-        ? basicStyles.skyboundNavBarText
+        : variant === 'blue' //else if variant is equal to navBar
+        ? basicStyles.skyboundBlueText
         : variant === 'primaryBold' //else if variant is pirmaryBold
         ? basicStyles.skyboundTextPrimaryBold
         : basicStyles.skyboundTextPrimary

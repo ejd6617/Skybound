@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
-import { StyleProp, View, ViewStyle, Dimensions} from 'react-native';
-import BasicStyles from '../../constants/BasicComponents'
+import { StyleProp, View, ViewStyle } from 'react-native';
+import BasicStyles from '../../constants/BasicComponents';
 
 interface SkyboundItemHolderProps {
   style?: StyleProp<ViewStyle>;
@@ -18,11 +18,11 @@ const SkyboundItemHolder: React.FC<SkyboundItemHolderProps> = ({
   height,
 }) => {
 
-  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+  
 
   // Fallbacks — only use screen size if width/height aren’t explicitly given
-  const resolvedWidth = width ?? screenWidth * 0.9;   // 90% of screen width by default
-  const resolvedHeight = height ?? screenHeight * 0.1; // 10% of screen height by default (you can tweak this)
+  
+  
 
 
   
@@ -31,7 +31,7 @@ const SkyboundItemHolder: React.FC<SkyboundItemHolderProps> = ({
     <View
       style={[
         style,                  
-        { width: resolvedWidth, height: resolvedHeight },       
+        { width: width, height: height},       
       ]}
     >
       {children}

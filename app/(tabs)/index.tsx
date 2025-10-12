@@ -1,16 +1,12 @@
-import SkyboundButton from '@components/ui/SkyboundButton';
+import SkyboundFlashDeal from '@/components/ui/SkyboundFlashDeal';
 import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
-import SkyboundText from '@components/ui/SkyboundText'
-import SkyboundTextBox from '@components/ui/SkyboundTextBox'
+import SkyboundNavBar from '@components/ui/SkyboundNavBar';
+import SkyboundText from '@components/ui/SkyboundText';
 import basicStyles from '@constants/BasicComponents';
-import SkyboundLabelledTextBox from '@/components/ui/SkyboundLabelledTextBox';  
-import SkyboundNotification from '@/components/ui/SkyboundNotification'
 import { useFonts } from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { GestureResponderEvent, Text, TextInput, View, Image } from 'react-native';
-import SkyboundNavBar from '@components/ui/SkyboundNavBar'
-import { StatusBar } from 'expo-status-bar'
-import SimplifiedFlightDetails  from '@/components/ui/SimplifiedFlightDetails';
+import { Image, View } from 'react-native';
 
 const App: React.FC = () => {
   const [fontsLoaded] = useFonts({
@@ -53,29 +49,28 @@ const App: React.FC = () => {
     title={"Nav Bar Test"}></SkyboundNavBar>
 
 
-      <SkyboundItemHolder style={basicStyles.itemHolder} width={300}>
+      <SkyboundItemHolder>
         <SkyboundText variant = 'primary' size = {60}>Help</SkyboundText>
-        <SkyboundButton style={[basicStyles.skyboundButton, basicStyles.skyboundButtonPrimary]} width={200} height={100} textVariant='primaryButton'
-          onPress={function (event: GestureResponderEvent): void {
-            console.log("Button pressed!");
-          } }
-        >
-          Click Me
-        </SkyboundButton>
-        <SkyboundTextBox placeholderText="Type Here..." width={250} height={50}></SkyboundTextBox>
 
-        <SkyboundLabelledTextBox placeholderText="this is a labelled text box" width={250} height={50} label="Label:"></SkyboundLabelledTextBox>
-          <SkyboundItemHolder style={basicStyles.subItemHolder}> 
-              <SkyboundText variant='primary'>
-                sub item holder test
-              </SkyboundText>
-          </SkyboundItemHolder>
 
-          <SimplifiedFlightDetails sourceCode='ERI' sourceName='Erie' totalDistance={1} totalTime={2} destCode='LAX' destName='Los Angeles Airport'></SimplifiedFlightDetails>
+
+       <SkyboundFlashDeal airlineImage={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>} 
+       airlineName='Test Airline'
+       sourceCode='ERI'
+       destCode='LAX'
+       departureTime='1:11 PM'
+       arrivalTime='2:22 PM'
+       travelTime='1h 11m'
+       originalPrice='$20000'
+       newPrice='$0'
+       onPress={() => console.log('What a great deal!')}>
+       </SkyboundFlashDeal>
+
+    </SkyboundItemHolder>
 
 
       
-      </SkyboundItemHolder>
+      
 
           
 

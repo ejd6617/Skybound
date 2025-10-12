@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
-import { View, StyleSheet, Image, Dimensions, Touchable, TouchableOpacity} from 'react-native';
-import SkyboundText from './SkyboundText'
+import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import SkyboundText from './SkyboundText';
 
 
 
@@ -36,7 +36,7 @@ const SkyboundNavBar: React.FC<SkybounNavBarProps> =({
             </TouchableOpacity>
             
             <View style={styles.title}>
-                <SkyboundText variant='navBar'>{title}</SkyboundText>
+                <SkyboundText variant='blue'>{title}</SkyboundText>
             </View>
 
             <View style = {styles.rightHandIconsHolder}>

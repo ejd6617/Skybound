@@ -16,6 +16,7 @@ export default StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     gap: 10,
+
     // boxShadow is not supported directly in RN; we emulate it below
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -27,6 +28,7 @@ export default StyleSheet.create({
     flexDirection: 'column',
     // gap is not supported in RN – use marginBottom or spacing components
     alignItems: 'center',
+    justifyContent: 'center' 
     // Item holder box for things
   },
 
@@ -128,11 +130,14 @@ export default StyleSheet.create({
     color: '#ef4444',
   },
 
-  skyboundNavBarText: {
+  skyboundBlueText: {
     color: '#0071E2',
     fontWeight: 'bold',
     fontSize: 20
   },
+
+  
+
 
   skyboundButtonTextPrimary: {
     fontFamily: 'Regular',
