@@ -1,13 +1,12 @@
-import SkyboundLabelledTextBox from '@/components/ui/SkyboundLabelledTextBox';
 import SkyboundButton from '@components/ui/SkyboundButton';
 import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
-import SkyboundText from '@components/ui/SkyboundText';
-import SkyboundTextBox from '@components/ui/SkyboundTextBox';
+import SkyboundText from '@components/ui/SkyboundText'
+import SkyboundTextBox from '@components/ui/SkyboundTextBox'
 import basicStyles from '@constants/BasicComponents';
-import Constants from 'expo-constants';
+import SkyboundLabelledTextBox from '@/components/ui/SkyboundLabelledTextBox';  
 import { useFonts } from 'expo-font';
-import React, { useEffect, useState } from 'react';
-import { GestureResponderEvent, View } from 'react-native';
+import React from 'react';
+import { GestureResponderEvent, Text, TextInput, View } from 'react-native';
 
 const App: React.FC = () => {
   const [fontsLoaded] = useFonts({
@@ -31,52 +30,10 @@ const App: React.FC = () => {
     'Thin': require('@fonts/Poppins/Poppins-Thin.ttf'),
   });
 
-  const [apiResponse, setApiResponse] = useState<string>("Loading...");
-  useEffect(() => {
-    const API_URL = Constants.expoConfig?.extra?.API_URL;
-    fetch(`${API_URL}/hello`)
-      .then(res => res.text())
-      .then(setApiResponse)
-      .catch(err => {
-        console.error(err);
-        console.error(`${API_URL}/hello`)
-        setApiResponse("Error fetching data");
-      });
-  }, []);
-  
-  /*
-  const [apiResponse, setApiResponse] = useState<string>("Loading...");
-  useEffect(() => {
-    const API_URL = Constants.expoConfig?.extra?.API_URL;
-    const url = `${API_URL}/api/searchFlightsOneWay`;
-    const requestBody = {
-      originAirport: 'JFK',
-      destinationAirport: 'LAX',
-      date: new Date('2025-11-01'), // can be new Date() or a selected date
-    };
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`API returned status ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        // Update this line based on what your API actually returns
-        setApiResponse(JSON.stringify(data, null, 2));
-      })
-      .catch((err) => {
-        console.error(err);
-        setApiResponse('Error fetching data');
-      });
-  }, []);
-   */
+  // Don't display anything yet if fonts aren't yet loaded
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <View style={[basicStyles.background, {width: "100%", height: "100%"}]}>
@@ -89,7 +46,7 @@ const App: React.FC = () => {
         >
           Click Me
         </SkyboundButton>
-        <SkyboundTextBox placeholderText={apiResponse} width={250} height={50}></SkyboundTextBox>
+        <SkyboundTextBox placeholderText="Type Here..." width={250} height={50}></SkyboundTextBox>
 
         <SkyboundLabelledTextBox placeholderText="this is a labelled text box" width={250} height={50} label="Label:"></SkyboundLabelledTextBox>
       </SkyboundItemHolder>

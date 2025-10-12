@@ -5,6 +5,7 @@ services:
     volumes:
       - ./api:/app
       - .env.ngrok.local:/.env.ngrok.local
+      - .env.amadeus.local:/.env.amadeus.local
     ports:
       - 4000:4000 # API
       - 4040:4040 # ngrok

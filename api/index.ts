@@ -1,18 +1,17 @@
+import AmadeusAPI from '@/src/AmadeusAPI';
 import GenericAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/src/GenericAPI';
-import ITAMatrixAPI from '@/src/ITAMatrixAPI';
 import exposeServer from '@/src/ngrok';
 import express, { Request, Response } from 'express';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
-const api: GenericAPI = new ITAMatrixAPI();
+const api: GenericAPI = new AmadeusAPI();
 
 // Expose the local dev server
 (async () => {
   await exposeServer("127.0.0.1", PORT); 
 })();
 
-// index.ts
 app.use(express.json()); // add this before any routes
 
 app.get('/hello', (_: Request, res: Response) => {

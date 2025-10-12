@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 
 export default async function exposeServer(ipv4: string, port: number) {
   try {
-    const ENV_FILE = '../.env.ngrok.local';
+    const ENV_FILE = '/.env.ngrok.local';
     dotenv.config({ path: ENV_FILE });
     const TOKEN = process.env.NGROK_AUTHTOKEN;
     if (!TOKEN) {
