@@ -13,17 +13,20 @@ export default function DashboardScreen() {
   const nav = useNavigation<any>();
 
   return (
-    <LinearGradient colors={["#2F97FF", "#0071E2"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
+    // Gradient for optional use in future, white for now
+    <LinearGradient colors={["#FFFFFF", "#FFFFFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
         {/* NavBar (required props) */}
         <View style={{ backgroundColor: "#fff" }}>
           <SkyboundNavBar
-            title="Home"
-            leftHandIcon={<Ionicons name="menu" size={22} color="#000" />}
+            title={ 
+              <Image source={require("../../assets/images/skybound-logo-dark.png")}
+              style={{ width: 200, height: 100, resizeMode: "contain" }}/>}
+            leftHandIcon={<Ionicons name="menu" size={22} color="#0071E2" />}
             leftHandIconOnPressEvent={() => {}}
-            rightHandFirstIcon={<Ionicons name="notifications-outline" size={22} color="#000" />}
+            rightHandFirstIcon={<Ionicons name="notifications-outline" size={22} color="#0071E2" />}
             rightHandFirstIconOnPressEvent={() => {}}
-            rightHandSecondIcon={<Ionicons name="person-circle-outline" size={24} color="#000" />}
+            rightHandSecondIcon={<Ionicons name="person-circle-outline" size={24} color="#0071E2" />}
             rightHandSecondIconOnPressEvent={() => {}}
           />
         </View>
@@ -31,7 +34,6 @@ export default function DashboardScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           {/* Hero */}
           <View style={styles.hero}>
-            <Image source={require("../../assets/images/skybound-logo-white.png")} resizeMode="contain" style={{ width: 160, height: 50, marginBottom: 10 }} />
             <Pressable style={styles.heroBtn}>
               <SkyboundText variant="primaryButton" size={14} style={{ color: "#fff" }}>Search for Flights →</SkyboundText>
             </Pressable>
@@ -40,7 +42,7 @@ export default function DashboardScreen() {
           {/* Flash Deals */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <SkyboundText variant="primaryBold" size={18} style={{ color: "#000" }}>Flash Deals</SkyboundText>
+              <SkyboundText variant="primaryBold" size={18} style={{ color: "#0071E2" }}>Flash Deals</SkyboundText>
               <Pressable><SkyboundText variant="blue" size={13}>View All</SkyboundText></Pressable>
             </View>
 
@@ -68,7 +70,7 @@ export default function DashboardScreen() {
 
           {/* CTA */}
           <View style={styles.readyCard}>
-            <SkyboundText variant="primaryBold" size={16} style={{ color: "#000", marginBottom: 6 }}>Ready to Book?</SkyboundText>
+            <SkyboundText variant="primaryBold" size={16} style={{ color: "#000", marginBottom: 10 }}>Ready to Book?</SkyboundText>
             <SkyboundText variant="secondary" size={13} style={{ marginBottom: 12 }}>
               Find more amazing deals and start your journey
             </SkyboundText>
@@ -86,31 +88,30 @@ const styles = StyleSheet.create({
     padding: 16, 
     borderRadius: 16,
     backgroundColor: "rgba(255,255,255,0.15)", 
-    borderWidth: 1, 
-    borderColor: "rgba(255,255,255,0.25)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.25)",
     alignItems: "center",
   },
   heroBtn: { 
-    marginTop: 12, 
+    marginTop: 0, 
     backgroundColor: "#0B57D0", 
     paddingVertical: 12, 
-    paddingHorizontal: 18, 
+    paddingHorizontal: 25, 
     borderRadius: 12 
   },
   section: { 
-    marginTop: 8, 
-    gap: 8 
+    marginTop: 15, 
+    gap: 8
   },
   sectionHeader: { 
-    paddingHorizontal: 16, 
+    paddingHorizontal: 18, 
     flexDirection: "row", 
     alignItems: "center", 
     justifyContent: "space-between", 
     marginBottom: 8 
   },
   readyCard: {
-    margin: 16, 
-    padding: 16, 
+    margin: 40, 
+    padding: 20, 
     borderRadius: 16, 
     backgroundColor: "#fff",
     shadowColor: "#000", 
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
   },
   readyBtn: { 
     backgroundColor: "#0B57D0", 
-    paddingVertical: 12, 
+    paddingVertical: 15, 
     paddingHorizontal: 18, 
     borderRadius: 12 
   },
