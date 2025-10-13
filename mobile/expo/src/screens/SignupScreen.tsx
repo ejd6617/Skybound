@@ -1,153 +1,277 @@
-// screens/SignupScreen.tsx
-import React, { useState } from "react";
-import { Alert, Dimensions, Image, KeyboardAvoidingView, Platform, Pressable, SafeAreaView, StatusBar, StyleSheet, View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import SkyboundButton from "../../components/ui/SkyboundButton";
-import SkyboundLabelledTextBox from "../../components/ui/SkyboundLabelledTextBox";
-import SkyboundText from "../../components/ui/SkyboundText";
-import { register } from "../api/auth";
+import type { RootStackParamList } from '../nav/RootNavigator';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Dimensions,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-type Nav = NativeStackNavigationProp<any>;
-const { width: SCREEN_W } = Dimensions.get("window");
-const CARD_W = Math.min(420, Math.round(SCREEN_W * 0.86));
-const H_PADDING = 18;
-const BTN_W = CARD_W - H_PADDING * 2;
-const COLORS = { primary:"#0071E2", primaryLight:"#2F97FF", black:"#000", white:"#FFF", divider:"rgba(0,0,0,0.15)" };
+// Ethan UI
+import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
+import SkyboundButton from '../../components/ui/SkyboundButton';
 
-export default function SignupScreen() 
-{
-  const nav = useNavigation<Nav>();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [pw, setPw] = useState("");
-  const [pw2, setPw2] = useState("");
-  const [pwHidden, setPwHidden] = useState(true);
-  const [pw2Hidden, setPw2Hidden] = useState(true);
+export default function SignupScreen() {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail]     = useState('');
+  const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  async function handleSignup() 
-  {
-    try 
-    {
-      if (!name || !email || !pw || !pw2) 
-        return Alert.alert("Missing info", "Please fill all fields.");
-      if (pw !== pw2) 
-        return Alert.alert("Password mismatch", "Passwords must match.");
-
-      await register(name.trim(), email.trim(), pw);
-      nav.replace("Dashboard");
-    } catch (e:any) {
-      Alert.alert("Signup failed", e?.response?.data?.error ?? e.message);
-    }
-  }
+  // width for SkyboundButton
+  const { width: SCREEN_W } = Dimensions.get("window");
+  const CARD_W = Math.min(420, Math.round(SCREEN_W * 0.86));
+  const H_PADDING = 18;
+  const BTN_W = CARD_W - H_PADDING * 2;
 
   return (
-    <LinearGradient colors={[COLORS.primaryLight, COLORS.primary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
-      <StatusBar barStyle="light-content" />
-      <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.center}>
-          <View style={[styles.card, { width: CARD_W, paddingHorizontal: H_PADDING }]}>
-            <Image source={require("../../assets/images/skybound-logo-white.png")} resizeMode="contain" style={styles.logo} />
-            <SkyboundText variant="primaryBold" size={20} style={{ color: COLORS.black, marginTop: 6 }}>Create Account</SkyboundText>
-            <SkyboundText variant="secondary" size={12} style={{ marginBottom: 10 }}>Join Skybound to track and save on flights</SkyboundText>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      {/* Gradient background */}
+      <LinearGradient
+        colors={['#2F97FF', '#000']}
+        start={{ x: -1, y: 1 }}
+        end={{ x: 1, y: 0 }}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 65,
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* LOGO */}
+          <Image
+            source={require('../../assets/images/skybound-logo-white.png')}
+            style={{ width: 220, height: 70, resizeMode: 'contain', marginBottom: 6 }}
+          />
 
-            <SkyboundLabelledTextBox label="Full Name" placeholderText="Enter your name" width={BTN_W} height={48} value={name} onChangeText={setName} />
-            <SkyboundLabelledTextBox label="Email" placeholderText="Enter your email" width={BTN_W} height={48} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
+          {/* Subtitle (Poppins) */}
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 16,
+              fontFamily: 'Poppins_400Regular',
+              marginBottom: 30,
+            }}
+          >
+            Your journey starts here
+          </Text>
 
-            <View style={{ marginTop: 12 }}>
-              <SkyboundLabelledTextBox label="Password" placeholderText="Create a password" width={BTN_W} height={48} value={pw} onChangeText={setPw} secureTextEntry={pwHidden} />
-              <Pressable onPress={() => setPwHidden(v => !v)} hitSlop={8} style={styles.eyeBtn}><Ionicons name={pwHidden ? "eye-off-outline" : "eye-outline"} size={20} color="rgba(0,0,0,0.55)" /></Pressable>
+          {/* White card */}
+          <View
+            style={{
+              width: '90%',
+              backgroundColor: 'white',
+              borderRadius: 20,
+              padding: 24,
+              shadowColor: '#000',
+              shadowOpacity: 0.12,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 8 },
+              elevation: 4,
+            }}
+          >
+            {/* Title */}
+            <Text
+              style={{
+                fontSize: 24,
+                fontFamily: 'Poppins_700Bold',
+                color: '#111827',
+                marginBottom: 6,
+              }}
+            >
+              Create Account
+            </Text>
+            <Text
+              style={{
+                fontFamily: 'Poppins_400Regular',
+                color: '#6B7280',
+                marginBottom: 35,
+              }}
+            >
+              Join Skybound to track and save on flights
+            </Text>
+
+            {/* Full Name */}
+            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginBottom: 0 }}>
+              Full Name
+            </Text>
+            <SkyboundLabelledTextBox
+              label=""
+              placeholderText="Enter your name"
+              width={BTN_W}
+              height={45}
+              value={fullName}
+              onChangeText={setFullName}
+            />
+
+            {/* Email */}
+            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginTop: 25, marginBottom: 0 }}>
+              Email
+            </Text>
+            <SkyboundLabelledTextBox
+              label=""
+              placeholderText="Enter your email"
+              width={BTN_W}
+              height={45}
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+
+            {/* Password */}
+            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginTop: 25, marginBottom: 0 }}>
+              Password
+            </Text>
+            <SkyboundLabelledTextBox
+              label=""
+              placeholderText="Create a password"
+              width={BTN_W}
+              height={45}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+
+            {/* Confirm Password */}
+            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginTop: 25, marginBottom: 0 }}>
+              Confirm Password
+            </Text>
+            <SkyboundLabelledTextBox
+              label=""
+              placeholderText="Re-enter password"
+              width={BTN_W}
+              height={45}
+              value={password2}
+              onChangeText={setPassword2}
+              secureTextEntry
+            />
+
+            {/* Create Account button */}
+            <View style={{ marginTop: 25 }}>
+              <SkyboundButton
+                onPress={() => navigation.navigate('Dashboard')}
+                width={BTN_W}
+                height={50}
+                style={{
+                  backgroundColor: '#000000',
+                  borderRadius: 10,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                textVariant="primaryButton"
+                textSize={16}
+              >
+                Create account
+              </SkyboundButton>
             </View>
 
-            <View style={{ marginTop: 12 }}>
-              <SkyboundLabelledTextBox label="Confirm Password" placeholderText="Re-enter password" width={BTN_W} height={48} value={pw2} onChangeText={setPw2} secureTextEntry={pw2Hidden} />
-              <Pressable onPress={() => setPw2Hidden(v => !v)} hitSlop={8} style={styles.eyeBtn}><Ionicons name={pw2Hidden ? "eye-off-outline" : "eye-outline"} size={20} color="rgba(0,0,0,0.55)" /></Pressable>
+            {/* OR separator */}
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginVertical: 16,
+              }}
+            >
+              <View style={{ flex: 1, height: 1, backgroundColor: '#E5E7EB' }} />
+              <Text
+                style={{
+                  marginHorizontal: 8,
+                  color: '#9CA3AF',
+                  fontFamily: 'Poppins_400Regular',
+                }}
+              >
+                or
+              </Text>
+              <View style={{ flex: 1, height: 1, backgroundColor: '#E5E7EB' }} />
             </View>
 
-            <SkyboundButton onPress={handleSignup} width={BTN_W} height={48} style={styles.blackBtn} textVariant="primaryButton">Create account</SkyboundButton>
+            {/* Google button (kept path) */}
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: '#FFFFFF',
+                borderRadius: 10,
+                borderWidth: 1,
+                borderColor: '#D1D5DB',
+                paddingVertical: 12,
+              }}
+            >
+              <Image
+                source={require('../../assets/images/google.png')}
+                style={{ width: 22, height: 22, resizeMode: 'contain', marginRight: 10 }}
+              />
+              <Text
+                style={{
+                  fontFamily: 'Poppins_600SemiBold',
+                  color: '#111827',
+                  fontSize: 15,
+                }}
+              >
+                Continue with Google
+              </Text>
+            </TouchableOpacity>
 
-            <View style={styles.dividerRow}>
-              <View style={styles.divider} />
-              <SkyboundText variant="secondary" size={12} style={{ marginHorizontal: 10 }}>or</SkyboundText>
-              <View style={styles.divider} />
-            </View>
-
-            <Pressable style={[styles.googleBtn, { width: BTN_W }]}>
-              <Image source={require("../../assets/images/google.png")} style={{ width: 18, height: 18, marginRight: 8 }} resizeMode="contain" />
-              <SkyboundText variant="primaryBold" size={13}>Continue with Google</SkyboundText>
-            </Pressable>
-
-            <View style={styles.bottomRow}>
-              <SkyboundText variant="secondary" size={12}>Already have an account? </SkyboundText>
-              <Pressable onPress={() => nav.navigate("Login")}><SkyboundText variant="blue" size={12}>Log in</SkyboundText></Pressable>
+            {/* Login link */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
+              <Text style={{ color: '#6B7280', fontFamily: 'Poppins_400Regular' }}>
+                Already have an account?{' '}
+              </Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+                <Text style={{ color: '#0071E2', fontFamily: 'Poppins_600SemiBold' }}>
+                  Log in
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </LinearGradient>
+
+          {/* Bottom links (unchanged) */}
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-evenly',
+              marginTop: 35,
+              width: '90%',
+            }}
+          >
+            <TouchableOpacity>
+              <Text style={{ color: 'white', fontFamily: 'Poppins_400Regular', fontSize: 12 }}>
+                Privacy Policy
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={{ color: 'white', fontFamily: 'Poppins_400Regular', fontSize: 12 }}>
+                Terms of Service
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={{ color: 'white', fontFamily: 'Poppins_400Regular', fontSize: 12 }}>
+                Help
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </LinearGradient>
+    </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  center: { 
-    flex: 1, 
-    alignItems: "center", 
-    justifyContent: "center" 
-  },
-  card: { 
-    backgroundColor: COLORS.white, 
-    borderRadius: 24, 
-    paddingVertical: 18, 
-    shadowColor: "#000", 
-    shadowOpacity: 0.18, 
-    shadowRadius: 16, 
-    shadowOffset: { width: 0, height: 8 }, 
-    elevation: 6 
-  },
-  logo: { 
-    width: 180, 
-    height: 56, 
-    alignSelf: "center", 
-    marginBottom: 8 
-  },
-  eyeBtn: { 
-    position: "absolute", 
-    right: 12, 
-    top: 38, 
-    padding: 4 
-  },
-  blackBtn: { 
-    marginTop: 12, 
-    backgroundColor: COLORS.black, 
-    borderRadius: 12, 
-    alignItems: "center", 
-    justifyContent: "center" 
-  },
-  dividerRow: { 
-    flexDirection: "row", 
-    alignItems: "center", 
-    marginVertical: 14 
-  },
-  divider: { 
-    flex: 1, 
-    height: StyleSheet.hairlineWidth, 
-    backgroundColor: COLORS.divider 
-  },
-  googleBtn: { 
-    borderWidth: 1, 
-    borderColor: "rgba(0,0,0,0.12)", 
-    backgroundColor: COLORS.white, 
-    borderRadius: 12, 
-    paddingVertical: 10, 
-    alignItems: "center", 
-    justifyContent: "center", 
-    flexDirection: "row" 
-  },
-  bottomRow: { 
-    flexDirection: "row", 
-    justifyContent: "center", 
-    marginTop: 12 
-  },
-});
