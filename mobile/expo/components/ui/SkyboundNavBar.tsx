@@ -6,7 +6,7 @@ import SkyboundText from './SkyboundText';
 
 
 interface SkybounNavBarProps{
-    title: string;           //the title text the NavBar dispalys
+    title: React.ReactNode;  //the title text the NavBar dispalys
     leftHandIcon: ReactNode; //the icon that will be displayed on the left hand side
     leftHandIconOnPressEvent: () => void; //the event that will happen when the left hand icon is pressed
     rightHandFirstIcon: ReactNode; //the icon that will be displayed first on the right hand side
