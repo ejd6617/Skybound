@@ -7,6 +7,12 @@ import LoginScreen from "../screens/LoginScreen";
 import SignupScreen from "../screens/SignupScreen";
 import DashboardScreen from "../screens/DashboardScreen";
 
+export type RootStackParamList = {
+  Login: undefined;
+  Signup: undefined;
+  Dashboard: undefined;
+};
+
 const Stack = createNativeStackNavigator();
 const NavContainer = NavigationContainer as unknown as React.ComponentType<React.PropsWithChildren<{}>>;
 
