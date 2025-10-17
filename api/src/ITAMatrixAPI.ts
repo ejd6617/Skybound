@@ -1,5 +1,5 @@
-import GenericAPI, { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@/src/GenericAPI";
-import { runQuery } from "@/src/ITAMatrixBackend";
+import GenericAPI, { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@/GenericAPI";
+import { runQuery } from "@/ITAMatrixBackend";
 
 export default class ITAMatrixAPI implements GenericAPI {
   async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]> {

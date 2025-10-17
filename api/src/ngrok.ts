@@ -13,7 +13,7 @@ export default async function exposeServer(ipv4: string, port: number) {
     }
 
     console.log('Attempting to create ngrok config file (if not existing)...');
-    execSync(`ngrok config add-authtoken ${TOKEN}`, { stdio: 'inherit' });
+    execSync(`npx ngrok config add-authtoken ${TOKEN}`, { stdio: 'inherit' });
 
     console.log(`Starting ngrok tunnel on port ${port}...`);
     const listener = await ngrok.forward({

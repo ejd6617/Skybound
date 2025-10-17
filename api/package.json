@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "start": "ts-node -r tsconfig-paths/register --log-error --project tsconfig.json index.ts"
+    "start": "npx ts-node -r tsconfig-paths/register --log-error --project tsconfig.json index.ts"
   },
   "dependencies": {
     "acorn": "^8.15.0",
@@ -316,7 +316,6 @@
   },
   "devDependencies": {
     "@ngrok/ngrok": "^1.5.2",
-    "@types/axios": "^0.9.36",
     "@types/express": "^5.0.3",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^24.7.1",
@@ -328,5 +327,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": ""
 }

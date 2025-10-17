@@ -1,6 +1,6 @@
-import AmadeusAPI from '@/src/AmadeusAPI';
-import GenericAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/src/GenericAPI';
-import exposeServer from '@/src/ngrok';
+import AmadeusAPI from '@/AmadeusAPI';
+import GenericAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/GenericAPI';
+import exposeServer from '@/ngrok';
 import express, { Request, Response } from 'express';
 
 const app = express();

@@ -12,22 +12,3 @@ services:
     environment:
       - PORT=4000
     command: ["npm", "start"]
-
-  expo:
-    build:
-      context: .
-    depends_on:
-      - api
-    volumes:
-      - .:/app
-      - .env.ngrok.local:/app/.env.ngrok.local
-    ports:
-      - "19000:19000"   # Metro bundler
-      - "19001:19001"   # Web
-      - "19002:19002"   # Devtools UI
-    environment:
-      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
-      - EXPO_NO_COMMAND_LINE=0
-    stdin_open: true   # Needed for interactive Expo CLI
-    tty: true
-    command: ["npm", "start"]

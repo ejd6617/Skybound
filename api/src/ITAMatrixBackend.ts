@@ -1,4 +1,4 @@
-import { Flight, FlightSection } from "@/src/GenericAPI";
+import { Flight, FlightSection } from "@/GenericAPI";
 import puppeteer, { Browser, Page } from 'puppeteer';
 export type FlightQueryType = "roundTrip" | "oneWay" | "multiCity";
 

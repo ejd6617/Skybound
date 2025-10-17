@@ -1,6 +1,5 @@
-import GenericAPI, { Flight, FlightSection, MultiCityQueryParams, OneWayQueryParams, Params, RoundTripQueryParams } from "@/src/GenericAPI";
-import type { AxiosResponse } from 'axios';
-import axios from 'axios';
+import GenericAPI, { Flight, FlightSection, MultiCityQueryParams, OneWayQueryParams, Params, RoundTripQueryParams } from "@/GenericAPI";
+import axios, { AxiosResponse } from 'axios';
 import * as dotenv from 'dotenv';
 
 const ENV_FILE = '/.env.amadeus.local';
