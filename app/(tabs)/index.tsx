@@ -1,12 +1,13 @@
-import SkyboundButton from '@components/ui/SkyboundButton';
+import SkyboundFlashDeal from '@/components/ui/SkyboundFlashDeal';
+import SkyboundFlightDetails from '@/components/ui/SkyboundFlightDetails';
 import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
-import SkyboundText from '@components/ui/SkyboundText'
-import SkyboundTextBox from '@components/ui/SkyboundTextBox'
+import SkyboundNavBar from '@components/ui/SkyboundNavBar';
+import SkyboundText from '@components/ui/SkyboundText';
 import basicStyles from '@constants/BasicComponents';
-import SkyboundLabelledTextBox from '@/components/ui/SkyboundLabelledTextBox';  
 import { useFonts } from 'expo-font';
+import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { GestureResponderEvent, Text, TextInput, View } from 'react-native';
+import { Image, View } from 'react-native';
 
 const App: React.FC = () => {
   const [fontsLoaded] = useFonts({
@@ -36,20 +37,66 @@ const App: React.FC = () => {
   }
 
   return (
+    
     <View style={[basicStyles.background, {width: "100%", height: "100%"}]}>
-      <SkyboundItemHolder style={basicStyles.itemHolder} width={300} height={500}>
-        <SkyboundText variant = 'primary' size = {60}>Help</SkyboundText>
-        <SkyboundButton style={[basicStyles.skyboundButton, basicStyles.skyboundButtonPrimary]} width={200} height={100} textVariant='primaryButton'
-          onPress={function (event: GestureResponderEvent): void {
-            console.log("Button pressed!");
-          } }
-        >
-          Click Me
-        </SkyboundButton>
-        <SkyboundTextBox placeholderText="Type Here..." width={250} height={50}></SkyboundTextBox>
 
-        <SkyboundLabelledTextBox placeholderText="this is a labelled text box" width={250} height={50} label="Label:"></SkyboundLabelledTextBox>
-      </SkyboundItemHolder>
+      <StatusBar style='dark' translucent={false}></StatusBar>
+    <SkyboundNavBar leftHandIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+    leftHandIconOnPressEvent={() => console.log("left hand icon pressed")}
+    rightHandFirstIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+    rightHandFirstIconOnPressEvent={() => console.log("first right hand icon pressed")}
+    rightHandSecondIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+    rightHandSecondIconOnPressEvent={()=> console.log("right hand second icon pressed")}
+    title={"Nav Bar Test"}></SkyboundNavBar>
+
+
+      <SkyboundItemHolder>
+        <SkyboundText variant = 'primary' size = {60}>Help</SkyboundText>
+
+
+
+       <SkyboundFlashDeal airlineImage={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>} 
+       airlineName='Test Airline'
+       sourceCode='ERI'
+       destCode='LAX'
+       departureTime='1:11 PM'
+       arrivalTime='2:22 PM'
+       travelTime='1h 11m'
+       originalPrice='$20000'
+       newPrice='$0'
+       onPress={() => console.log('What a great deal!')}>
+       </SkyboundFlashDeal>
+
+
+
+    </SkyboundItemHolder>
+
+    <SkyboundFlightDetails airlineLogo={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>}
+    airlineName='test airline'
+    airlineDescription='test Description'
+    price='$ 100'
+    tripType='round trip'
+    departureTime='1:11 AM'
+    arrivalTime='2:22 PM'
+    sourceCode='ERI'
+    destCode='LAX'
+    departureDate='10/12'
+    arrivalDate='10/12'
+    travelTime='1h 11m'
+    stops='1 stop'
+    onPress={() => console.log('flight pressed')}>
+
+
+    </SkyboundFlightDetails>
+
+   
+
+
+      
+      
+
+          
+
     </View>
   );
 };

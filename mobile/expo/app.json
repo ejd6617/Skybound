@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Skybound",
+    "slug": "skybound",
+    "scheme": "skybound",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/skybound_icon.png",
+    "splash": {
+      "image": "./assets/images/skybound_icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#2F97FF"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/skybound_icon.png",
+        "backgroundColor": "#0071E2"
+      }
+    },
+    "web": {
+      "favicon": "./assets/images/skybound_icon.png"
+    },
+    "plugins": [
+      "expo-font"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "00000000-0000-0000-0000-000000000000"
+      }
+    }
+  }
+}

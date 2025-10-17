@@ -8,6 +8,8 @@ interface SkyboundTextProps {
     style?: StyleProp<TextStyle>;//optinal style override
     size?: number;//size override
     variant: TextVariant //which Skybound text style it is
+    accessabilityLabel: string;
+
 }
 
 export type TextVariant = 'primary' | 'secondary' | 'error' | 'primaryButton'
@@ -18,6 +20,7 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
     variant = 'primary',
     style,
     size,
+    accessabilityLabel,
 }) => {
     const variantStyle =
         variant === 'secondary' //if variant is equal to secondary
@@ -39,7 +42,7 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
             variantStyle,
             size ? {fontSize: size} : null,
             style,
-         ]}
+         ]} accessibilityLabel= {accessabilityLabel}
          >
             {children}
          </Text>
