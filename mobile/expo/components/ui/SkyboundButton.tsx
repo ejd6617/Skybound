@@ -27,7 +27,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
 
   return (
     <TouchableOpacity style={[style, { width, height }]} onPress={onPress}>
-      <SkyboundText variant={textVariant} size={fontSize}>
+      <SkyboundText  variant={textVariant} size={fontSize} accessabilityLabel={'Label: ' + children}>
         {children}
       </SkyboundText>
     </TouchableOpacity>

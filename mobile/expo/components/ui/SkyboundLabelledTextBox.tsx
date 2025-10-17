@@ -26,7 +26,7 @@ const SkyboundLabelledTextBox: React.FC<SkyboundLabelledTextBoxProps> = ({
 }) => {
   return (
     <View style={styles.container}>
-      <SkyboundText variant={labelVariant} size={labelSize}>{label}</SkyboundText>
+      <SkyboundText variant={labelVariant} size={labelSize} accessabilityLabel={'Text Box Label: ' + label}>{label}</SkyboundText>
       <SkyboundTextBox
         placeholderText={placeholderText}
         width={width}

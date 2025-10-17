@@ -36,7 +36,7 @@ const SkyboundNavBar: React.FC<SkybounNavBarProps> =({
             </TouchableOpacity>
             
             <View style={styles.title}>
-                <SkyboundText variant='blue'>{title}</SkyboundText>
+                <SkyboundText variant='blue' accessabilityLabel={'Navigation Bar Title: ' + title}>{title}</SkyboundText>
             </View>
 
             <View style = {styles.rightHandIconsHolder}>

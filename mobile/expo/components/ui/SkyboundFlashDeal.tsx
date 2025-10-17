@@ -50,30 +50,30 @@ const SkyboundFlashDeal: React.FC<SkyboundFlashDealProps> = ({
                     <View style={{alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'center'}}>
                         {airlineImage}
 
-                        <SkyboundText variant='primary' style={{fontWeight: 'bold'}}>{airlineName}</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Airline: ' + airlineName} variant='primary' style={{fontWeight: 'bold'}}>{airlineName}</SkyboundText>
                     </View>
                     <View style={styles.flashDeal}>
-                        <SkyboundText variant='primaryButton' style={{fontWeight: 'bold'}}>Flash Deal</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Flash Deal'} variant='primaryButton' style={{fontWeight: 'bold'}}>Flash Deal</SkyboundText>
                     </View>
                 </View>
 
                 <View style={styles.middleRowHolder}>
                     <View style={styles.subHolder}>
-                        <SkyboundText variant='primary' size={20}>{sourceCode}</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Airline Code: ' + sourceCode} variant='primary' size={20}>{sourceCode}</SkyboundText>
 
-                        <SkyboundText variant='secondary'>{departureTime}</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Estimated departure time: ' + departureTime} variant='secondary'>{departureTime}</SkyboundText>
                     </View>
 
                     <View style ={styles.subHolder}>
                         <Image source={require('../../assets/images/AirlineTravelGraphic.png')} ></Image>
                         
-                        <SkyboundText variant='secondary'>{travelTime}</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Estimated travel time: ' + travelTime} variant='secondary'>{travelTime}</SkyboundText>
                     </View>
 
                     <View style={styles.subHolder}>
-                        <SkyboundText variant='primary' size={20}>{destCode}</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Destination Airline Code: ' + destCode} variant='primary' size={20}>{destCode}</SkyboundText>
 
-                        <SkyboundText variant='secondary'>{arrivalTime}</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Estimated Arrival Time: ' + arrivalTime} variant='secondary'>{arrivalTime}</SkyboundText>
                     </View>
 
 
@@ -82,14 +82,14 @@ const SkyboundFlashDeal: React.FC<SkyboundFlashDealProps> = ({
 
                     <View style={styles.middleRowHolder}>
                         <View style={styles.priceHolder}>
-                            <SkyboundText variant='secondary' style={{textDecorationLine: 'line-through'}}>{originalPrice}</SkyboundText>
+                            <SkyboundText accessabilityLabel={'Original Price: ' + originalPrice} variant='secondary' style={{textDecorationLine: 'line-through'}}>{originalPrice}</SkyboundText>
 
-                            <SkyboundText variant='blue' style={{fontWeight: 'bold'}}>{newPrice}</SkyboundText>
+                            <SkyboundText accessabilityLabel={'New Price: ' + newPrice} variant='blue' style={{fontWeight: 'bold'}}>{newPrice}</SkyboundText>
 
                         </View>
 
                         <View style={styles.cheaperThanUsual}>
-                            <SkyboundText variant='primaryButton'>Cheaper Than Usual</SkyboundText>
+                            <SkyboundText accessabilityLabel={'This flight is cheaper than usual! '} variant='primaryButton'>Cheaper Than Usual</SkyboundText>
                         </View>
                     </View>
 

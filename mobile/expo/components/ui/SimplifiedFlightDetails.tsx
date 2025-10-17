@@ -31,8 +31,8 @@ const SimplifiedFlightDetails: React.FC<SimplifiedFlightDetailsProps> = ( {
                         style={{ width: '100%', height: '100%' }}
                         />
                 </View>
-                 <SkyboundText variant="primary">{sourceCode}</SkyboundText>
-                <SkyboundText variant="secondary">{sourceName}</SkyboundText>
+                 <SkyboundText accessabilityLabel={'Source Airport Code: ' + sourceCode} variant="primary">{sourceCode}</SkyboundText>
+                <SkyboundText accessabilityLabel={'Source Airport Name: ' + sourceName} variant="secondary">{sourceName}</SkyboundText>
             </View>
 
   {/* Middle column */}
@@ -48,8 +48,8 @@ const SimplifiedFlightDetails: React.FC<SimplifiedFlightDetailsProps> = ( {
                 style={{width: '100%'}}/>
             </View>
 
-        <SkyboundText variant="secondary">{totalDistance}</SkyboundText>
-        <SkyboundText variant="secondary">{totalTime}</SkyboundText>
+        <SkyboundText accessabilityLabel={'Total flight distance:' + totalDistance} variant="secondary">{totalDistance}</SkyboundText>
+        <SkyboundText accessabilityLabel={'Estimated flight time: ' + totalTime  } variant="secondary">{totalTime}</SkyboundText>
         </View>
 
   {/* Right column */}
@@ -60,8 +60,8 @@ const SimplifiedFlightDetails: React.FC<SimplifiedFlightDetailsProps> = ( {
                     style={{ width: '100%', height: '100%' }}
                 />
             </View>
-            <SkyboundText variant="primary">{destCode}</SkyboundText>
-            <SkyboundText variant="secondary">{destName}</SkyboundText>
+            <SkyboundText accessabilityLabel={'Destination Airport Code: ' + destCode} variant="primary">{destCode}</SkyboundText>
+            <SkyboundText accessabilityLabel={'Destination Airport Name: ' + destName} variant="secondary">{destName}</SkyboundText>
         </View>
 </View>
 
