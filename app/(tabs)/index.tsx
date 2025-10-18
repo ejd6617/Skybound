@@ -4,9 +4,10 @@ import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
 import SkyboundNavBar from '@components/ui/SkyboundNavBar';
 import SkyboundText from '@components/ui/SkyboundText';
 import basicStyles from '@constants/BasicComponents';
+import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Image, View } from 'react-native';
 
 const App: React.FC = () => {
@@ -31,10 +32,41 @@ const App: React.FC = () => {
     'Thin': require('@fonts/Poppins/Poppins-Thin.ttf'),
   });
 
-  // Don't display anything yet if fonts aren't yet loaded
-  if (!fontsLoaded) {
-    return null;
-  }
+  const [data, setData] = useState([]);
+  const API_URL = Constants.expoConfig?.extra?.API_URL;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const url = `${API_URL}/api/searchFlightsRoundTrip/`;
+        console.log(url);
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+
+          body: JSON.stringify({
+            "originAirport": "LAX",
+            "destinationAirport": "JFK",
+            "startDate": "2026-01-10",
+            "endDate": "2026-01-17"
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
+
+        const data = await response.json();
+        setData(data);
+      } catch (err) {
+        console.error('API call failed', err);
+      }
+    })();
+ 
+  }, []);
 
   return (
     
@@ -55,17 +87,21 @@ const App: React.FC = () => {
 
 
 
-       <SkyboundFlashDeal airlineImage={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>} 
-       airlineName='Test Airline'
-       sourceCode='ERI'
-       destCode='LAX'
-       departureTime='1:11 PM'
-       arrivalTime='2:22 PM'
-       travelTime='1h 11m'
-       originalPrice='$20000'
-       newPrice='$0'
-       onPress={() => console.log('What a great deal!')}>
-       </SkyboundFlashDeal>
+        {data.length > 0 && (
+          <SkyboundFlashDeal airlineImage={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>} 
+          airlineName={data[0].airline}
+          sourceCode={data[0].outbound.from}
+          destCode={data[0].return.from}
+          departureTime={new Date(data[0].outbound.takeoff).toISOString().split('T')[0]}
+          arrivalTime={new Date(data[0].return.takeoff).toISOString().split('T')[0]}
+          travelTime={data[0].outbound.duration}
+          originalPrice={data[0].price}
+          newPrice={data[0].price}
+          onPress={() => console.log('What a great deal!')}>
+          </SkyboundFlashDeal>   
+        )}
+
+       
 
 
 
