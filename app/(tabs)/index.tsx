@@ -73,65 +73,47 @@ const App: React.FC = () => {
     <View style={[basicStyles.background, {width: "100%", height: "100%"}]}>
 
       <StatusBar style='dark' translucent={false}></StatusBar>
-    <SkyboundNavBar leftHandIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
-    leftHandIconOnPressEvent={() => console.log("left hand icon pressed")}
-    rightHandFirstIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
-    rightHandFirstIconOnPressEvent={() => console.log("first right hand icon pressed")}
-    rightHandSecondIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
-    rightHandSecondIconOnPressEvent={()=> console.log("right hand second icon pressed")}
-    title={"Nav Bar Test"}></SkyboundNavBar>
 
+      <SkyboundNavBar leftHandIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+      leftHandIconOnPressEvent={() => console.log("left hand icon pressed")}
+      rightHandFirstIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+      rightHandFirstIconOnPressEvent={() => console.log("first right hand icon pressed")}
+      rightHandSecondIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
+      rightHandSecondIconOnPressEvent={()=> console.log("right hand second icon pressed")}
+      title={"Nav Bar Test"}></SkyboundNavBar>
 
       <SkyboundItemHolder>
         <SkyboundText variant = 'primary' size = {60}>Help</SkyboundText>
-
-
-
         {data.length > 0 && (
           <SkyboundFlashDeal airlineImage={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>} 
-          airlineName={data[0].airline}
-          sourceCode={data[0].outbound.from}
-          destCode={data[0].return.from}
-          departureTime={new Date(data[0].outbound.takeoff).toISOString().split('T')[0]}
-          arrivalTime={new Date(data[0].return.takeoff).toISOString().split('T')[0]}
+          airlineName={data[0].airlineName}
+          sourceCode={data[0].outbound.sourceCode}
+          destCode={data[0].outbound.destCode}
+          departureTime={new Date(data[0].outbound.departureTime).toISOString().split('T')[0]}
+          arrivalTime={new Date(data[0].outbound.arrivalTime).toISOString().split('T')[0]}
           travelTime={data[0].outbound.duration}
           originalPrice={data[0].price}
           newPrice={data[0].price}
           onPress={() => console.log('What a great deal!')}>
-          </SkyboundFlashDeal>   
+          </SkyboundFlashDeal>
         )}
+      </SkyboundItemHolder>
 
-       
-
-
-
-    </SkyboundItemHolder>
-
-    <SkyboundFlightDetails airlineLogo={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>}
-    airlineName='test airline'
-    airlineDescription='test Description'
-    price='$ 100'
-    tripType='round trip'
-    departureTime='1:11 AM'
-    arrivalTime='2:22 PM'
-    sourceCode='ERI'
-    destCode='LAX'
-    departureDate='10/12'
-    arrivalDate='10/12'
-    travelTime='1h 11m'
-    stops='1 stop'
-    onPress={() => console.log('flight pressed')}>
-
-
-    </SkyboundFlightDetails>
-
-   
-
-
-      
-      
-
-          
+      <SkyboundFlightDetails airlineLogo={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>}
+      airlineName='test airline'
+      airlineDescription='test Description'
+      price='$ 100'
+      tripType='round trip'
+      departureTime='1:11 AM'
+      arrivalTime='2:22 PM'
+      sourceCode='ERI'
+      destCode='LAX'
+      departureDate='10/12'
+      arrivalDate='10/12'
+      travelTime='1h 11m'
+      stops='1 stop'
+      onPress={() => console.log('flight pressed')}>
+      </SkyboundFlightDetails>
 
     </View>
   );

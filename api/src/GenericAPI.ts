@@ -25,24 +25,25 @@ export interface MultiCityQueryParams extends Params {
 }
 
 // Represents the flight to/from destination, but not both
-export interface FlightSection {
-  from: string, // Origin airport
-  to: string, // Destination airport
-  takeoff: Date, // Specific time, not just a date
+export interface SkyboundFlightSegment {
+  sourceCode: string, // Origin airport
+  destCode: string, // Destination airport
+  departureTime: Date, // Specific time, not just a date
+  arrivalTime: Date, // Same as above, but for arrival
   duration: number, // Duration of flight in minutes
 }
 
 // Represents a full flight ticket, may be round trip
-export interface Flight {
+export interface SkyboundFlight {
   price: number,
-  airline: string,
-  outbound: FlightSection,
-  return?: FlightSection, // Optional, may not be set for one way flights
+  airlineName: string,
+  outbound: SkyboundFlightSegment,
+  return?: SkyboundFlightSegment, // Optional, may not be set for one way flights
 }
 
 export default interface GenericAPI {
-  searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]>;
-  searchFlightsOneWay(params: OneWayQueryParams): Promise<Flight[]>;
-  searchFlightsMultiCity(params: MultiCityQueryParams): Promise<Flight[]>;
+  searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<SkyboundFlight[]>;
+  searchFlightsOneWay(params: OneWayQueryParams): Promise<SkyboundFlight[]>;
+  searchFlightsMultiCity(params: MultiCityQueryParams): Promise<SkyboundFlight[]>;
 }
 
