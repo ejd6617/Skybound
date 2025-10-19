@@ -59,8 +59,12 @@ export default function DashboardScreen() {
     return [hoursString, minutesString].join(" ");
   }
 
-  const flightDeals = data.map(flight => (
+  // HACK: Generates unique keys for each flight deal based on its index in the array
+  // Ideally each item should have its own uniquely identifying index in the underlying data structure
+  // I'll fix this later if we end up depending on unique IDs for each item
+  const flightDeals = data.map((flight, index) => (
     <SkyboundFlashDeal
+      key={`flashdeal-${index}`}
       airlineImage={<Image source={require("../../assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
       airlineName={flight.airlineName} sourceCode={flight.outbound.sourceCode} destCode={flight.outbound.destCode}
       departureTime={flight.outbound.departureTime.split('T')[0]} arrivalTime={flight.outbound.arrivalTime.split('T')[0]} travelTime={parseDuration(flight.outbound.duration)}
