@@ -1,17 +1,72 @@
 // screens/DashboardScreen.tsx
-import React from "react";
-import { SafeAreaView, View, StyleSheet, Image, ScrollView, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useEffect, useState } from "react";
+import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 
-import SkyboundText from "../../components/ui/SkyboundText";
+import Constants from 'expo-constants';
 import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
 import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
+import SkyboundText from "../../components/ui/SkyboundText";
 
 export default function DashboardScreen() {
   const nav = useNavigation<any>();
 
+  const [data, setData] = useState([]);
+  const API_URL = Constants.expoConfig?.extra?.API_URL;
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const url = `${API_URL}/api/searchFlightsRoundTrip/`;
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+
+          body: JSON.stringify({
+            "originAirport": "LAX",
+            "destinationAirport": "JFK",
+            "startDate": "2026-01-10",
+            "endDate": "2026-01-17"
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error ${response.status}`);
+        }
+
+        const data = await response.json();
+        // TEMPORARY: shuffle and shorten the data to make it more realistic in the app
+        const shuffledData = data.sort(() => Math.random() - 0.5).slice(0,5);
+        setData(shuffledData);
+      } catch (err) {
+        console.error('API call failed', err);
+      }
+    })();
+ 
+  }, []);
+
+  function parseDuration(totalMinutes: number): string {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    const hoursString = (hours > 0) ? hours.toString()+"h": "";
+    const minutesString = (minutes > 0) ? minutes.toString()+"m": "";
+    return [hoursString, minutesString].join(" ");
+  }
+
+  const flightDeals = data.map(flight => (
+    <SkyboundFlashDeal
+      airlineImage={<Image source={require("../../assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
+      airlineName={flight.airlineName} sourceCode={flight.outbound.sourceCode} destCode={flight.outbound.destCode}
+      departureTime={flight.outbound.departureTime.split('T')[0]} arrivalTime={flight.outbound.arrivalTime.split('T')[0]} travelTime={parseDuration(flight.outbound.duration)}
+      originalPrice="" newPrice={`$${flight.price}`} onPress={() => {}}
+    />
+  ));
+  
   return (
     // Gradient for optional use in future, white for now
     <LinearGradient colors={["#FFFFFF", "#FFFFFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
@@ -46,25 +101,8 @@ export default function DashboardScreen() {
               <Pressable><SkyboundText variant="blue" size={13}>View All</SkyboundText></Pressable>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
-              <SkyboundFlashDeal
-                airlineImage={<Image source={require("../../assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
-                airlineName="Delta Airlines" sourceCode="LGA" destCode="LAX"
-                departureTime="8:30 AM" arrivalTime="12:15 PM" travelTime="5h 45m"
-                originalPrice="$460" newPrice="$225" onPress={() => {}}
-              />
-              <SkyboundFlashDeal
-                airlineImage={<Image source={require("../../assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
-                airlineName="United" sourceCode="JFK" destCode="SFO"
-                departureTime="9:15 AM" arrivalTime="12:25 PM" travelTime="6h 10m"
-                originalPrice="$520" newPrice="$289" onPress={() => {}}
-              />
-              <SkyboundFlashDeal
-                airlineImage={<Image source={require("../../assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
-                airlineName="JetBlue" sourceCode="PHL" destCode="MIA"
-                departureTime="7:40 AM" arrivalTime="10:10 AM" travelTime="2h 30m"
-                originalPrice="$180" newPrice="$119" onPress={() => {}}
-              />
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 16, gap: 12 }}>
+              {flightDeals}
             </ScrollView>
           </View>
 

@@ -1,13 +1,9 @@
-import SkyboundFlashDeal from '@/components/ui/SkyboundFlashDeal';
 import SkyboundFlightDetails from '@/components/ui/SkyboundFlightDetails';
-import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
 import SkyboundNavBar from '@components/ui/SkyboundNavBar';
-import SkyboundText from '@components/ui/SkyboundText';
 import basicStyles from '@constants/BasicComponents';
-import Constants from 'expo-constants';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Image, View } from 'react-native';
 
 const App: React.FC = () => {
@@ -32,44 +28,7 @@ const App: React.FC = () => {
     'Thin': require('@fonts/Poppins/Poppins-Thin.ttf'),
   });
 
-  const [data, setData] = useState([]);
-  const API_URL = Constants.expoConfig?.extra?.API_URL;
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const url = `${API_URL}/api/searchFlightsRoundTrip/`;
-        console.log(url);
-
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-
-          body: JSON.stringify({
-            "originAirport": "LAX",
-            "destinationAirport": "JFK",
-            "startDate": "2026-01-10",
-            "endDate": "2026-01-17"
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status}`);
-        }
-
-        const data = await response.json();
-        setData(data);
-      } catch (err) {
-        console.error('API call failed', err);
-      }
-    })();
- 
-  }, []);
-
   return (
-    
     <View style={[basicStyles.background, {width: "100%", height: "100%"}]}>
 
       <StatusBar style='dark' translucent={false}></StatusBar>
@@ -81,23 +40,6 @@ const App: React.FC = () => {
       rightHandSecondIcon={<Image source={require("../../assets/images/Notification Photo.png")}></Image>}
       rightHandSecondIconOnPressEvent={()=> console.log("right hand second icon pressed")}
       title={"Nav Bar Test"}></SkyboundNavBar>
-
-      <SkyboundItemHolder>
-        <SkyboundText variant = 'primary' size = {60}>Help</SkyboundText>
-        {data.length > 0 && (
-          <SkyboundFlashDeal airlineImage={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>} 
-          airlineName={data[0].airlineName}
-          sourceCode={data[0].outbound.sourceCode}
-          destCode={data[0].outbound.destCode}
-          departureTime={new Date(data[0].outbound.departureTime).toISOString().split('T')[0]}
-          arrivalTime={new Date(data[0].outbound.arrivalTime).toISOString().split('T')[0]}
-          travelTime={data[0].outbound.duration}
-          originalPrice={data[0].price}
-          newPrice={data[0].price}
-          onPress={() => console.log('What a great deal!')}>
-          </SkyboundFlashDeal>
-        )}
-      </SkyboundItemHolder>
 
       <SkyboundFlightDetails airlineLogo={<Image source={require("../../assets/images/AirplaneIcon.png")}></Image>}
       airlineName='test airline'
