@@ -1,22 +1,23 @@
 // screens/DashboardScreen.tsx
-import React from "react";
-import { SafeAreaView, View, StyleSheet, Image, ScrollView, Pressable } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
-import SkyboundText from "../../components/ui/SkyboundText";
 import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
+import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
 import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
+import SkyboundText from "../../components/ui/SkyboundText";
 
 export default function DashboardScreen() {
   const nav = useNavigation<any>();
-
+  const colorScheme = useColorScheme();
   return (
     // Gradient for optional use in future, white for now
     <LinearGradient colors={["#FFFFFF", "#FFFFFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }}>
-        {/* NavBar (required props) */}
+      <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#FFFFFF' : '#1E1E1E'}}>
+        {/* NavBar (required props) */}  
         <View style={{ backgroundColor: "#fff" }}>
           <SkyboundNavBar
             title={ 
@@ -35,15 +36,15 @@ export default function DashboardScreen() {
           {/* Hero */}
           <View style={styles.hero}>
             <Pressable style={styles.heroBtn}>
-              <SkyboundText variant="primaryButton" size={14} style={{ color: "#fff" }}>Search for Flights →</SkyboundText>
+              <SkyboundText accessabilityLabel="Search for flights button" variant="primaryButton" size={14} style={{ color: "#fff" }}>Search for Flights →</SkyboundText>
             </Pressable>
           </View>
 
           {/* Flash Deals */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <SkyboundText variant="primaryBold" size={18} style={{ color: "#0071E2" }}>Flash Deals</SkyboundText>
-              <Pressable><SkyboundText variant="blue" size={13}>View All</SkyboundText></Pressable>
+              <SkyboundText accessabilityLabel="Flash Deals Available" variant="primaryBold" size={18} style={{ color: "#0071E2" }}>Flash Deals</SkyboundText>
+              <Pressable><SkyboundText accessabilityLabel="View All"variant="blue" size={13}>View All</SkyboundText></Pressable>
             </View>
 
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}>
@@ -69,13 +70,13 @@ export default function DashboardScreen() {
           </View>
 
           {/* CTA */}
-          <View style={styles.readyCard}>
-            <SkyboundText variant="primaryBold" size={16} style={{ color: "#000", marginBottom: 10 }}>Ready to Book?</SkyboundText>
-            <SkyboundText variant="secondary" size={13} style={{ marginBottom: 12 }}>
+          <SkyboundItemHolder style={{margin: 40}}>
+            <SkyboundText accessabilityLabel="Ready to book button" variant="primaryBold" size={16}>Ready to Book?</SkyboundText>
+            <SkyboundText accessabilityLabel= "Find more amazing deals to start your journey" variant="secondary" size={13} style={{ marginBottom: 12 }}>
               Find more amazing deals and start your journey
             </SkyboundText>
-            <Pressable style={styles.readyBtn}><SkyboundText variant="primaryButton" size={14} style={{ color: "#fff" }}>View All Deals</SkyboundText></Pressable>
-          </View>
+            <Pressable style={styles.readyBtn}><SkyboundText accessabilityLabel=' View All Deals' variant="primaryButton" size={14} style={{ color: "#fff" }}>View All Deals</SkyboundText></Pressable>
+          </SkyboundItemHolder>
         </ScrollView>
       </SafeAreaView>
     </LinearGradient>

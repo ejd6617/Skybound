@@ -1,23 +1,25 @@
-import type { RootStackParamList } from '../nav/RootNavigator';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
+  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
-  Dimensions,
+  View
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import basicStyles from '../../constants/BasicComponents';
+import type { RootStackParamList } from '../nav/RootNavigator';
 
 // Ethan UI
-import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
 import SkyboundButton from '../../components/ui/SkyboundButton';
+import SkyboundItemHolder from '../../components/ui/SkyboundItemHolder';
+import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
+import SkyboundText from '../../components/ui/SkyboundText';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -29,6 +31,7 @@ export default function LoginScreen() {
   const CARD_W = Math.min(420, Math.round(SCREEN_W * 0.86));
   const H_PADDING = 18;
   const BTN_W = CARD_W - H_PADDING * 2;
+  const itemHolderWidth = SCREEN_W * .9; 
 
   return (
     <KeyboardAvoidingView
@@ -59,58 +62,21 @@ export default function LoginScreen() {
           />
 
           {/* Subtitle (Poppins) */}
-          <Text
-            style={{
-              color: 'white',
-              fontSize: 16,
-              fontFamily: 'Poppins_400Regular',
-              marginBottom: 30,
-            }}
-          >
-            Your journey starts here
-          </Text>
+          <SkyboundText variant='primary' accessabilityLabel="Skybound: Your Journey Starts Here">Your Journey Starts Here</SkyboundText>
 
           {/* White card */}
-          <View
-            style={{
-              width: '90%',
-              backgroundColor: 'white',
-              borderRadius: 20,
-              padding: 24,
-              shadowColor: '#000',
-              shadowOpacity: 0.12,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 8 },
-              elevation: 4,
-            }}
-          >
+          <SkyboundItemHolder style={{alignContent: 'flex-start', gap: 5}} width={itemHolderWidth}>
+          
             {/* Title */}
-            <Text
-              style={{
-                fontSize: 24,
-                fontFamily: 'Poppins_700Bold',
-                color: '#111827',
-                marginBottom: 6,
-              }}
-            >
-              Welcome Back
-            </Text>
-            <Text
-              style={{
-                fontFamily: 'Poppins_400Regular',
-                color: '#6B7280',
-                marginBottom: 35,
-              }}
-            >
-              Sign in to your account
-            </Text>
+            <View style={{width: BTN_W, alignItems: 'flex-start',}}>
+              <SkyboundText variant='primaryBold' accessabilityLabel='Welcome back to Skybound' size={20}>Welcome Back</SkyboundText>
+              <SkyboundText variant='secondary' accessabilityLabel='Please sign into your account'>Please Sign In to your account</SkyboundText>
+            </View>
 
             {/* Email (Ethan component) */}
-            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginBottom: 0 }}>
-              Email
-            </Text>
+           
             <SkyboundLabelledTextBox
-              label=""
+              label="Email"
               placeholderText="Enter your email"
               width={BTN_W}
               height={45}
@@ -121,11 +87,9 @@ export default function LoginScreen() {
             />
 
             {/* Password (Ethan component) */}
-            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginTop: 25, marginBottom: 0 }}>
-              Password
-            </Text>
+            
             <SkyboundLabelledTextBox
-              label=""
+              label="Password"
               placeholderText="Enter your password"
               width={BTN_W}
               height={45}
@@ -146,7 +110,7 @@ export default function LoginScreen() {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
-                textVariant="primaryButton"
+                textVariant="forceWhite"
                 textSize={16}
               >
                 Log In
@@ -214,7 +178,7 @@ export default function LoginScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </SkyboundItemHolder>
 
           {/* Bottom links (unchanged) */}
           <View
@@ -240,9 +204,23 @@ export default function LoginScreen() {
                 Help
               </Text>
             </TouchableOpacity>
+
+            <SkyboundButton
+            onPress={()=> navigation.navigate("ComponentTest")}
+            style={basicStyles.skyboundButtonPrimaryLight}
+            width={100}
+            height={50}
+            >Component Test</SkyboundButton>
+
           </View>
-        </ScrollView>
+          
+          </ScrollView>
       </LinearGradient>
+        
+
+   
     </KeyboardAvoidingView>
+
+    
   );
 }

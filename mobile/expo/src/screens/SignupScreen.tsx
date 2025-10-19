@@ -1,23 +1,24 @@
-import type { RootStackParamList } from '../nav/RootNavigator';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
+  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
-  Dimensions,
+  View
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import type { RootStackParamList } from '../nav/RootNavigator';
 
 // Ethan UI
-import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
 import SkyboundButton from '../../components/ui/SkyboundButton';
+import SkyboundItemHolder from '../../components/ui/SkyboundItemHolder';
+import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
+import SkyboundText from '../../components/ui/SkyboundText';
 
 export default function SignupScreen() {
   const [fullName, setFullName] = useState('');
@@ -61,58 +62,19 @@ export default function SignupScreen() {
           />
 
           {/* Subtitle (Poppins) */}
-          <Text
-            style={{
-              color: 'white',
-              fontSize: 16,
-              fontFamily: 'Poppins_400Regular',
-              marginBottom: 30,
-            }}
-          >
-            Your journey starts here
-          </Text>
+          <SkyboundText variant='primary' accessabilityLabel='Skybound: your journey starts here'>Your Journey Starts Here</SkyboundText>
 
-          {/* White card */}
-          <View
-            style={{
-              width: '90%',
-              backgroundColor: 'white',
-              borderRadius: 20,
-              padding: 24,
-              shadowColor: '#000',
-              shadowOpacity: 0.12,
-              shadowRadius: 10,
-              shadowOffset: { width: 0, height: 8 },
-              elevation: 4,
-            }}
-          >
+          {/* card */}
+          <SkyboundItemHolder width={CARD_W} style={{gap: 20}}>
             {/* Title */}
-            <Text
-              style={{
-                fontSize: 24,
-                fontFamily: 'Poppins_700Bold',
-                color: '#111827',
-                marginBottom: 6,
-              }}
-            >
-              Create Account
-            </Text>
-            <Text
-              style={{
-                fontFamily: 'Poppins_400Regular',
-                color: '#6B7280',
-                marginBottom: 35,
-              }}
-            >
-              Join Skybound to track and save on flights
-            </Text>
-
+            <View style={{width: BTN_W, alignItems: 'flex-start'}}>
+              <SkyboundText variant='primaryBold' accessabilityLabel='Create Account' size={20}>Create Account</SkyboundText>
+              <SkyboundText variant='primary' accessabilityLabel='Join Skybound to track and save on flights'>Join Skybound to track and save on flights</SkyboundText>
+            </View> 
             {/* Full Name */}
-            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginBottom: 0 }}>
-              Full Name
-            </Text>
+           
             <SkyboundLabelledTextBox
-              label=""
+              label="Full Name"
               placeholderText="Enter your name"
               width={BTN_W}
               height={45}
@@ -121,11 +83,9 @@ export default function SignupScreen() {
             />
 
             {/* Email */}
-            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginTop: 25, marginBottom: 0 }}>
-              Email
-            </Text>
+           
             <SkyboundLabelledTextBox
-              label=""
+              label="Email"
               placeholderText="Enter your email"
               width={BTN_W}
               height={45}
@@ -136,11 +96,9 @@ export default function SignupScreen() {
             />
 
             {/* Password */}
-            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginTop: 25, marginBottom: 0 }}>
-              Password
-            </Text>
+            
             <SkyboundLabelledTextBox
-              label=""
+              label="Password"
               placeholderText="Create a password"
               width={BTN_W}
               height={45}
@@ -150,11 +108,9 @@ export default function SignupScreen() {
             />
 
             {/* Confirm Password */}
-            <Text style={{ fontFamily: 'Poppins_600SemiBold', color: '#111827', marginTop: 25, marginBottom: 0 }}>
-              Confirm Password
-            </Text>
+       
             <SkyboundLabelledTextBox
-              label=""
+              label="Confirm Password"
               placeholderText="Re-enter password"
               width={BTN_W}
               height={45}
@@ -175,7 +131,7 @@ export default function SignupScreen() {
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
-                textVariant="primaryButton"
+                textVariant="forceWhite"
                 textSize={16}
               >
                 Create account
@@ -243,7 +199,7 @@ export default function SignupScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </SkyboundItemHolder>
 
           {/* Bottom links (unchanged) */}
           <View

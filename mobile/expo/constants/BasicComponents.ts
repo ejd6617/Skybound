@@ -11,7 +11,7 @@ export default StyleSheet.create({
     // filled background for the login screen.
   },
 
-  itemHolder: {
+  itemHolderLight: {
     backgroundColor: 'white',
     borderRadius: 16,
     padding: 16,
@@ -32,6 +32,28 @@ export default StyleSheet.create({
     // Item holder box for things
   },
 
+   itemHolderDark: {
+    backgroundColor: '#1E1E1E',
+    borderRadius: 16,
+    padding: 16,
+    gap: 10,
+
+    // boxShadow is not supported directly in RN; we emulate it below
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4, // for Android
+    // boxSizing is not applicable in React Native
+    display: 'flex',
+    flexDirection: 'column',
+    // gap is not supported in RN – use marginBottom or spacing components
+    alignItems: 'center',
+    justifyContent: 'center' 
+    // Item holder box for things
+  },
+
+
   subItemHolder: {
     backgroundColor: '#E8EFF0',
     borderRadius: 16,
@@ -47,6 +69,8 @@ export default StyleSheet.create({
     // gap is not supported in RN – use marginBottom or spacing components
     alignItems: 'center',
   },
+
+  // ============== BUTTON STYLES ===============
 
   skyboundButton: {
     borderRadius: 20,
@@ -64,11 +88,11 @@ export default StyleSheet.create({
   },
 
   //button Variants
-  skyboundButtonPrimary: {
+  skyboundButtonPrimaryLight: {
     color: 'white',
     backgroundColor: '#0071E2',
     fontFamily: 'Regular',
-    fontSize: 16, // 1rem ≈ 16px
+    fontSize: 16, 
   },
 
   skyboundButtonDelete: {
@@ -83,11 +107,7 @@ export default StyleSheet.create({
     fontSize: 16,
   },
 
-  // hover state cannot be defined in RN styles directly
-  // Use Pressable with conditional styles for hover/pressed states
-  skyboundButtonPrimaryHover: {
-    backgroundColor: 'darkblue',
-  },
+// ================= TEXT BOX STYLES =================
 
   skyboundTextBox: {
     borderWidth: 2,
@@ -105,43 +125,68 @@ export default StyleSheet.create({
     borderColor: '#3b82f6',
   },
 
+  // ================= TEXT STYLES =================
+  
   skyboundText: {
     fontFamily: 'Regular',
     color: '#111827',
   },
 
   // text variants
-  skyboundTextPrimary: {
+  skyboundTextPrimaryLight: {
     fontFamily: 'Regular',
     color: '#111827',
   },
 
-  skyboundTextPrimaryBold: {
-    fontFamily: 'Regular',
+  skyboundTextPrimaryLightBold: {
+    fontFamily: 'Bold',
     color: '#111827',
-    fontWeight: 'bold',
+    
   },
-  skyboundTextSecondary: {
+  skyboundTextSecondaryLight: {
     fontFamily: 'Regular',
     color: '#585858',
   },
-  skyboundTextError: {
+
+   skyboundTextPrimaryDark: {
     fontFamily: 'Regular',
-    color: '#ef4444',
+    color: '#F3F4F6',
   },
 
-  skyboundBlueText: {
+  skyboundTextPrimaryDarkBold: {
+    fontFamily: 'Bold',
+    color: '#F3F4F6',
+    
+  },
+  skyboundTextSecondaryDark: {
+    fontFamily: 'Regular',
+    color: '#585858',
+  },
+ 
+
+  skyboundBlueTextLight: {
     color: '#0071E2',
-    fontWeight: 'bold',
+    fontFamily: 'Bold',
     fontSize: 20
   },
 
-  
+    skyboundBlueTextDark: {
+    color: '#4DA3FF',
+    fontFamily: 'Bold',
+    fontSize: 20
+  },
 
 
-  skyboundButtonTextPrimary: {
+  // ================ BUTTON TEXT STYLES =================
+
+  skyboundButtonTextPrimaryLight: {
     fontFamily: 'Regular',
     color: '#FFFFFF'
+  },
+
+   skyboundButtonTextPrimaryDark: {
+    fontFamily: 'Regular',
+    color: '#000000'
   },
 
   skyboundDeleteButtonText: {

@@ -1,7 +1,10 @@
 import React, { ReactNode } from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
+import AirplaneTravelGraphic from '../../assets/images/AirplaneTravelGraphic.svg';
+import basicStyles from '../../constants/BasicComponents';
 import SkyboundItemHolder from './SkyboundItemHolder';
 import SkyboundText from './SkyboundText';
+
 
 interface SkyboundFlashDealProps {
     airlineImage: ReactNode;
@@ -30,22 +33,11 @@ const SkyboundFlashDeal: React.FC<SkyboundFlashDealProps> = ({
     onPress
 }) =>
 {
+    const colorScheme = useColorScheme();
     return (
         <TouchableOpacity onPress={onPress} >
 
-            <SkyboundItemHolder style={{
-        
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
-            elevation: 4,
-            gap: 3,
-            padding: 10
-            
-            }}>
+            <SkyboundItemHolder style={colorScheme === 'light' ? basicStyles.itemHolderLight : basicStyles.itemHolderDark}>
                 <View style={styles.TopRowHolder}>
                     <View style={{alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'center'}}>
                         {airlineImage}
@@ -65,7 +57,7 @@ const SkyboundFlashDeal: React.FC<SkyboundFlashDealProps> = ({
                     </View>
 
                     <View style ={styles.subHolder}>
-                        <Image source={require('../../assets/images/AirlineTravelGraphic.png')} ></Image>
+                       <AirplaneTravelGraphic width={100} height={20}></AirplaneTravelGraphic>
                         
                         <SkyboundText accessabilityLabel={'Estimated travel time: ' + travelTime} variant='secondary'>{travelTime}</SkyboundText>
                     </View>
