@@ -1,4 +1,65 @@
-# Welcome to your Expo app 👋
+# Running Skybound
+
+## 1. Clone the git repo
+
+```powershell
+git clone "https://github.com/ejd6617/Skybound"
+```
+
+## 2. Start the API Backend
+
+### 2.1. Docker Desktop
+
+- Ensure docker desktop is installed and running (should be preinstalled in VMs)
+
+### 2.2. ngrok (for connection tunneling)
+
+- Create an ngrok account [here](https://dashboard.ngrok.com/signup). I just used my GitHub account to sign up.
+
+- Find your authtoken [here](https://dashboard.ngrok.com/get-started/your-authtoken)
+
+- Create file `.env.ngrok.local` in the project root (Skybound/.env.ngrok.local) with the following contents:
+
+```ini
+NGROK_AUTHTOKEN="yourTokenHere"
+```
+
+### 2.3. Amadeus API
+
+- Create file `.env.amadeus.local` in the project root (Skybound/.env.amadeus.local) with the following contents:
+
+```ini
+AMADEUS_KEY="yourKeyHere"
+AMADEUS_SECRET="yourSecretHere"
+```
+
+> [!NOTE]
+> I don't think we all need a separate account for this one, so you can use the credentials I emailed you. If it starts to hit you with weird rate limits etc, you can try making your own developer account with Amadeus.
+
+### 2.4. Start the docker container
+
+```powershell
+cd .\Skybound\
+docker compose up --build
+```
+
+## 3. Start the app
+
+```powershell
+cd .\Skybound\mobile\expo
+npm install
+npm start
+```
+
+## 4. View the app on your mobile device
+
+There will be a QR code output to the terminal by the running expo app. Scan it to connect to the tunnel.
+
+<br>
+
+---
+
+# Default Expo README (for reference)
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
