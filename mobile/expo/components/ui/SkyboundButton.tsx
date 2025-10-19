@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react';
-import { GestureResponderEvent, StyleProp, Text, TextStyle, TouchableOpacity, ViewStyle } from 'react-native';
+import { GestureResponderEvent, StyleProp, TouchableOpacity, ViewStyle } from 'react-native';
+import basicStyles from '../../constants/BasicComponents';
 import SkyboundText, { TextVariant } from './SkyboundText';
+
 
 
 
@@ -26,7 +28,7 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   const fontSize = textSize ?? Math.min(Math.max(height * 0.4, 12), 20);
 
   return (
-    <TouchableOpacity style={[style, { width, height }]} onPress={onPress}>
+    <TouchableOpacity style={[basicStyles.skyboundButton, style, { width, height }]} onPress={onPress}>
       <SkyboundText  variant={textVariant} size={fontSize} accessabilityLabel={'Label: ' + children}>
         {children}
       </SkyboundText>

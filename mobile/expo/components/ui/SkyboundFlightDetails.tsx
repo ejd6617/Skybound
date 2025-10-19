@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import AirplaneTravelGraphic from '../../assets/images/AirplaneTravelGraphic.svg';
 import SkyboundItemHolder from './SkyboundItemHolder';
 import SkyboundText from './SkyboundText';
 
@@ -80,7 +81,7 @@ const SkyboundFlightDetails: React.FC<SkyboundFlightDetailsProps> =({
 
                     <SkyboundText accessabilityLabel={'Estimated travel time: ' + travelTime} variant='secondary'>{travelTime}</SkyboundText>
 
-                    <Image source={require('../../assets/images/AirlineTravelGraphic.png')}></Image>
+                    <AirplaneTravelGraphic size ={24}></AirplaneTravelGraphic>
 
                     <SkyboundText accessabilityLabel={'Number of stops: ' + stops} variant='secondary'>{stops}</SkyboundText>
 
@@ -111,7 +112,7 @@ const SkyboundFlightDetails: React.FC<SkyboundFlightDetailsProps> =({
 const styles = StyleSheet.create({
 
     rowHolder: {
-        gap: 5,
+        gap: 10,
         flexDirection: 'row',
         justifyContent: 'space-between',
     },

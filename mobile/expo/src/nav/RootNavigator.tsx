@@ -1,16 +1,18 @@
 // mobile/expo/src/nav/RootNavigator.tsx
-import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import * as React from "react";
 
+import ComponentTestScreen from "../screens/ComponentTestScreen";
+import DashboardScreen from "../screens/DashboardScreen";
 import LoginScreen from "../screens/LoginScreen";
 import SignupScreen from "../screens/SignupScreen";
-import DashboardScreen from "../screens/DashboardScreen";
 
 export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
   Dashboard: undefined;
+  ComponentTest: undefined;
 };
 
 const Stack = createNativeStackNavigator();
@@ -25,6 +27,7 @@ export default function RootNavigator(): React.JSX.Element
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
+        <Stack.Screen name ="ComponentTest" component={ComponentTestScreen}/>
       </Stack.Navigator>
     </NavContainer>
   );
