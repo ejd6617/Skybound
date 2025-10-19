@@ -19,6 +19,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
 import SkyboundButton from '../../components/ui/SkyboundButton';
 
+//signup functionality with Firebase
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from "../firebase";
+import { Alert } from 'react-native';
+
 export default function SignupScreen() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail]     = useState('');
@@ -32,6 +37,30 @@ export default function SignupScreen() {
   const H_PADDING = 18;
   const BTN_W = CARD_W - H_PADDING * 2;
 
+  //signup functionality with Firebase
+  async function handleSignup() {
+    if (!email || !password || !password2 || !fullName) {
+      Alert.alert('Error', 'Please fill out all fields.');
+      return;
+    }
+
+    if (password !== password2) {
+      Alert.alert('Error', 'Passwords do not match.');
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      navigation.navigate('Dashboard');
+
+    } catch (error: any) {
+      console.error("Signup error:", error);
+      Alert.alert('Signup failed', error.message);
+    }
+  }
+  
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -166,7 +195,7 @@ export default function SignupScreen() {
             {/* Create Account button */}
             <View style={{ marginTop: 25 }}>
               <SkyboundButton
-                onPress={() => navigation.navigate('Dashboard')}
+                onPress={handleSignup}
                 width={BTN_W}
                 height={50}
                 style={{
