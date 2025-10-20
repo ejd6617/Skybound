@@ -1,7 +1,8 @@
 import React, { ReactNode } from 'react';
-import { Dimensions, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Dimensions, StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SkyboundText from './SkyboundText';
+
 
 
 
@@ -27,16 +28,17 @@ const SkyboundNavBar: React.FC<SkybounNavBarProps> =({
 }) => {
 
     const {width, height} = Dimensions.get('window')
+    const colorScheme = useColorScheme();
 
     return(
-        <SafeAreaView style={{backgroundColor: 'white'}}>
+        <SafeAreaView style={{backgroundColor: colorScheme === 'light' ? 'white' : '#1E1E1E'}}>
         <View style={[styles.navBarHolder, {width: width}]}>
             <TouchableOpacity onPress={leftHandIconOnPressEvent}>
                     {leftHandIcon}
             </TouchableOpacity>
             
             <View style={styles.title}>
-                <SkyboundText variant='blue'>{title}</SkyboundText>
+                <SkyboundText variant='blue' accessabilityLabel={'Navigation Bar Title: ' + title}>{title}</SkyboundText>
             </View>
 
             <View style = {styles.rightHandIconsHolder}>
@@ -64,7 +66,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 10,
-        backgroundColor: 'white',
+     
         position: 'relative',
 
     },

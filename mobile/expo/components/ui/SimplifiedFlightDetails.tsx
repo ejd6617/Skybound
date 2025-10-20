@@ -1,6 +1,7 @@
-import React, { ReactNode } from 'react';
-import { StyleProp, View, ViewStyle, StyleSheet, Image } from 'react-native';
-import BasicStyles from '../../constants/BasicComponents'
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import BallIcon from '../../assets/images/BallIcon.svg';
+import SimplifiedFlightGraphic from '../../assets/images/SimplifiedFlightGraphic.svg';
 import SkyboundText from './SkyboundText';
 
 interface SimplifiedFlightDetailsProps {
@@ -26,42 +27,27 @@ const SimplifiedFlightDetails: React.FC<SimplifiedFlightDetailsProps> = ( {
             {/* Left column */}
             <View style={styles.subholder}>
                  <View style={{ width: 30, height: 30 }}>
-                      <Image
-                         source={require('../../assets/images/CircleGraphic.png')}
-                        style={{ width: '100%', height: '100%' }}
-                        />
+                      <BallIcon width={24} height={24}></BallIcon>
                 </View>
-                 <SkyboundText variant="primary">{sourceCode}</SkyboundText>
-                <SkyboundText variant="secondary">{sourceName}</SkyboundText>
+                 <SkyboundText accessabilityLabel={'Source Airport Code: ' + sourceCode} variant="primary">{sourceCode}</SkyboundText>
+                <SkyboundText accessabilityLabel={'Source Airport Name: ' + sourceName} variant="secondary">{sourceName}</SkyboundText>
             </View>
 
   {/* Middle column */}
         <View style={styles.middleSubholder}>
-            <View style={{ width: 30, height: 30 }}>
-                <Image
-                    source={require('../../assets/images/AirplaneIcon.png')}
-                     style={{ width: '100%', height: '100%' }}
-                />
-            </View>
-            <View style={{ width: 100, height: 30 }}>
-                <Image source={require('../../assets/images/DistanceLine.png')} 
-                style={{width: '100%'}}/>
-            </View>
+          <SimplifiedFlightGraphic size={100}></SimplifiedFlightGraphic>
 
-        <SkyboundText variant="secondary">{totalDistance}</SkyboundText>
-        <SkyboundText variant="secondary">{totalTime}</SkyboundText>
+        <SkyboundText accessabilityLabel={'Total flight distance:' + totalDistance} variant="secondary">{totalDistance}</SkyboundText>
+        <SkyboundText accessabilityLabel={'Estimated flight time: ' + totalTime  } variant="secondary">{totalTime}</SkyboundText>
         </View>
 
   {/* Right column */}
         <View style={styles.subholder}>
             <View style={{ width: 30, height: 30 }}>
-                <Image
-                    source={require('../../assets/images/CircleGraphic.png')}
-                    style={{ width: '100%', height: '100%' }}
-                />
+                <BallIcon width={24} height={24}></BallIcon>
             </View>
-            <SkyboundText variant="primary">{destCode}</SkyboundText>
-            <SkyboundText variant="secondary">{destName}</SkyboundText>
+            <SkyboundText accessabilityLabel={'Destination Airport Code: ' + destCode} variant="primary">{destCode}</SkyboundText>
+            <SkyboundText accessabilityLabel={'Destination Airport Name: ' + destName} variant="secondary">{destName}</SkyboundText>
         </View>
 </View>
 
@@ -89,6 +75,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        alignContent: 'center',
         gap: 3,
         maxWidth: '30%',           // side columns take up at most 30% of parent width
         minWidth: 0, 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleProp, Text, TextStyle } from 'react-native';
+import { StyleProp, Text, TextStyle, useColorScheme } from 'react-native';
 import basicStyles from '../../constants/BasicComponents';
 
 
@@ -8,38 +8,90 @@ interface SkyboundTextProps {
     style?: StyleProp<TextStyle>;//optinal style override
     size?: number;//size override
     variant: TextVariant //which Skybound text style it is
+    accessabilityLabel: string;
+
 }
 
-export type TextVariant = 'primary' | 'secondary' | 'error' | 'primaryButton'
-| 'deleteButton' | 'blue' | 'primaryBold' // enum of the various styles
+export type TextVariant = 'primary' | 'secondary' | 'primaryButton'
+| 'deleteButton' | 'blue' | 'primaryBold'  | 'forceWhite' // enum of the various styles
 
 const SkyboundText: React.FC<SkyboundTextProps> = ({
     children,
     variant = 'primary',
     style,
     size,
+    accessabilityLabel,
 }) => {
-    const variantStyle =
-        variant === 'secondary' //if variant is equal to secondary
-        ? basicStyles.skyboundTextSecondary
-        : variant === 'error' //else if variant is equal to error
-        ? basicStyles.skyboundTextError
-        : variant === 'primaryButton' //else if variant is equal to primaryButton
-        ? basicStyles.skyboundButtonTextPrimary
-        : variant === 'deleteButton' // else if variant is equal to deleteButton
-        ? basicStyles.skyboundDeleteButtonText
-        : variant === 'blue' //else if variant is equal to navBar
-        ? basicStyles.skyboundBlueText
-        : variant === 'primaryBold' //else if variant is pirmaryBold
-        ? basicStyles.skyboundTextPrimaryBold
-        : basicStyles.skyboundTextPrimary
+    let variantStyle = basicStyles.skyboundTextPrimaryLight;
+    const colorScheme = useColorScheme();
+    
+    //need to set the style based on both text variant and current theme
+    if(variant === 'primary')
+    {
+        if(colorScheme === 'light')
+        {
+            variantStyle = basicStyles.skyboundTextPrimaryLight;
+        }
+        else 
+        {
+            variantStyle = basicStyles.skyboundTextPrimaryDark;
+        }
+    }
+    else if(variant === 'secondary')
+    {
+         if(colorScheme === 'light')
+        {
+             variantStyle = basicStyles.skyboundTextSecondaryLight;
+        }
+        else 
+        {
+             variantStyle = basicStyles.skyboundTextSecondaryDark;
+        }
+    }
+    else if(variant === 'primaryButton')
+    {
+         if(colorScheme === 'light')
+        {
+             variantStyle = basicStyles.skyboundButtonTextPrimaryLight;
+        }
+        else 
+        {
+             variantStyle = basicStyles.skyboundButtonTextPrimaryDark;
+        }
+    }
+    else if(variant === 'primaryBold')
+    {
+         if(colorScheme === 'light')
+        {
+             variantStyle = basicStyles.skyboundTextPrimaryLightBold;
+        }
+        else 
+        {
+             variantStyle = basicStyles.skyboundTextPrimaryDarkBold;
+        }
+    }
+    else if(variant === 'blue')
+    {
+          if(colorScheme === 'light')
+        {
+             variantStyle = basicStyles.skyboundBlueTextLight;
+        }
+        else 
+        {
+             variantStyle = basicStyles.skyboundBlueTextDark;
+        }
+    }
+    else if(variant === 'forceWhite')
+    {
+        variantStyle = basicStyles.skyboundTextPrimaryDarkBold;
+    }
 
     return (
         <Text style = {[
             variantStyle,
             size ? {fontSize: size} : null,
             style,
-         ]}
+         ]} accessibilityLabel= {accessabilityLabel}
          >
             {children}
          </Text>

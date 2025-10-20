@@ -1,0 +1,12 @@
+accessible: Groups children into one accessible element.
+
+accessibilityLabel: Read by the screen reader instead of raw text.
+
+accessibilityHint: Extra description (e.g. “Navigates to the next screen”).
+
+accessibilityRole: Describes the element’s type (button, link, image, etc.).
+
+accessibilityState: Describes states like “checked”, “disabled”, “selected”, etc.
+
+accessibilityValue: Provides values for sliders, progress bars, etc.
+
