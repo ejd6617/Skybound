@@ -127,21 +127,7 @@ export default function DashboardScreen() {
               </View>
             ) : (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 16, gap: 12 }}>
-                {data.map((flight, index) => (
-                  <SkyboundFlashDeal
-                    key={`flashdeal-${index}`}
-                    airlineImage={<Image source={require("../../assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
-                    airlineName={flight.airlineName}
-                    sourceCode={flight.outbound.sourceCode}
-                    destCode={flight.outbound.destCode}
-                    departureTime={flight.outbound.departureTime.split('T')[0]}
-                    arrivalTime={flight.outbound.arrivalTime.split('T')[0]}
-                    travelTime={parseDuration(flight.outbound.duration)}
-                    originalPrice=""
-                    newPrice={`$${flight.price}`}
-                    onPress={() => {}}
-                  />
-                ))}
+                {flightDeals}
               </ScrollView>
             )}
           </View>
