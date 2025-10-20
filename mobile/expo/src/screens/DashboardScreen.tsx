@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import Constants from 'expo-constants';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
-import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
 import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
 import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
@@ -15,41 +15,46 @@ export default function DashboardScreen() {
   const nav = useNavigation<any>();
 
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true); // Is loading in new data (default true)
+  const [refreshing, setRefreshing] = useState(false); // Is refreshing data (default false)
   const API_URL = Constants.expoConfig?.extra?.API_URL;
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const url = `${API_URL}/api/searchFlightsRoundTrip/`;
+  const fetchData = async () => {
+    try {
+      const url = `${API_URL}/api/searchFlightsRoundTrip/`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          originAirport: 'LAX',
+          destinationAirport: 'JFK',
+          startDate: '2026-01-10',
+          endDate: '2026-01-17',
+        }),
+      });
 
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-
-          body: JSON.stringify({
-            "originAirport": "LAX",
-            "destinationAirport": "JFK",
-            "startDate": "2026-01-10",
-            "endDate": "2026-01-17"
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status}`);
-        }
-
-        const data = await response.json();
-        // TEMPORARY: shuffle and shorten the data to make it more realistic in the app
-        const shuffledData = data.sort(() => Math.random() - 0.5).slice(0,5);
-        setData(shuffledData);
-      } catch (err) {
-        console.error('API call failed', err);
+      if (!response.ok) {
+        throw new Error(`HTTP error ${response.status}`);
       }
-    })();
- 
+
+      const data = await response.json();
+      const shuffledData = data.sort(() => Math.random() - 0.5).slice(0, 5);
+      setData(shuffledData);
+    } catch (err) {
+      console.error('API call failed', err);
+    }
+  };
+
+  useEffect(() => {
+    setLoading(true);
+    fetchData().finally(() => setLoading(false));
   }, []);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
 
   function parseDuration(totalMinutes: number): string {
     const hours = Math.floor(totalMinutes / 60);
@@ -92,7 +97,12 @@ export default function DashboardScreen() {
           />
         </View>
 
-        <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+          <ScrollView
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            contentContainerStyle={{ paddingBottom: 24 }}
+          >
           {/* Hero */}
           <View style={styles.hero}>
             <Pressable style={styles.heroBtn}>
@@ -103,13 +113,37 @@ export default function DashboardScreen() {
           {/* Flash Deals */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <SkyboundText accessabilityLabel="Flash Deals Available" variant="primaryBold" size={18} style={{ color: "#0071E2" }}>Flash Deals</SkyboundText>
-              <Pressable><SkyboundText accessabilityLabel="View All"variant="blue" size={13}>View All</SkyboundText></Pressable>
+              <SkyboundText accessabilityLabel="Flash Deals Available" variant="primaryBold" size={18} style={{ color: "#0071E2" }}>
+                Flash Deals
+              </SkyboundText>
+              <Pressable>
+                <SkyboundText accessabilityLabel="View All" variant="blue" size={13}>View All</SkyboundText>
+              </Pressable>
             </View>
 
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 16, gap: 12 }}>
-              {flightDeals}
-            </ScrollView>
+            {loading ? (
+              <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+                <ActivityIndicator size="large" color="#000000" />
+              </View>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 16, gap: 12 }}>
+                {data.map((flight, index) => (
+                  <SkyboundFlashDeal
+                    key={`flashdeal-${index}`}
+                    airlineImage={<Image source={require("../../assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
+                    airlineName={flight.airlineName}
+                    sourceCode={flight.outbound.sourceCode}
+                    destCode={flight.outbound.destCode}
+                    departureTime={flight.outbound.departureTime.split('T')[0]}
+                    arrivalTime={flight.outbound.arrivalTime.split('T')[0]}
+                    travelTime={parseDuration(flight.outbound.duration)}
+                    originalPrice=""
+                    newPrice={`$${flight.price}`}
+                    onPress={() => {}}
+                  />
+                ))}
+              </ScrollView>
+            )}
           </View>
 
           {/* CTA */}
