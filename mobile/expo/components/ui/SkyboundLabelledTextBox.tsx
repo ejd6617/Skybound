@@ -1,52 +1,70 @@
-
-import {StyleSheet, View, TextInputProps, KeyboardTypeOptions} from 'react-native'
-import SkyboundText, { TextVariant } from './SkyboundText';
-import SkyboundTextBox from './SkyboundTextBox';
+import React from 'react';
+import { StyleProp, Text, TextInput, TextInputProps, TextStyle, View } from 'react-native';
+import { useColors } from '../../constants/theme';
 
 //this is a component for a label + text box combo.
 
-interface SkyboundLabelledTextBoxProps {
-    placeholderText: string;
-    width: number;
-    height: number;
-    icon?: any;
-    label: string;
-    labelVariant?: TextVariant
-    labelSize?: number;
-    value?: string;
-    onChangeText?: (t: string) => void;
-    secureTextEntry?: boolean;
-    autoCapitalize?: TextInputProps['autoCapitalize'];
-    keyboardType?: KeyboardTypeOptions;
-}
+export type SkyboundLabelledTextBoxProps = {
+  label?: string;
+  placeholderText?: string;
+  width: number;
+  height: number;
+  value?: string;
+  onChangeText?: (t: string) => void;
+  secureTextEntry?: boolean;
+  textColor?: string;
+  placeholderColor?: string;
+  inputStyle?: StyleProp<TextStyle>;
+} & Omit<TextInputProps, 'style' | 'placeholderTextColor' | 'onChangeText' | 'value'>;
 
-const SkyboundLabelledTextBox: React.FC<SkyboundLabelledTextBoxProps> = ({
-  placeholderText, width, height, icon, label, labelVariant = 'primary', labelSize = 15,
-  value, onChangeText, secureTextEntry, autoCapitalize, keyboardType,
-}) => {
+export default function SkyboundLabelledTextBox(props: SkyboundLabelledTextBoxProps) {
+  const {
+    label,
+    placeholderText,
+    width,
+    height,
+    value,
+    onChangeText,
+    secureTextEntry,
+    textColor,
+    placeholderColor,
+    inputStyle,
+    ...rest
+  } = props;
+
+  const C = useColors();
+
   return (
-    <View style={styles.container}>
-      <SkyboundText variant={labelVariant} size={labelSize} accessabilityLabel={'Text Box Label: ' + label}>{label}</SkyboundText>
-      <SkyboundTextBox
-        placeholderText={placeholderText}
-        width={width}
-        height={height}
-        icon={icon}
+    <View style={{ width }}>
+      {label ? (
+        <Text style={{ fontFamily: 'Poppins_600SemiBold', color: C.text, marginBottom: 4 }}>
+          {label}
+        </Text>
+      ) : null}
+
+      <TextInput
+        style={[
+          {
+            width: '100%',
+            height,
+            borderColor: C.outline,
+            borderWidth: 1,
+            borderRadius: 8,
+            paddingHorizontal: 10,
+            fontFamily: 'Poppins_400Regular',
+            color: textColor ?? C.text,       
+            backgroundColor: C.card,
+          },
+          inputStyle,                       
+        ]}
+        placeholder={placeholderText}
+        placeholderTextColor={placeholderColor ?? C.subText}
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
-        autoCapitalize={autoCapitalize}
-        keyboardType={keyboardType}
+        selectionColor={textColor ?? C.text}
+        {...rest}
       />
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-    container: {
-        justifyContent: 'flex-start',
-        flexDirection: 'column',
-        gap: 3
-    }
-})
-export default SkyboundLabelledTextBox; 
+}
