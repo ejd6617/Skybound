@@ -1,7 +1,8 @@
 // mobile/expo/App.tsx
-import React from "react";
-import RootNavigator from "./src/nav/RootNavigator";
 import { useFonts } from "expo-font";
+import React from "react";
+import "./src/firebase";
+import RootNavigator from "./src/nav/RootNavigator";
 
 export default function App() 
 {
