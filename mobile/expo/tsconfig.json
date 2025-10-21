@@ -3,7 +3,10 @@
   "compilerOptions": {
     "jsx": "react-native",
     "skipLibCheck": true, 
-    "module": "esnext"
+    "module": "esnext",
+    "paths": {
+      "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
+    }
   },
   "include": ["**/*.ts", "**/*.tsx"]
 }
