@@ -1,7 +1,7 @@
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import AccountIcon from '../../assets/images/AccountIcon.svg';
 import AirplaneIcon from '../../assets/images/Airplane.svg';
@@ -16,6 +16,7 @@ import SkyboundItemHolder from '../../components/ui/SkyboundItemHolder';
 import SkyboundNavBar from '../../components/ui/SkyboundNavBar';
 import SkyboundText from '../../components/ui/SkyboundText';
 import basicStyles from '../../constants/BasicComponents';
+import SkyboundButtonGroup from '../../components/ui/SkyboundButtonGroup'
 import { RootStackParamList } from '../nav/RootNavigator';
 
 
@@ -25,6 +26,7 @@ import { RootStackParamList } from '../nav/RootNavigator';
 export default function ComponentTestScreen() {
 
       const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+      const [selected, setSelected] = useState(0);
 
 
     return(
@@ -41,7 +43,7 @@ export default function ComponentTestScreen() {
 
 
       <SkyboundItemHolder>
-        <SkyboundText accessabilityLabel='help'  variant = 'primary' size = {60}>Help</SkyboundText>
+        <SkyboundText accessabilityLabel='help'  variant = 'primary' size = {60}>Test</SkyboundText>
 
 
 
@@ -57,14 +59,14 @@ export default function ComponentTestScreen() {
        onPress={() => console.log('What a great deal!')}>
        </SkyboundFlashDeal>
 
-       <SimplifiedFlightDetails
-       sourceCode='ERI'
-       sourceName='Erie'
-       destCode='LAX'
-       destName='Los Angeles'
-       totalDistance={2}
-       totalTime={100}></SimplifiedFlightDetails>
+       
+      <SkyboundButtonGroup
+      options ={['Option 1', 'Option 2', 'Option 3',]}
+      onChange={setSelected}>
 
+      </SkyboundButtonGroup>
+
+      <SkyboundText accessabilityLabel='test' variant='primary'>{'Active option: ' + selected}</SkyboundText>
 
 
     </SkyboundItemHolder>
@@ -87,10 +89,7 @@ export default function ComponentTestScreen() {
 
     </SkyboundFlightDetails>
 
-    <SkyboundButton>
-
-    </SkyboundButton>
-
+ 
 
     </View>
     );

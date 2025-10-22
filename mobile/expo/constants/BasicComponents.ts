@@ -107,6 +107,24 @@ export default StyleSheet.create({
     fontSize: 16,
   },
 
+  SkyboundButtonGroupInactiveDark: {
+     
+    backgroundColor: '#49454F',
+    fontFamily: 'Regular',
+    fontSize: 16, 
+  },
+
+
+  SkyboundButtonGroupInactiveLight: {
+    
+    backgroundColor: "white",
+    fontFamily: 'Regular',
+    fontSize: 16, 
+
+  },
+
+
+
 // ================= TEXT BOX STYLES =================
 
   skyboundTextBox: {
