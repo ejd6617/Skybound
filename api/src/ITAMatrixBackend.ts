@@ -1,4 +1,4 @@
-import { SkyboundFlight, SkyboundFlightSegment } from "@/GenericAPI";
+import { Flight, FlightSegment } from "@/SkyboundAPI";
 import puppeteer, { Browser, Page } from 'puppeteer';
 export type FlightQueryType = "roundTrip" | "oneWay" | "multiCity";
 
@@ -259,7 +259,7 @@ async function dispatchClick(page: Page, buttonSelector: string) {
   }, buttonSelector);
 }
 
-function parseOutputRow(raw: string[], roundTrip: boolean): SkyboundFlight {
+function parseOutputRow(raw: string[], roundTrip: boolean): Flight {
   const [rawPrice, airline, outboundTimes, returnTimes, durations, routes] = raw;
 
   const price = parseInt(rawPrice.replace('$', ''), 10);
@@ -316,14 +316,14 @@ function parseOutputRow(raw: string[], roundTrip: boolean): SkyboundFlight {
 
   const duration1 = parseDuration(durationParts[0]);
 
-  const outbound: SkyboundFlightSegment = {
+  const outbound: FlightSegment = {
     sourceCode: from1,
     destCode: to1,
     departureTime: makeDate(dep1),
     duration: duration1
   };
 
-  let returnSection: SkyboundFlightSegment | undefined = undefined;
+  let returnSection: FlightSegment | undefined = undefined;
 
   if (roundTrip) {
     const [from2, to2] = routeParts[1] ? parseRoute(routeParts[1]) : ["", ""];
@@ -353,7 +353,7 @@ function parseOutputRow(raw: string[], roundTrip: boolean): SkyboundFlight {
   };
 }
 
-export async function runQuery(queryType: FlightQueryType, fieldInputs: FieldInputs): Promise<SkyboundFlight[]> {
+export async function runQuery(queryType: FlightQueryType, fieldInputs: FieldInputs): Promise<Flight[]> {
   // TODO: Implement multi city search
   if (queryType === "multiCity") {
     throw new Error("Multi city search is not yet implemented");
@@ -369,7 +369,7 @@ export async function runQuery(queryType: FlightQueryType, fieldInputs: FieldInp
   const page: Page = await browser.newPage();
 
   // Data to return
-  let outputFlights: SkyboundFlight[] = [];
+  let outputFlights: Flight[] = [];
 
   try {
     // Request the page

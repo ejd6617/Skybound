@@ -1,8 +1,8 @@
-import GenericAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams, SkyboundFlight } from "@/GenericAPI";
 import { runQuery } from "@/ITAMatrixBackend";
+import SkyboundAPI, { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@/SkyboundAPI";
 
-export default class ITAMatrixAPI implements GenericAPI {
-  async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<SkyboundFlight[]> {
+export default class ITAMatrixAPI implements SkyboundAPI {
+  async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]> {
     return await runQuery("roundTrip", {
       originAirport: params.originAirport,
       destinationAirport: params.destinationAirport,
@@ -10,14 +10,14 @@ export default class ITAMatrixAPI implements GenericAPI {
       endDate: params.endDate,
     });
   }
-  async searchFlightsOneWay(params: OneWayQueryParams): Promise<SkyboundFlight[]> {
+  async searchFlightsOneWay(params: OneWayQueryParams): Promise<Flight[]> {
     return await runQuery("oneWay", {
       originAirport: params.originAirport,
       destinationAirport: params.destinationAirport,
       date: params.date,
     });
   }
-  async searchFlightsMultiCity(params: MultiCityQueryParams): Promise<SkyboundFlight[]> {
+  async searchFlightsMultiCity(params: MultiCityQueryParams): Promise<Flight[]> {
     // TODO: Implement
     return await runQuery("multiCity", {});
   }

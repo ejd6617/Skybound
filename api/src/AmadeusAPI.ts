@@ -1,4 +1,4 @@
-import GenericAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams, SkyboundFlight, SkyboundFlightSegment } from "@/GenericAPI";
+import SkyboundAPI, { Flight, FlightSegment, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@/SkyboundAPI";
 import * as dotenv from 'dotenv';
 const Amadeus = require('amadeus');
 
@@ -20,7 +20,7 @@ export interface AmadeusFlightSegment {
   },
 }
 
-export default class AmadeusAPI implements GenericAPI {
+export default class AmadeusAPI implements SkyboundAPI {
   private amadeus: typeof Amadeus | null = null;
   
   constructor() {
@@ -58,7 +58,7 @@ export default class AmadeusAPI implements GenericAPI {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
   
-  private parseSegment(segment: AmadeusFlightSegment): SkyboundFlightSegment {
+  private parseSegment(segment: AmadeusFlightSegment): FlightSegment {
     return {
       sourceCode: segment.departure.iataCode,
       destCode: segment.arrival.iataCode,
@@ -68,7 +68,7 @@ export default class AmadeusAPI implements GenericAPI {
     }
   }
 
-  private parseFlights(json: any): SkyboundFlight[] {
+  private parseFlights(json: any): Flight[] {
     if (!json) {
       throw new Error("Error parsing flights from Amadeus API response: no response json provided");
     }
@@ -79,15 +79,15 @@ export default class AmadeusAPI implements GenericAPI {
 
     // Maps IATA airline codes to human-readable airline names
     const carriersDict: {[airlineCodeIATA: string]: string} = json.result.dictionaries.carriers;
-    return json.data.map((offer: any): SkyboundFlight => {
-      const outboundSegment: SkyboundFlightSegment = this.parseSegment(offer.itineraries[0].segments[0]);
-      let returnSegment: SkyboundFlightSegment | undefined = undefined;
+    return json.data.map((offer: any): Flight => {
+      const outboundSegment: FlightSegment = this.parseSegment(offer.itineraries[0].segments[0]);
+      let returnSegment: FlightSegment | undefined = undefined;
 
       if (offer.itineraries.length > 1) {
         returnSegment = this.parseSegment(offer.itineraries[1].segments[0]);
       }
 
-      const flight: SkyboundFlight = {
+      const flight: Flight = {
         price: parseFloat(offer.price.grandTotal),
         airlineName: carriersDict[offer.validatingAirlineCodes[0]],
         outbound: outboundSegment,
@@ -98,7 +98,7 @@ export default class AmadeusAPI implements GenericAPI {
     });
   }
 
-  async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<SkyboundFlight[]> {
+  async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]> {
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.get({
       originLocationCode: params.originAirport,
       destinationLocationCode: params.destinationAirport,
@@ -115,7 +115,7 @@ export default class AmadeusAPI implements GenericAPI {
     return this.parseFlights(response);
   }
 
-  async searchFlightsOneWay(params: OneWayQueryParams): Promise<SkyboundFlight[]> {
+  async searchFlightsOneWay(params: OneWayQueryParams): Promise<Flight[]> {
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.get({
       originLocationCode: params.originAirport,
       destinationLocationCode: params.destinationAirport,
@@ -131,7 +131,7 @@ export default class AmadeusAPI implements GenericAPI {
     return this.parseFlights(response);
   }
 
-  async searchFlightsMultiCity(params: MultiCityQueryParams): Promise<SkyboundFlight[]> {
+  async searchFlightsMultiCity(params: MultiCityQueryParams): Promise<Flight[]> {
     throw new Error("Multi flight search is not yet implemented");
   }
 }

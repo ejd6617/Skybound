@@ -1,11 +1,11 @@
 import AmadeusAPI from '@/AmadeusAPI';
-import GenericAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/GenericAPI';
+import SkyboundAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/SkyboundAPI';
 import exposeServer from '@/ngrok';
 import express, { Request, Response } from 'express';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
-const api: GenericAPI = new AmadeusAPI();
+const api: SkyboundAPI = new AmadeusAPI();
 
 // Expose the local dev server
 (async () => {
