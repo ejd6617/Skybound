@@ -38,7 +38,8 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
         style={[
           BasicStyles.skyboundTextBox,
           { flex: 1, height: undefined, borderColor: isFocused ? '#3b82f6' : borderColor, 
-            backgroundColor: colorScheme === 'light' ? '#ffffff' : '#1E1E1E'
+            backgroundColor: colorScheme === 'light' ? '#ffffff' : '#1E1E1E',
+            color: colorScheme === 'light' ? 'black' : 'white'
           },
         ]}
         placeholder={placeholderText}
@@ -52,11 +53,9 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
         keyboardType={keyboardType}
       />
       {icon && (
-        <Image
-          source={icon}
-          style={[styles.icon, { right: 8, width: height * 0.6, height: height * 0.6 }]}
-          resizeMode="contain"
-        />
+        <View style={[styles.icon, { right: 8 }]}>
+    {icon}
+  </View>
       )}
     </View>
   );

@@ -7,12 +7,14 @@ import ComponentTestScreen from "../screens/ComponentTestScreen";
 import DashboardScreen from "../screens/DashboardScreen";
 import LoginScreen from "../screens/LoginScreen";
 import SignupScreen from "../screens/SignupScreen";
+import FlightSearchScreen from "../screens/FlightSearchScreen";
 
 export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
   Dashboard: undefined;
   ComponentTest: undefined;
+  FlightSearch: undefined;
 };
 
 const Stack = createNativeStackNavigator();
@@ -28,6 +30,7 @@ export default function RootNavigator(): React.JSX.Element
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
         <Stack.Screen name ="ComponentTest" component={ComponentTestScreen}/>
+        <Stack.Screen name="FlightSearch"  component={FlightSearchScreen}/>
       </Stack.Navigator>
     </NavContainer>
   );

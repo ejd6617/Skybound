@@ -9,9 +9,12 @@ import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
 import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
 import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
 import SkyboundText from "../../components/ui/SkyboundText";
+import SkyboundButton from "../../components/ui/SkyboundButton";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../nav/RootNavigator";
 
 export default function DashboardScreen() {
-  const nav = useNavigation<any>();
+ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const colorScheme = useColorScheme();
   return (
     // Gradient for optional use in future, white for now
@@ -35,9 +38,9 @@ export default function DashboardScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           {/* Hero */}
           <View style={styles.hero}>
-            <Pressable style={styles.heroBtn}>
-              <SkyboundText accessabilityLabel="Search for flights button" variant="primaryButton" size={14} style={{ color: "#fff" }}>Search for Flights →</SkyboundText>
-            </Pressable>
+            <SkyboundButton onPress={() => navigation.navigate('FlightSearch')}
+              width={300} height={100}
+            >Search For Flights</SkyboundButton>
           </View>
 
           {/* Flash Deals */}

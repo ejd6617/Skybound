@@ -54,7 +54,7 @@ const SkyboundButtonGroup: React.FC<SkyboundButtonGroupProps> = ({
                         borderBottomRightRadius: index === options.length - 1 ? 8 : 0,}
                     ]}
                     >
-                    {label +' ' + isActive}
+                    {label}
                     </SkyboundButton>
                 )   
             }
