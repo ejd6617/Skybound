@@ -1,4 +1,4 @@
-import {StyleSheet, View} from 'react-native'
+import { StyleSheet, View } from 'react-native';
 import SkyboundText, { TextVariant } from './SkyboundText';
 import SkyboundTextBox from './SkyboundTextBox';
 
@@ -13,17 +13,18 @@ interface SkyboundLabelledTextBoxProps {
     label: string;
     labelVariant?: TextVariant
     labelSize?: number;
-    
+    value?: string;
+    onChangeText?: (text: string) => void;
 }
 
 
-const SkyboundLabelledTextBox: React.FC<SkyboundLabelledTextBoxProps> = ({placeholderText, width, height, icon, label, labelVariant = 'primary', labelSize = 15, }) => {
+const SkyboundLabelledTextBox: React.FC<SkyboundLabelledTextBoxProps> = ({placeholderText, width, height, icon, label, labelVariant = 'primary', labelSize = 15, value, onChangeText }) => {
 
 
     return(
         <View style={styles.container}>
             <SkyboundText variant={labelVariant} size={labelSize} accessabilityLabel={label}>{label}</SkyboundText>
-            <SkyboundTextBox placeholderText={placeholderText} width={width} height={height} icon={icon} />
+            <SkyboundTextBox placeholderText={placeholderText} width={width} height={height} icon={icon} value={value} onChangeText={onChangeText} />
         </View>
     )
 
