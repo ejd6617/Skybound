@@ -1,7 +1,7 @@
   import React, { ReactNode } from 'react';
-  import { GestureResponderEvent, StyleProp, TouchableOpacity, ViewStyle } from 'react-native';
-  import basicStyles from '../../constants/BasicComponents';
-  import SkyboundText, { TextVariant } from './SkyboundText';
+import { GestureResponderEvent, StyleProp, TouchableOpacity, ViewStyle } from 'react-native';
+import basicStyles from '../../constants/BasicComponents';
+import SkyboundText, { TextVariant } from './SkyboundText';
 
 
 

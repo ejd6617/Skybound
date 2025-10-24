@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, StyleProp, ViewStyle, useColorScheme } from 'react-native';
+import { StyleSheet, View, useColorScheme } from 'react-native';
 import SkyboundButton from '../../components/ui/SkyboundButton';
-import basicStyles from '../../constants/BasicComponents'
+import basicStyles from '../../constants/BasicComponents';
 
 interface SkyboundButtonGroupProps {
     options: string[]; //array of strings for labels 
-    onChange?: (index: number) => void; //callback function
+    onChange?: (index: number, label: string) => void; // callback function
     initialIndex?: number; //optional starting index
     width?: number;
     height?: number;
@@ -29,7 +29,7 @@ const SkyboundButtonGroup: React.FC<SkyboundButtonGroupProps> = ({
     const handlePress = (index: number) => {
         setSelectedIndex(index);
         //optionally have an on change funciton
-        onChange?.(index)
+        onChange?.(index, options[index]);
     }
 
     return(

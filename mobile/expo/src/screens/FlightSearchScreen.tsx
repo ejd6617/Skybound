@@ -1,31 +1,29 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { Dimensions, Image, Pressable, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
+import Constants from 'expo-constants';
+import React, { useState } from "react";
+import { Dimensions, SafeAreaView, StyleSheet, useColorScheme, View } from "react-native";
 
-import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
-import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
-import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
-import SkyboundText from "../../components/ui/SkyboundText";
-import HamburgerIcon from '../../assets/images/HamburgerIcon.svg'
-import BellIcon from '../../assets/images/BellIcon.svg'
-import AccountIcon from '../../assets/images/AccountIcon.svg'
-import DepartureIcon from '../../assets/images/DepartureIcon.svg'
-import ArrivalIcon from '../../assets/images/ArrivalIcon.svg'
-import CalandarIcon from '../../assets/images/CalandarIcon.svg'
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootStackParamList } from "../nav/RootNavigator";
-import SkyboundButtonGroup from "../../components/ui/SkyboundButtonGroup";
-import SkyboundLabelledTextBox from "../../components/ui/SkyboundLabelledTextBox";
-import basicStyles from '../../constants/BasicComponents'
+import AccountIcon from '../../assets/images/AccountIcon.svg';
+import ArrivalIcon from '../../assets/images/ArrivalIcon.svg';
+import BellIcon from '../../assets/images/BellIcon.svg';
+import CalandarIcon from '../../assets/images/CalandarIcon.svg';
+import DepartureIcon from '../../assets/images/DepartureIcon.svg';
+import HamburgerIcon from '../../assets/images/HamburgerIcon.svg';
 import SkyboundButton from "../../components/ui/SkyboundButton";
+import SkyboundButtonGroup from "../../components/ui/SkyboundButtonGroup";
+import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
+import SkyboundLabelledTextBox from "../../components/ui/SkyboundLabelledTextBox";
+import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
+import basicStyles from '../../constants/BasicComponents';
+import { RootStackParamList } from "../nav/RootNavigator";
 
 
 
 export default function FlightSearchScreen() {
     const colorScheme = useColorScheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const API_URL = Constants.expoConfig?.extra?.API_URL;
         
     //Dynamic size variables
     const { width: SCREEN_W } = Dimensions.get("window");
@@ -34,8 +32,55 @@ export default function FlightSearchScreen() {
     const BTN_W = CARD_W - H_PADDING * 2;
     const itemHolderWidth = SCREEN_W * .9;
     
+    
+    const [sourceAirport, setSourceAirport] = useState('');
+    const [destAirport, setDestAirport] = useState('');
+    const [departureDate, setDepartureDate] = useState('');
+    const [searchTypeOptions, setSearchTypeOptions] = useState(['One Way', 'Round Trip', 'Multi City']);
+    const [searchTypeEndpoints, setSearchTypeEndpoints] = useState({
+        'One Way': 'searchFlightsOneWay',
+        'Round Trip': 'searchFlightsRoundTrip',
+        'Multi City': 'searchFlightsMultiCity',
+    });
+    const [selectedSearchType, setSelectedSearchType] = useState(0); // Search types like one way, round trip, multi city
+    
+    function setData(shuffledData: any) {
+        throw new Error("Function not implemented.");
+    }
+    
+    
+    async function handleSearch() {
+        console.log("navigate to search radius screen");
 
+        try {
 
+            console.log(searchTypeOptions[selectedSearchType]);
+            const endpoint = searchTypeEndpoints[searchTypeOptions[selectedSearchType]]
+            const url = `${API_URL}/api/${endpoint}/`;
+            console.log(url);
+            const jsonBody = {
+                originAirport: sourceAirport, // ex. "JFK"
+                destinationAirport: destAirport, // ex. "LAX"
+                startDate: departureDate, // ex. "2026-01-10"
+                endDate: departureDate, // ex. "2026-01-17"
+            };
+            console.log(jsonBody);
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(jsonBody),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log(data);
+        } catch (err) {
+            console.error('API call failed', err);
+        }
+    }
 
     return (
 
@@ -52,7 +97,8 @@ export default function FlightSearchScreen() {
             <SkyboundItemHolder style={{width: CARD_W}}>
                 
                 <SkyboundButtonGroup
-                options={[ 'One Way', 'Round Trip', 'Multi City']}
+                options={searchTypeOptions}
+                onChange={setSelectedSearchType}
                 fontSize={18}></SkyboundButtonGroup>
 
 
@@ -62,6 +108,7 @@ export default function FlightSearchScreen() {
                 height={45}
                 label="From: "
                 icon={<DepartureIcon width={20} height={20}></DepartureIcon>}
+                onChangeText={setSourceAirport}
                 ></SkyboundLabelledTextBox>
 
                  <SkyboundLabelledTextBox
@@ -70,6 +117,7 @@ export default function FlightSearchScreen() {
                 height={45}
                 label="To: "
                 icon={<ArrivalIcon width={20} height={20}></ArrivalIcon>}
+                onChangeText={setDestAirport}
                 ></SkyboundLabelledTextBox>
 
                  <SkyboundLabelledTextBox
@@ -78,6 +126,7 @@ export default function FlightSearchScreen() {
                 height={45}
                 label="Departure Date "
                 icon={<CalandarIcon width={20} height={20}></CalandarIcon>}
+                onChangeText={setDepartureDate}
                 ></SkyboundLabelledTextBox>
 
                 {/*TODO: Refactor this button to accept variants like text does. 
@@ -106,7 +155,7 @@ export default function FlightSearchScreen() {
                 <SkyboundButton
                 textVariant="primaryBold"
                 style={basicStyles.skyboundButtonPrimaryLight}
-                onPress={() => console.log("navigate to search radius screen")}
+                onPress={handleSearch}
                 width={BTN_W * .8}
                 height={45}>
                 Search
