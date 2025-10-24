@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { View } from 'react-native';
+import { Dimensions, View } from 'react-native';
 import AccountIcon from '../../assets/images/AccountIcon.svg';
 import AirplaneIcon from '../../assets/images/Airplane.svg';
 import BellIcon from '../../assets/images/BellIcon.svg';
@@ -19,6 +19,8 @@ import basicStyles from '../../constants/BasicComponents';
 import SkyboundButtonGroup from '../../components/ui/SkyboundButtonGroup'
 import { RootStackParamList } from '../nav/RootNavigator';
 
+import SkyboundCalandarPicker from '../../components/ui/SkyboundCalandarPicker'
+
 
 
 
@@ -27,8 +29,16 @@ export default function ComponentTestScreen() {
 
       const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
       const [selected, setSelected] = useState(0);
+      const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+      const handleDateChange = (data : Date) => {
+        setSelectedDate(data);
+        console.log("Selected Date: " + selectedDate)
+      }
 
 
+
+    
     return(
         <View style={[basicStyles.background, {width: "100%", height: "100%"}]}>
 
@@ -68,26 +78,14 @@ export default function ComponentTestScreen() {
 
       <SkyboundText accessabilityLabel='test' variant='primary'>{'Active option: ' + selected}</SkyboundText>
 
-
+      <SkyboundText variant='primary' accessabilityLabel='penis'>{'Selected Date:' + selectedDate}</SkyboundText>
     </SkyboundItemHolder>
 
-    <SkyboundFlightDetails airlineLogo={<AirplaneIcon width={24} height={24}></AirplaneIcon> }
-    airlineName='test airline'
-    airlineDescription='test Description'
-    price='$ 100'
-    tripType='round trip'
-    departureTime='1:11 AM'
-    arrivalTime='2:22 PM'
-    sourceCode='ERI'
-    destCode='LAX'
-    departureDate='10/12'
-    arrivalDate='10/12'
-    travelTime='1h 11m'
-    stops='1 stop'
-    onPress={() => console.log('flight pressed')}>
+    <SkyboundCalandarPicker onDateChange={handleDateChange}></SkyboundCalandarPicker>
 
 
-    </SkyboundFlightDetails>
+
+    
 
  
 

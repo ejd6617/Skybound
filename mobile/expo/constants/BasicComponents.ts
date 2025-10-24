@@ -95,6 +95,20 @@ export default StyleSheet.create({
     fontSize: 16, 
   },
 
+  skyboundButtonSecondaryLight: {
+    backgroundColor: 'white',
+    borderColor: '#1E1E1E',
+    fontFamily: 'Regular',
+    fontSize: 16,
+  },
+
+  skyboundButtonSecondaryDark: {
+    backgroundColor: '#1E1E1E',
+    borderColor: 'white',
+    fontFamily: 'Regular',
+    fontSize: 16,
+  },
+
   skyboundButtonDelete: {
     backgroundColor: 'transparent',
     fontFamily: 'Regular',
