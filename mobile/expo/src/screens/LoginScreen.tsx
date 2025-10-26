@@ -14,6 +14,7 @@ import {
 import basicStyles from '../../constants/BasicComponents';
 import { useColors } from '../../constants/theme'; // to use dark/light theme
 import type { RootStackParamList } from '../nav/RootNavigator';
+import LoadingScreen from './LoadingScreen';
 
 // Ethan UI
 import SkyboundButton from '../../components/ui/SkyboundButton';
@@ -24,6 +25,7 @@ import SkyboundText from '../../components/ui/SkyboundText';
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const c = useColors(); // current theme (light/dark)
 
@@ -33,6 +35,10 @@ export default function LoginScreen() {
   const H_PADDING = 18;
   const BTN_W = CARD_W - H_PADDING * 2;
   const itemHolderWidth = SCREEN_W * .9;
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <KeyboardAvoidingView
@@ -107,7 +113,13 @@ export default function LoginScreen() {
             {/* Login button */}
             <View style={{ marginTop: 25 }}>
               <SkyboundButton
-                onPress={() => navigation.navigate('Dashboard')}
+                onPress={() => {
+                  setIsLoading(true);
+                  setTimeout(() => {
+                    setIsLoading(false);
+                    navigation.navigate('Dashboard');
+                  }, 1500);
+                }}
                 width={BTN_W}
                 height={50}
                 style={{
@@ -118,8 +130,6 @@ export default function LoginScreen() {
                 }}
                 textVariant="forceWhite"
                 textSize={15}
-                // if your component supports explicit color:
-                // textColor={c.buttonText}
               >
                 Log In
               </SkyboundButton>
