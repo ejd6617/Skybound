@@ -21,11 +21,29 @@ import SkyboundItemHolder from '../../components/ui/SkyboundItemHolder';
 import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
 import SkyboundText from '../../components/ui/SkyboundText';
 
+// To support Login
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { Alert } from 'react-native';
+import { auth } from '../firebase';
+
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const c = useColors(); // current theme (light/dark)
+
+  async function handleLogin() {
+    if (!email || !password) {
+      Alert.alert('Error', 'Please enter email and password.');
+      return;
+    }
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), password);
+      navigation.navigate('Dashboard');
+    } catch (error: any) {
+      Alert.alert('Login failed', error.message);
+    }
+  }
 
   // width for SkyboundButton
   const { width: SCREEN_W } = Dimensions.get("window");
@@ -107,7 +125,7 @@ export default function LoginScreen() {
             {/* Login button */}
             <View style={{ marginTop: 25 }}>
               <SkyboundButton
-                onPress={() => navigation.navigate('Dashboard')}
+                onPress={handleLogin}
                 width={BTN_W}
                 height={50}
                 style={{
@@ -118,8 +136,6 @@ export default function LoginScreen() {
                 }}
                 textVariant="forceWhite"
                 textSize={15}
-                // if your component supports explicit color:
-                // textColor={c.buttonText}
               >
                 Log In
               </SkyboundButton>

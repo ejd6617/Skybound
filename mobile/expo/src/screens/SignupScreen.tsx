@@ -23,8 +23,8 @@ import SkyboundText from '../../components/ui/SkyboundText';
 
 //signup functionality with Firebase
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from "../firebase";
 import { Alert } from 'react-native';
+import { auth } from "../firebase";
 
 export default function SignupScreen() {
   const [fullName, setFullName]   = useState('');
