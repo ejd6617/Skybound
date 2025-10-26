@@ -4,11 +4,13 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
 import "../firebase";
 
+import AccountScreen from "../screens/AccountScreen";
 import ComponentTestScreen from "../screens/ComponentTestScreen";
 import DashboardScreen from "../screens/DashboardScreen";
+import FlightResultsScreen from "../screens/FlightResultsScreen";
+import FlightSearchScreen from "../screens/FlightSearchScreen";
 import LoginScreen from "../screens/LoginScreen";
 import SignupScreen from "../screens/SignupScreen";
-import FlightSearchScreen from "../screens/FlightSearchScreen";
 
 // Login listener
 import { onAuthStateChanged } from 'firebase/auth';
@@ -21,6 +23,8 @@ export type RootStackParamList = {
   Dashboard: undefined;
   ComponentTest: undefined;
   FlightSearch: undefined;
+  Account: undefined;
+  FlightResults: undefined;
 };
 
 const Stack = createNativeStackNavigator();
@@ -49,6 +53,8 @@ export default function RootNavigator(): React.JSX.Element
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
         <Stack.Screen name ="ComponentTest" component={ComponentTestScreen}/>
         <Stack.Screen name="FlightSearch"  component={FlightSearchScreen}/>
+        <Stack.Screen name="Account" component={AccountScreen} />
+        <Stack.Screen name="FlightResults" component={FlightResultsScreen} />
       </Stack.Navigator>
     </NavContainer>
   );

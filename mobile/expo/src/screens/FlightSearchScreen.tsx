@@ -17,6 +17,7 @@ import SkyboundLabelledTextBox from "../../components/ui/SkyboundLabelledTextBox
 import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
 import basicStyles from '../../constants/BasicComponents';
 import { RootStackParamList } from "../nav/RootNavigator";
+import LoadingScreen from "./LoadingScreen";
 
 
 
@@ -24,15 +25,14 @@ export default function FlightSearchScreen() {
     const colorScheme = useColorScheme();
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const API_URL = Constants.expoConfig?.extra?.API_URL;
-        
     //Dynamic size variables
     const { width: SCREEN_W } = Dimensions.get("window");
     const CARD_W = Math.min(420, Math.round(SCREEN_W * 0.86));
     const H_PADDING = 18;
     const BTN_W = CARD_W - H_PADDING * 2;
     const itemHolderWidth = SCREEN_W * .9;
-    
-    
+
+    const [isLoading, setIsLoading] = useState(false);
     const [sourceAirport, setSourceAirport] = useState('');
     const [destAirport, setDestAirport] = useState('');
     const [departureDate, setDepartureDate] = useState('');
@@ -50,10 +50,10 @@ export default function FlightSearchScreen() {
     
     
     async function handleSearch() {
-        console.log("navigate to search radius screen");
+        console.log("Searching flights...");
+        setIsLoading(true);
 
         try {
-
             console.log(searchTypeOptions[selectedSearchType]);
             const endpoint = searchTypeEndpoints[searchTypeOptions[selectedSearchType]]
             const url = `${API_URL}/api/${endpoint}/`;
@@ -65,6 +65,13 @@ export default function FlightSearchScreen() {
                 endDate: departureDate, // ex. "2026-01-17"
             };
             console.log(jsonBody);
+
+            setTimeout(() => {
+                setIsLoading(false);
+                navigation.navigate('FlightResults');
+            }, 1500);
+
+            /* Uncomment when API is ready
             const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -77,9 +84,17 @@ export default function FlightSearchScreen() {
 
             const data = await response.json();
             console.log(data);
+            setIsLoading(false);
+            navigation.navigate('FlightResults', { flights: data });
+            */
         } catch (err) {
             console.error('API call failed', err);
+            setIsLoading(false);
         }
+    }
+
+    if (isLoading) {
+        return <LoadingScreen />;
     }
 
     return (
@@ -92,7 +107,7 @@ export default function FlightSearchScreen() {
             rightHandFirstIcon={<BellIcon width={24} height={24}></BellIcon>}
             rightHandFirstIconOnPressEvent={() => console.log('Notification Icon Pressed')}
             rightHandSecondIcon={<AccountIcon width={24} height={24}></AccountIcon>}
-            rightHandSecondIconOnPressEvent={() => console.log('Account Button Pressed')}></SkyboundNavBar>
+            rightHandSecondIconOnPressEvent={() => console.log(navigation.navigate("Account"))}></SkyboundNavBar>
 
             <SkyboundItemHolder style={{width: CARD_W}}>
                 

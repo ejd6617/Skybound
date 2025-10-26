@@ -84,7 +84,7 @@ export default function DashboardScreen() {
             rightHandFirstIcon={<Ionicons name="notifications-outline" size={22} color="#0071E2" />}
             rightHandFirstIconOnPressEvent={() => {}}
             rightHandSecondIcon={<Ionicons name="person-circle-outline" size={24} color="#0071E2" />}
-            rightHandSecondIconOnPressEvent={() => {}}
+            rightHandSecondIconOnPressEvent={() => navigation.navigate("Account")}
           />
         </View>
 

@@ -3,8 +3,9 @@ import { useFonts } from "expo-font";
 import React from "react";
 import "./src/firebase";
 import RootNavigator from "./src/nav/RootNavigator";
+import LoadingScreen from "./src/screens/LoadingScreen";
 
-export default function App() 
+export default function App()
 {
   const [fontsLoaded] = useFonts({
     'BlackItalic': require('./assets/fonts/Poppins/Poppins-BlackItalic.ttf'),
@@ -27,7 +28,7 @@ export default function App()
     'Thin': require('./assets/fonts/Poppins/Poppins-Thin.ttf'),
   });
 
-  if (!fontsLoaded) return null;
+  if (!fontsLoaded) return <LoadingScreen />;
 
   return <RootNavigator />;
 }
