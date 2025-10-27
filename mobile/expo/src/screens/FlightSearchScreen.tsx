@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Dimensions, SafeAreaView, StyleSheet, useColorScheme, View } from "react-native";
 
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { Flight, Params } from "../../../../skyboundTypes/SkyboundAPI";
 import AccountIcon from '../../assets/images/AccountIcon.svg';
 import ArrivalIcon from '../../assets/images/ArrivalIcon.svg';
 import BellIcon from '../../assets/images/BellIcon.svg';
@@ -16,6 +17,7 @@ import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
 import SkyboundLabelledTextBox from "../../components/ui/SkyboundLabelledTextBox";
 import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
 import basicStyles from '../../constants/BasicComponents';
+import { skyboundRequest } from "../api/SkyboundUtils";
 import { RootStackParamList } from "../nav/RootNavigator";
 import LoadingScreen from "./LoadingScreen";
 
@@ -42,53 +44,30 @@ export default function FlightSearchScreen() {
         'Round Trip': 'searchFlightsRoundTrip',
         'Multi City': 'searchFlightsMultiCity',
     });
+    const [searchResults, setSearchResults] = useState<Flight[]>([]);
     const [selectedSearchType, setSelectedSearchType] = useState(0); // Search types like one way, round trip, multi city
     
     function setData(shuffledData: any) {
         throw new Error("Function not implemented.");
     }
     
-    
     async function handleSearch() {
         console.log("Searching flights...");
         setIsLoading(true);
-
+        
         try {
-            console.log(searchTypeOptions[selectedSearchType]);
             const endpoint = searchTypeEndpoints[searchTypeOptions[selectedSearchType]]
-            const url = `${API_URL}/api/${endpoint}/`;
-            console.log(url);
-            const jsonBody = {
-                originAirport: sourceAirport, // ex. "JFK"
-                destinationAirport: destAirport, // ex. "LAX"
-                startDate: departureDate, // ex. "2026-01-10"
-                endDate: departureDate, // ex. "2026-01-17"
+            const params: Params = {
+                originAirport: sourceAirport.toUpperCase(), // ex. "JFK"
+                destinationAirport: destAirport.toUpperCase(), // ex. "LAX"
+                date: new Date(departureDate),
             };
-            console.log(jsonBody);
+            setSearchResults(await skyboundRequest(endpoint, params));
 
-            setTimeout(() => {
-                setIsLoading(false);
-                navigation.navigate('FlightResults');
-            }, 1500);
-
-            /* Uncomment when API is ready
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(jsonBody),
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP error ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log(data);
-            setIsLoading(false);
-            navigation.navigate('FlightResults', { flights: data });
-            */
+            navigation.navigate('FlightResults', {searchResults: searchResults});
         } catch (err) {
-            console.error('API call failed', err);
+            throw new Error(`Error searching for flights with Skybound API: ${err.message}`);
+        } finally {
             setIsLoading(false);
         }
     }

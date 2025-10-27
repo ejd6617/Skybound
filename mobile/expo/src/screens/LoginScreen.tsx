@@ -131,7 +131,8 @@ export default function LoginScreen() {
             {/* Login button */}
             <View style={{ marginTop: 25 }}>
               <SkyboundButton
-                onPress={handleLogin}
+                // onPress={handleLogin}
+                onPress={() => navigation.navigate('Dashboard')}
                 width={BTN_W}
                 height={50}
                 style={{

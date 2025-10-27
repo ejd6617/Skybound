@@ -1,17 +1,18 @@
 // screens/DashboardScreen.tsx
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import Constants from 'expo-constants';
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RoundTripQueryParams } from "../../../../skyboundTypes/SkyboundAPI";
 import SkyboundButton from "../../components/ui/SkyboundButton";
 import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
 import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
 import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
 import SkyboundText from "../../components/ui/SkyboundText";
+import { skyboundRequest } from "../api/SkyboundUtils";
 import { RootStackParamList } from "../nav/RootNavigator";
 
 export default function DashboardScreen() {
@@ -20,33 +21,17 @@ export default function DashboardScreen() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true); // Is loading in new data (default true)
   const [refreshing, setRefreshing] = useState(false); // Is refreshing data (default false)
-  const API_URL = Constants.expoConfig?.extra?.API_URL;
 
-  const fetchData = async () => {
-    try {
-      const url = `${API_URL}/api/searchFlightsRoundTrip/`;
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          originAirport: 'LAX',
-          destinationAirport: 'JFK',
-          startDate: '2026-01-10',
-          endDate: '2026-01-17',
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error ${response.status}`);
-      }
-
-      const data = await response.json();
-      const shuffledData = data.sort(() => Math.random() - 0.5).slice(0, 5);
-      setData(shuffledData);
-    } catch (err) {
-      console.error('API call failed', err);
-    }
-  };
+  const fetchData = (async () => {
+    const endpoint: string = "searchFlightsRoundTrip";
+    const params: RoundTripQueryParams = {
+      originAirport: 'LAX',
+      destinationAirport: 'JFK',
+      startDate: new Date('2026-01-10'),
+      endDate: new Date('2026-01-17'),
+    };
+    setData(await skyboundRequest(endpoint, params));
+  });
 
   useEffect(() => {
     setLoading(true);

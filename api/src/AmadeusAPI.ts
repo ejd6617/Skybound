@@ -1,4 +1,4 @@
-import SkyboundAPI, { Flight, FlightSegment, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@/SkyboundAPI";
+import SkyboundAPI, { Flight, FlightSegment, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import * as dotenv from 'dotenv';
 const Amadeus = require('amadeus');
 

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from "react";
@@ -33,6 +33,55 @@ interface Flight {
   stops: string;
   hasBaggage?: boolean;
 }
+
+// Utility function to format time
+const formatTime = (time: string) => {
+  const date = new Date(time);
+  return new Intl.DateTimeFormat('en-US', {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  }).format(date);
+};
+
+// Convert API flights to local flight datatype
+const convertDataToFlights = (data: any[]): Flight[] => {
+  return data.map((item, index) => {
+    const { outbound, price, airlineName } = item;
+
+    // Placeholder values for missing fields
+    const id = (index + 1).toString();
+    const airlineCode = 'JB'; // Placeholder airline code
+    const airlineColor = '#1E40AF'; // Placeholder airline color (JetBlue)
+    const category: string = ['best', 'cheapest', 'fastest'][Math.floor(Math.random() * 3)];
+    const cabinClass = 'Economy'; // Placeholder cabin class
+    const stops = 'Nonstop'; // Placeholder stop value
+    const hasBaggage = true; // Placeholder baggage availability
+
+    // Convert duration from minutes to hours and minutes
+    const hours = Math.floor(outbound.duration / 60);
+    const minutes = outbound.duration % 60;
+    const duration = `${hours}h ${minutes}m`;
+
+    // Return the formatted flight object
+    return {
+      id,
+      airline: airlineName,
+      airlineCode,
+      airlineColor,
+      category,
+      price,
+      cabinClass,
+      departureTime: formatTime(outbound.departureTime),
+      arrivalTime: formatTime(outbound.arrivalTime),
+      departureCode: outbound.sourceCode,
+      arrivalCode: outbound.destCode,
+      duration,
+      stops,
+      hasBaggage
+    };
+  });
+};
 
 const MOCK_FLIGHTS: Flight[] = [
   {
@@ -98,9 +147,14 @@ const MOCK_FLIGHTS: Flight[] = [
 ];
 
 export default function FlightResultsScreen() {
+  const route = useRoute();
+  const {searchResults} = route.params;
+  
+  console.log(searchResults);
+
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [flights, setFlights] = useState<Flight[]>(MOCK_FLIGHTS);
+  const [flights, setFlights] = useState<Flight[]>(convertDataToFlights(searchResults)); // Can be replaced with MOCK_FLIGHTS
   const [visibleCount, setVisibleCount] = useState(4);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [filterModalVisible, setFilterModalVisible] = useState(false);

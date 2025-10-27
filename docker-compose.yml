@@ -1,9 +1,11 @@
 services:
   api:
     build:
-      context: ./api
+      context: ./
+      dockerfile: ./api/Dockerfile
     volumes:
       - ./api:/app
+      - ./skyboundTypes:/skyboundTypes
       - .env.ngrok.local:/.env.ngrok.local
       - .env.amadeus.local:/.env.amadeus.local
     ports:

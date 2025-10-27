@@ -1,4 +1,4 @@
-import { Flight, FlightSegment } from "@/SkyboundAPI";
+import { Flight, FlightSegment } from "@skyboundTypes/SkyboundAPI";
 import puppeteer, { Browser, Page } from 'puppeteer';
 export type FlightQueryType = "roundTrip" | "oneWay" | "multiCity";
 

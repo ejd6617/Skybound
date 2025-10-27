@@ -15,6 +15,7 @@ import SignupScreen from "../screens/SignupScreen";
 // Login listener
 import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
+import { Flight } from "../../../../skyboundTypes/SkyboundAPI";
 import { auth } from '..//firebase';
 
 export type RootStackParamList = {
@@ -24,7 +25,7 @@ export type RootStackParamList = {
   ComponentTest: undefined;
   FlightSearch: undefined;
   Account: undefined;
-  FlightResults: undefined;
+  FlightResults: { searchResults: Flight[] };
 };
 
 const Stack = createNativeStackNavigator();

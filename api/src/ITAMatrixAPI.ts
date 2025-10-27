@@ -1,5 +1,6 @@
 import { runQuery } from "@/ITAMatrixBackend";
-import SkyboundAPI, { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@/SkyboundAPI";
+import SkyboundAPI, { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
+;
 
 export default class ITAMatrixAPI implements SkyboundAPI {
   async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]> {
