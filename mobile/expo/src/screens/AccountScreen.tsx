@@ -67,7 +67,7 @@ export default function AccountScreen() {
     <SafeAreaView
       style={{
         flex: 1,
-        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
+        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF', marginTop: -25,
       }}
       edges={['top']}
     >
@@ -87,9 +87,8 @@ export default function AccountScreen() {
           rightHandSecondIconOnPressEvent={() => {}}
         />
 
-        <SafeAreaView
-          style={{ flex: 1, backgroundColor: 'transparent' }}
-          edges={['top']}
+        <View
+          style={{ flex: 1, backgroundColor: 'transparent', marginTop: 10 }}
         >
           <ScrollView
             contentContainerStyle={[styles.scrollContent, { paddingBottom: 0 }]}
@@ -303,7 +302,7 @@ export default function AccountScreen() {
             </View>
 
           </ScrollView>
-        </SafeAreaView>
+        </View>
       </LinearGradient>
     </SafeAreaView>
   );
