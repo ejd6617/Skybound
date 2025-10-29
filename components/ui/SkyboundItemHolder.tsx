@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { StyleProp, View, ViewStyle } from 'react-native';
+import { StyleProp, View, ViewStyle, useColorScheme } from 'react-native';
 import BasicStyles from '../../constants/BasicComponents';
 
 interface SkyboundItemHolderProps {
@@ -12,24 +12,22 @@ interface SkyboundItemHolderProps {
 
 
 const SkyboundItemHolder: React.FC<SkyboundItemHolderProps> = ({
-  style = BasicStyles.itemHolder,
+  style,
   children,
   width,
   height,
 }) => {
 
-  
+ 
+ //import color scheme
+  const colorScheme = useColorScheme();
 
-  // Fallbacks — only use screen size if width/height aren’t explicitly given
-  
-  
-
-
-  
-
-  return (
+  if(colorScheme === "light")
+  {
+    return (
     <View
       style={[
+        BasicStyles.itemHolderLight,
         style,                  
         { width: width, height: height},       
       ]}
@@ -37,6 +35,31 @@ const SkyboundItemHolder: React.FC<SkyboundItemHolderProps> = ({
       {children}
     </View>
   );
+  }
+  else
+  {
+    return (
+
+    <View
+      style={[
+        BasicStyles.itemHolderDark,
+        style,                  
+        { width: width, height: height},       
+      ]}
+    >
+      {children}
+    </View>
+
+    );
+  }
+
+  
+  
+
+
+  
+
+  
 };
 
 export default SkyboundItemHolder;

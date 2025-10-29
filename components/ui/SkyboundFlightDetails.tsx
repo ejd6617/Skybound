@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import AirplaneTravelGraphic from '../../assets/images/AirplaneTravelGraphic.svg';
 import SkyboundItemHolder from './SkyboundItemHolder';
 import SkyboundText from './SkyboundText';
 
@@ -46,16 +47,16 @@ const SkyboundFlightDetails: React.FC<SkyboundFlightDetailsProps> =({
             {airlineLogo}
             
             <View style={styles.subHolder}>
-                <SkyboundText variant='primary' size={16}>{airlineName}</SkyboundText>
+                <SkyboundText accessabilityLabel={'Airline Name: ' + airlineName} variant='primary' size={16}>{airlineName}</SkyboundText>
 
-                <SkyboundText variant='secondary'>{airlineDescription}</SkyboundText>
+                <SkyboundText accessabilityLabel={'Airline Description: ' + airlineDescription}variant='secondary'>{airlineDescription}</SkyboundText>
             </View>
 
             <View style={styles.subHolder}>
                 
-                <SkyboundText variant='blue'>{price}</SkyboundText>
+                <SkyboundText accessabilityLabel={'Price: ' + price} variant='blue'>{price}</SkyboundText>
 
-                <SkyboundText variant='secondary'>{tripType}</SkyboundText>
+                <SkyboundText accessabilityLabel={'Trip Type: ' + tripType} variant='secondary'>{tripType}</SkyboundText>
 
             </View>
 
@@ -65,12 +66,12 @@ const SkyboundFlightDetails: React.FC<SkyboundFlightDetailsProps> =({
         <View style={styles.rowHolder}>
                 <View style={styles.subHolder}>
 
-                    <SkyboundText variant='primary' size={20}>{departureTime}</SkyboundText>
+                    <SkyboundText accessabilityLabel={'Estimated departure time: ' + departureTime} variant='primary' size={20}>{departureTime}</SkyboundText>
 
                     <View style={styles.rowHolder}>
-                            <SkyboundText variant='secondary'>{sourceCode}</SkyboundText>
+                            <SkyboundText accessabilityLabel={'Source Airport Code: ' + sourceCode} variant='secondary'>{sourceCode}</SkyboundText>
 
-                            <SkyboundText variant='secondary'>{departureDate}</SkyboundText>
+                            <SkyboundText accessabilityLabel={'Departure Date: ' + departureDate} variant='secondary'>{departureDate}</SkyboundText>
 
                     </View>
 
@@ -78,23 +79,23 @@ const SkyboundFlightDetails: React.FC<SkyboundFlightDetailsProps> =({
                 <View style={{justifyContent: 'center'}}>
                 <View style={styles.subHolder}>
 
-                    <SkyboundText variant='secondary'>{travelTime}</SkyboundText>
+                    <SkyboundText accessabilityLabel={'Estimated travel time: ' + travelTime} variant='secondary'>{travelTime}</SkyboundText>
 
-                    <Image source={require('../../assets/images/AirlineTravelGraphic.png')}></Image>
+                    <AirplaneTravelGraphic size ={24}></AirplaneTravelGraphic>
 
-                    <SkyboundText variant='secondary'>{stops}</SkyboundText>
+                    <SkyboundText accessabilityLabel={'Number of stops: ' + stops} variant='secondary'>{stops}</SkyboundText>
 
                 </View>
                 </View>
 
                 <View style={styles.subHolder}>
 
-                    <SkyboundText variant='primary' size={20}>{arrivalTime}</SkyboundText>
+                    <SkyboundText accessabilityLabel={'Estimated arrival time: ' + arrivalTime} variant='primary' size={20}>{arrivalTime}</SkyboundText>
 
                     <View style={styles.rowHolder}>
-                            <SkyboundText variant='secondary'>{destCode}</SkyboundText>
+                            <SkyboundText accessabilityLabel={'Destination Airport code: ' + destCode} variant='secondary'>{destCode}</SkyboundText>
 
-                            <SkyboundText variant='secondary'>{arrivalDate}</SkyboundText>
+                            <SkyboundText accessabilityLabel={'Estimated Arrival Date: ' + arrivalDate } variant='secondary'>{arrivalDate}</SkyboundText>
 
                     </View>
 
@@ -111,7 +112,7 @@ const SkyboundFlightDetails: React.FC<SkyboundFlightDetailsProps> =({
 const styles = StyleSheet.create({
 
     rowHolder: {
-        gap: 5,
+        gap: 10,
         flexDirection: 'row',
         justifyContent: 'space-between',
     },

@@ -37,8 +37,8 @@ const SkyboundNotification: React.FC<SkyboundNotificationProps> = ({
                     
                     <View style={styles.titleDateHolder}>
                         
-                            <SkyboundText variant='primary'>{notificationTitle}</SkyboundText>
-                            <SkyboundText variant='secondary'>{formattedDate}</SkyboundText>
+                            <SkyboundText variant='primary' accessabilityLabel={'Notification Title: ' + notificationTitle}>{notificationTitle}</SkyboundText>
+                            <SkyboundText variant='secondary' accessabilityLabel={'Notification Date: ' + notificationDate}>{formattedDate}</SkyboundText>
                         
                     </View>
                     <View style={styles.deleteButtonHolder}>
@@ -53,7 +53,7 @@ const SkyboundNotification: React.FC<SkyboundNotificationProps> = ({
                         </View>
             
                         <View style={{flex: 1}}>
-                            <SkyboundText variant='primary'>{notificationText}</SkyboundText>
+                            <SkyboundText variant='primary' accessabilityLabel={'Notification Body: ' + notificationText}>{notificationText}</SkyboundText>
                         </View>
                     </View>
                 </View>

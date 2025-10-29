@@ -1,50 +1,65 @@
 import React, { useState } from 'react';
-import {TextInput, View, Image, StyleSheet } from 'react-native';
-import BasicStyles from '../../constants/BasicComponents'
+import type { KeyboardTypeOptions, TextInputProps } from 'react-native';
+import { Image, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import BasicStyles from '../../constants/BasicComponents';
 
 //this custom text box component creates a text box with an optional icon placed on the right hand side.
 
 interface SkyboundTextBoxProps {
-    placeholderText: string;
-    width?: number;
-    height: number;
-    icon?: any;
-    
+  placeholderText: string;
+  width?: number;
+  height: number;
+  icon?: any;
+  value?: string;
+  onChangeText?: (text: string) => void;
+  secureTextEntry?: boolean;
+  autoCapitalize?: TextInputProps['autoCapitalize'];
+  keyboardType?: KeyboardTypeOptions;
 }
 
 const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
-    placeholderText,
-    width,
-    height,
-    icon,
+  placeholderText,
+  width,
+  height,
+  icon,
+  value,
+  onChangeText,
+  secureTextEntry,
+  autoCapitalize,
+  keyboardType,
 }) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const colorScheme = useColorScheme(); 
+  const borderColor = colorScheme === 'light'? '#E5E7EB' : '#3A3A3A'
 
-    const [isFocused, setIsFocused] = useState(false)
-
-    return (
-    <View style={[styles.container, { width, height, }]}>
-  <TextInput
-    style={[BasicStyles.skyboundTextBox, { flex: 1, height: undefined, borderColor: isFocused ? '#3b82f6' : '#E5E7EB' }]}
-    placeholder={placeholderText}
-    placeholderTextColor="#585858"
-    onFocus={() => setIsFocused(true)}
-    onBlur={() => setIsFocused(false)}
-   
-  />
-  {icon && (
-    <Image
-      source={icon}
-      style={[
-        styles.icon,
-        { right: 8, width: height * 0.6, height: height * 0.6 },
-      ]}
-      resizeMode="contain"
-    />
-  )}
-</View>
+  return (
+    <View style={[styles.container, { width, height }]}>
+      <TextInput
+        style={[
+          BasicStyles.skyboundTextBox,
+          { flex: 1, height: undefined, borderColor: isFocused ? '#3b82f6' : borderColor, 
+            backgroundColor: colorScheme === 'light' ? '#ffffff' : '#1E1E1E',
+            color: colorScheme === 'light' ? 'black' : 'white'
+          },
+        ]}
+        placeholder={placeholderText}
+        placeholderTextColor={colorScheme === 'light'? '#585858' : '#9CA3AF'}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        value={value}
+        onChangeText={onChangeText}
+        secureTextEntry={secureTextEntry}
+        autoCapitalize={autoCapitalize}
+        keyboardType={keyboardType}
+      />
+      {icon && (
+        <View style={[styles.icon, { right: 8 }]}>
+    {icon}
+  </View>
+      )}
+    </View>
   );
 };
-
 
 //local stylesheet for the icon and text box to fit nicely togather
 const styles = StyleSheet.create({
@@ -54,7 +69,7 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderColor: 'transparent',
     borderRadius: 5,
-    backgroundColor: '#fff',
+   
   },
   icon: {
     position: 'absolute',
@@ -63,6 +78,4 @@ const styles = StyleSheet.create({
   },
 });
 
-
 export default SkyboundTextBox;
-

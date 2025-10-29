@@ -25,7 +25,7 @@ export const Colors = {
     link: '#0071E2',
     gradient: ['#FFFFFF', '#0071E2'] as [string, string],
     gradientStart: { x: -1, y: 1 },
-    gradientEnd: { x: 1, y: 0 },
+    gradientEnd: { x: 2, y: 0 },
   },
   dark: {
     text: '#ECEDEE',
