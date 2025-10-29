@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useState } from "react";
 import { Dimensions, Image, Pressable, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
 import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
@@ -33,6 +33,11 @@ export default function FlightSearchScreen() {
     const H_PADDING = 18;
     const BTN_W = CARD_W - H_PADDING * 2;
     const itemHolderWidth = SCREEN_W * .9;
+    const [selectedIndex, setSelectedIndex] = useState(0); 
+    const [sourceLocation, setSourceLocation] = useState('');
+    const [destinationLocation, setDestinationLocation] = useState('');
+    const [departureDate, setDepartureDate] = useState('');
+    const [returnDate, setReturnDate] = useState('');
     
 
 
@@ -53,32 +58,82 @@ export default function FlightSearchScreen() {
                 
                 <SkyboundButtonGroup
                 options={[ 'One Way', 'Round Trip', 'Multi City']}
-                fontSize={18}></SkyboundButtonGroup>
+                fontSize={18}
+                onChange={setSelectedIndex}></SkyboundButtonGroup>
 
+                {/*Conditional Loading the text boxes based on what button in the button group is active*/}
+                {/*IF "One way" is selected */}
+                {selectedIndex === 0 && (
+                    <>
+                        <SkyboundLabelledTextBox
+                        placeholderText="Source Location"
+                        width={BTN_W}
+                        height={45}
+                        label="From: "
+                        icon={<DepartureIcon width={20} height={20}></DepartureIcon>}
+                        onChange={setSourceLocation}></SkyboundLabelledTextBox>
 
-                <SkyboundLabelledTextBox
-                placeholderText="Source Location"
-                width={BTN_W}
-                height={45}
-                label="From: "
-                icon={<DepartureIcon width={20} height={20}></DepartureIcon>}
-                ></SkyboundLabelledTextBox>
+                        <SkyboundLabelledTextBox
+                        placeholderText="Destination Location"
+                        width={BTN_W}
+                        height={45}
+                        label="To: "
+                        icon={<ArrivalIcon width={20} height={20}></ArrivalIcon>}
+                        onChange={setDestinationLocation}></SkyboundLabelledTextBox>
 
-                 <SkyboundLabelledTextBox
-                placeholderText="Destination Location"
-                width={BTN_W}
-                height={45}
-                label="To: "
-                icon={<ArrivalIcon width={20} height={20}></ArrivalIcon>}
-                ></SkyboundLabelledTextBox>
+                        <SkyboundLabelledTextBox
+                        placeholderText="Departure Date"
+                        width={BTN_W}
+                        height={45}
+                        label="Departure Date "
+                        icon={<CalandarIcon width={20} height={20}></CalandarIcon>}
+                        onChange={setDepartureDate}></SkyboundLabelledTextBox>
+                    </>
+                )}
+                {/*IF "Round Trip" is selected */}
+                 {selectedIndex === 1 && (
+                    <>
+                        <SkyboundLabelledTextBox
+                        placeholderText="Source Location"
+                        width={BTN_W}
+                        height={45}
+                        label="From: "
+                        icon={<DepartureIcon width={20} height={20}></DepartureIcon>}
+                        onChange={setSourceLocation}></SkyboundLabelledTextBox>
 
-                 <SkyboundLabelledTextBox
-                placeholderText="Departure Date"
-                width={BTN_W}
-                height={45}
-                label="Departure Date "
-                icon={<CalandarIcon width={20} height={20}></CalandarIcon>}
-                ></SkyboundLabelledTextBox>
+                        <SkyboundLabelledTextBox
+                        placeholderText="Destination Location"
+                        width={BTN_W}
+                        height={45}
+                        label="To: "
+                        icon={<ArrivalIcon width={20} height={20}></ArrivalIcon>}
+                        onChange={setDestinationLocation}></SkyboundLabelledTextBox>
+
+                        <SkyboundLabelledTextBox
+                        placeholderText="Departure Date"
+                        width={BTN_W}
+                        height={45}
+                        label="Departure Date "
+                        icon={<CalandarIcon width={20} height={20}></CalandarIcon>}
+                        onChange={setDepartureDate}></SkyboundLabelledTextBox>
+
+                        <SkyboundLabelledTextBox
+                        placeholderText="Return Date"
+                        width={BTN_W}
+                        height={45}
+                        label="Return Date "
+                        icon={<CalandarIcon width={20} height={20}></CalandarIcon>}
+                        onChange={setReturnDate}></SkyboundLabelledTextBox>
+                    </>
+                )}
+                {/*IF "Multi-City" is selected*/}
+                {selectedIndex === 2 && (
+                    <>
+                        <SkyboundText accessabilityLabel="help" variant="primary">I have no idea what this option means</SkyboundText>
+                    </>
+                )}
+                
+                
 
                 {/*TODO: Refactor this button to accept variants like text does. 
                 also should let you pass an svg icon  */}
