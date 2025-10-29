@@ -5,12 +5,12 @@ import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import SkyboundButton from "../../components/ui/SkyboundButton";
 import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
 import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
 import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
 import SkyboundText from "../../components/ui/SkyboundText";
-import SkyboundButton from "../../components/ui/SkyboundButton";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../nav/RootNavigator";
 
 export default function DashboardScreen() {
@@ -31,7 +31,7 @@ export default function DashboardScreen() {
             rightHandFirstIcon={<Ionicons name="notifications-outline" size={22} color="#0071E2" />}
             rightHandFirstIconOnPressEvent={() => {}}
             rightHandSecondIcon={<Ionicons name="person-circle-outline" size={24} color="#0071E2" />}
-            rightHandSecondIconOnPressEvent={() => {}}
+            rightHandSecondIconOnPressEvent={() => navigation.navigate("Account")}
           />
         </View>
 
