@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { KeyboardTypeOptions, TextInputProps } from 'react-native';
-import { Image, StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { StyleSheet, TextInput, useColorScheme, View } from 'react-native';
 import BasicStyles from '../../constants/BasicComponents';
 
 //this custom text box component creates a text box with an optional icon placed on the right hand side.
