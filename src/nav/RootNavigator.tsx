@@ -1,8 +1,8 @@
 // mobile/expo/src/nav/RootNavigator.tsx
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { auth } from "@src/firebase";
 import * as React from "react";
-import "../firebase";
 
 import AccountScreen from "../screens/AccountScreen";
 import ComponentTestScreen from "../screens/ComponentTestScreen";
@@ -14,7 +14,6 @@ import LoginScreen from "../screens/LoginScreen";
 import SignupScreen from "../screens/SignupScreen";
 
 // Login listener
-import { auth } from '@firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 
