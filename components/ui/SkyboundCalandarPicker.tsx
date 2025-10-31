@@ -1,7 +1,7 @@
 import React from 'react'
 import CalendarPicker from 'react-native-calendar-picker'
 import SkyboundItemHolder from './SkyboundItemHolder';
-import { useColorScheme } from 'react-native';
+import { Dimensions, useColorScheme } from 'react-native';
 import basicStyles from '../../constants/BasicComponents';
 
 //Wrapper component for the Calandar Picker developed by stephy on GitHub. 
@@ -16,14 +16,14 @@ const SkyboundCalandarPicker: React.FC<SkyboundCalandarPickerProps> = ({
     onDateChange,
 }) => {
     const colorScheme = useColorScheme();
-
-
+    const {width, height} = Dimensions.get("window");
     return(
         <SkyboundItemHolder>
             <CalendarPicker onDateChange={onDateChange}
             textStyle={colorScheme === 'light' ? basicStyles.skyboundTextPrimaryLight : basicStyles.skyboundTextPrimaryDark}
             selectedDayColor={'#0071E2'}
-            selectedDayTextColor={'white'}>
+            selectedDayTextColor={'white'}
+            width={width * .9}>
             </CalendarPicker>
         </SkyboundItemHolder>
     )

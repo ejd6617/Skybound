@@ -4,10 +4,11 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from "react";
 import {
+  Animated,
   Dimensions,
+  Easing,
   Modal,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   View
@@ -16,6 +17,17 @@ import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
 import SkyboundText from "../../components/ui/SkyboundText";
 import { useColors } from "../../constants/theme";
 import type { RootStackParamList } from "../nav/RootNavigator";
+
+const bgWithAlpha = (hex: string, a: number) => {
+  const raw = hex.replace('#', '');
+  const expand = raw.length === 3
+    ? raw.split('').map(c => c + c).join('')
+    : raw;
+  const r = parseInt(expand.slice(0, 2), 16);
+  const g = parseInt(expand.slice(2, 4), 16);
+  const b = parseInt(expand.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${a})`;
+};
 
 interface Flight {
   id: string;
@@ -154,16 +166,35 @@ export default function FlightResultsScreen() {
 
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [flights, setFlights] = useState<Flight[]>(convertDataToFlights(searchResults)); // Can be replaced with MOCK_FLIGHTS
-  const [visibleCount, setVisibleCount] = useState(4);
+  const [flights, setFlights] = useState<Flight[]>(MOCK_FLIGHTS);
+  const [visibleCount, setVisibleCount] = useState(3);
   const [sortModalVisible, setSortModalVisible] = useState(false);
+  const [sortBy, setSortBy] = useState<'recommended'|'price'|'duration'|'stops'>('recommended');
+  const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [sortBy, setSortBy] = useState<'price' | 'duration' | 'stops'>('price');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const canLoadMore = visibleCount < flights.length;
   
   // Filter states
   const [maxStops, setMaxStops] = useState(2);
   const [maxDuration, setMaxDuration] = useState(10);
+
+  const overlayOp = React.useRef(new Animated.Value(0)).current;
+  const sheetY = React.useRef(new Animated.Value(40)).current;
+
+  function openSortSheet() {
+    setSortModalVisible(true);
+    Animated.parallel([
+      Animated.timing(overlayOp, { toValue: 1, duration: 150, useNativeDriver: true, easing: Easing.out(Easing.quad) }),
+      Animated.timing(sheetY,     { toValue: 0, duration: 220, useNativeDriver: true, easing: Easing.out(Easing.cubic) }),
+    ]).start();
+  }
+
+  function closeSortSheet() {
+    Animated.parallel([
+      Animated.timing(overlayOp, { toValue: 0, duration: 120, useNativeDriver: true }),
+      Animated.timing(sheetY,     { toValue: 40, duration: 180, useNativeDriver: true }),
+    ]).start(() => setSortModalVisible(false));
+  }
 
   const screenWidth = Dimensions.get('window').width;
 
@@ -180,34 +211,33 @@ export default function FlightResultsScreen() {
     }
   };
 
-  const sortFlights = (criteria: 'price' | 'duration' | 'stops', direction: 'asc' | 'desc') => {
+  const sortFlights = (criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') => {
     const sorted = [...flights].sort((a, b) => {
-      let comparison = 0;
-      if (criteria === 'price') {
-        comparison = a.price - b.price;
+      let cmp = 0;
+      if (criteria === 'recommended' || criteria === 'price') {
+        cmp = a.price - b.price;                       // default “recommended”: price asc
       } else if (criteria === 'duration') {
-        const aDuration = parseInt(a.duration);
-        const bDuration = parseInt(b.duration);
-        comparison = aDuration - bDuration;
+        const m = (s:string)=>{const [h,m]=s.replace('h','').replace('m','').split(' ').map(n=>parseInt(n));return h*60+m;};
+        cmp = m(a.duration) - m(b.duration);
       } else if (criteria === 'stops') {
-        const aStops = a.stops.includes('Nonstop') ? 0 : parseInt(a.stops) || 1;
-        const bStops = b.stops.includes('Nonstop') ? 0 : parseInt(b.stops) || 1;
-        comparison = aStops - bStops;
+        const n = (s:string)=> s.includes('Nonstop') ? 0 : parseInt(s) || 1;
+        cmp = n(a.stops) - n(b.stops);
       }
-      return direction === 'asc' ? comparison : -comparison;
+      return direction === 'asc' ? cmp : -cmp;
     });
     setFlights(sorted);
     setSortBy(criteria);
     setSortDirection(direction);
-    setSortModalVisible(false);
   };
+  const toggleDirection = () => setSortDirection(d => d === 'asc' ? 'desc' : 'asc');
+  const arrowFor = (crit: typeof sortBy) => (sortBy === crit && sortDirection === 'desc') ? 'arrow-down' : 'arrow-up';
 
   const FlightCard = ({ flight }: { flight: Flight }) => {
     const badge = getCategoryBadge(flight.category);
 
     return (
       <Pressable 
-        style={[styles.flightCard, { backgroundColor: colors.card, borderColor: colors.divider }]}
+        style={[styles.flightCard, { backgroundColor: colors.card }]}
         onPress={() => navigation.navigate('ComponentTest')}
       >
         {badge && (
@@ -280,9 +310,9 @@ export default function FlightResultsScreen() {
           </View>
 
           {flight.hasBaggage && (
-            <View style={[styles.baggageBanner, { backgroundColor: colors.successBg, borderColor: '#DCFCE7' }]}>
-              <Ionicons name="briefcase-outline" size={12} color={colors.successText} />
-              <SkyboundText variant="primary" size={12} accessabilityLabel="Free Baggage Included" style={{ color: colors.successText }}>
+            <View style={styles.baggageBanner}>
+              <Ionicons name="briefcase-outline" size={12} color="#FFFFFF" />
+              <SkyboundText variant="primary" size={12} style={{ color: '#FFFFFF' }}>
                 Free Baggage Included
               </SkyboundText>
             </View>
@@ -293,20 +323,25 @@ export default function FlightResultsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient colors={colors.gradient} start={colors.gradientStart} end={colors.gradientEnd} style={{ flex: 1 }}>
-        <View style={{ backgroundColor: colors.card }}>
+    <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
           <SkyboundNavBar
             title="Outbound: CLE - LAX"
             leftHandIcon={<Ionicons name="arrow-back" size={22} color={colors.link} />}
             leftHandIconOnPressEvent={() => navigation.goBack()}
             rightHandFirstIcon={<Ionicons name="filter" size={22} color={colors.link} />}
-            rightHandFirstIconOnPressEvent={() => setFilterModalVisible(true)}
+            rightHandFirstIconOnPressEvent={() => navigation.navigate('FilterScreen')}
             rightHandSecondIcon={<Ionicons name="swap-vertical" size={22} color={colors.link} />}
-            rightHandSecondIconOnPressEvent={() => setSortModalVisible(true)}
+            rightHandSecondIconOnPressEvent={() => openSortSheet()}
           />
-          <View style={{ paddingHorizontal: 16, paddingBottom: 8 }}>
-            <SkyboundText variant="secondary" size={14} accessabilityLabel="Nov 7 - Nov 12">
+          <View style={{ paddingBottom: 8 }}>
+            <SkyboundText
+              variant="secondary"
+              size={14}
+              accessabilityLabel="Nov 7 - Nov 12"
+              style={{ textAlign: 'center' }}
+            >
               Nov 7 - Nov 12
             </SkyboundText>
           </View>
@@ -315,7 +350,7 @@ export default function FlightResultsScreen() {
         {/* Map Placeholder */}
         <View style={[styles.mapContainer, { backgroundColor: colors.surfaceMuted }]}>
           <View style={[styles.routeInfo, { backgroundColor: 'rgba(239, 246, 255, 0.95)' }]}>
-            <View style={styles.routePoint}>
+            <View style={[styles.routePoint, { width: 96 }]}>
               <View style={[styles.dot, { backgroundColor: colors.link }]} />
               <SkyboundText variant="primaryBold" size={14} accessabilityLabel="CLE">CLE</SkyboundText>
               <SkyboundText variant="secondary" size={12} accessabilityLabel="Cleveland">Cleveland</SkyboundText>
@@ -325,156 +360,97 @@ export default function FlightResultsScreen() {
               <Ionicons name="airplane" size={20} color={colors.link} />
               <SkyboundText variant="secondary" size={12} accessabilityLabel="2,048 miles">2,048 miles</SkyboundText>
             </View>
-            <View style={styles.routePoint}>
+            <View style={[styles.routePoint, { width: 96 }]}>
               <View style={[styles.dot, { backgroundColor: colors.link }]} />
               <SkyboundText variant="primaryBold" size={14} accessabilityLabel="LAX">LAX</SkyboundText>
               <SkyboundText variant="secondary" size={12} accessabilityLabel="Los Angeles">Los Angeles</SkyboundText>
             </View>
           </View>
-          <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 8 }}>
+          <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 40, marginBottom: -10 }}>
             Google Maps integration would display route here
           </SkyboundText>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <SkyboundText variant="secondary" size={14} accessabilityLabel={`${flights.length} flights found`} style={{ marginBottom: 16 }}>
-            {flights.length} flights found
-          </SkyboundText>
+        <View style={styles.resultsWrapper}>
+          <View style={styles.resultsFadeOverlay} pointerEvents="none">
+            <LinearGradient
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              colors={[bgWithAlpha(colors.background, 0.98), bgWithAlpha(colors.background, 0)]}
+              style={StyleSheet.absoluteFill}
+            />
+          </View>
 
-          {flights.slice(0, visibleCount).map((flight) => (
-            <FlightCard key={flight.id} flight={flight} />
-          ))}
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            <SkyboundText variant="secondary" size={14} style={{ marginTop: 35, marginBottom: 16 }}>
+              {flights.length} flights found
+            </SkyboundText>
 
-          {visibleCount < flights.length && (
-            <Pressable style={styles.loadMoreButton} onPress={() => setVisibleCount(prev => prev + 4)}>
-              <SkyboundText variant="blue" size={14} accessabilityLabel="Load more flights" style={{ color: colors.link }}>
-                Load more flights
-              </SkyboundText>
-            </Pressable>
-          )}
-        </ScrollView>
+            {flights.slice(0, visibleCount).map((flight) => (
+              <FlightCard key={flight.id} flight={flight} />
+            ))}
 
-        {/* Sort Modal */}
-        <Modal visible={sortModalVisible} transparent animationType="slide">
-          <Pressable style={styles.modalOverlay} onPress={() => setSortModalVisible(false)}>
-            <View style={[styles.modalContent, { backgroundColor: colors.card }]} onStartShouldSetResponder={() => true}>
-              <SkyboundText variant="primaryBold" size={18} accessabilityLabel="Sort by" style={{ marginBottom: 16 }}>
-                Sort By
-              </SkyboundText>
-              
-              {(['price', 'duration', 'stops'] as const).map((criteria) => (
-                <View key={criteria}>
-                  <Pressable
-                    style={styles.sortOption}
-                    onPress={() => sortFlights(criteria, 'asc')}
-                  >
-                    <SkyboundText variant="primary" size={16} accessabilityLabel={`${criteria} low to high`}>
-                      {criteria.charAt(0).toUpperCase() + criteria.slice(1)} (Low to High)
-                    </SkyboundText>
-                    <Ionicons name="arrow-up" size={20} color={colors.icon} />
-                  </Pressable>
-                  <Pressable
-                    style={styles.sortOption}
-                    onPress={() => sortFlights(criteria, 'desc')}
-                  >
-                    <SkyboundText variant="primary" size={16} accessabilityLabel={`${criteria} high to low`}>
-                      {criteria.charAt(0).toUpperCase() + criteria.slice(1)} (High to Low)
-                    </SkyboundText>
-                    <Ionicons name="arrow-down" size={20} color={colors.icon} />
-                  </Pressable>
-                </View>
-              ))}
-
+            {visibleCount < flights.length && (
               <Pressable
-                style={[styles.closeButton, { backgroundColor: colors.link }]}
-                onPress={() => setSortModalVisible(false)}
+                style={[
+                  styles.loadMoreButton,
+                  !canLoadMore && { opacity: 0.5 }
+                ]}
+                disabled={!canLoadMore}
+                onPress={() => setVisibleCount(prev => Math.min(prev + 4, flights.length))}
               >
-                <SkyboundText variant="primary" size={16} accessabilityLabel="Close" style={{ color: '#FFF' }}>
-                  Close
+                <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFFFFF' }}>
+                  {canLoadMore ? 'Load More Flights' : 'No More Flights'}
                 </SkyboundText>
               </Pressable>
-            </View>
-          </Pressable>
-        </Modal>
+            )}
+          </ScrollView>
+        </View>
 
         {/* Filter Modal */}
-        <Modal visible={filterModalVisible} transparent animationType="slide">
-          <Pressable style={styles.modalOverlay} onPress={() => setFilterModalVisible(false)}>
-            <View style={[styles.modalContent, { backgroundColor: colors.card }]} onStartShouldSetResponder={() => true}>
-              <SkyboundText variant="primaryBold" size={18} accessabilityLabel="Filter flights" style={{ marginBottom: 16 }}>
-                Filter Flights
-              </SkyboundText>
+        <Modal visible={sortModalVisible} transparent animationType="none">
+          <Animated.View style={[styles.animatedOverlay, { opacity: overlayOp }]}>
+            <Pressable style={{ flex:1 }} onPress={closeSortSheet} />
+          </Animated.View>
 
-              <View style={styles.filterSection}>
-                <SkyboundText variant="primary" size={16} accessabilityLabel="Maximum stops">
-                  Maximum Stops: {maxStops}
-                </SkyboundText>
-                <View style={styles.filterButtons}>
-                  {[0, 1, 2].map((num) => (
-                    <Pressable
-                      key={num}
-                      style={[
-                        styles.filterChip,
-                        { backgroundColor: maxStops === num ? colors.link : colors.surfaceMuted }
-                      ]}
-                      onPress={() => setMaxStops(num)}
-                    >
-                      <SkyboundText
-                        variant="primary"
-                        size={14}
-                        accessabilityLabel={`${num} stops`}
-                        style={{ color: maxStops === num ? '#FFF' : colors.text }}
-                      >
-                        {num}
-                      </SkyboundText>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.filterSection}>
-                <SkyboundText variant="primary" size={16} accessabilityLabel="Maximum duration">
-                  Maximum Duration: {maxDuration}h
-                </SkyboundText>
-                <View style={styles.filterButtons}>
-                  {[5, 8, 10, 12].map((num) => (
-                    <Pressable
-                      key={num}
-                      style={[
-                        styles.filterChip,
-                        { backgroundColor: maxDuration === num ? colors.link : colors.surfaceMuted }
-                      ]}
-                      onPress={() => setMaxDuration(num)}
-                    >
-                      <SkyboundText
-                        variant="primary"
-                        size={14}
-                        accessabilityLabel={`${num} hours`}
-                        style={{ color: maxDuration === num ? '#FFF' : colors.text }}
-                      >
-                        {num}h
-                      </SkyboundText>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
+          <Animated.View
+            style={[
+              styles.animatedSheetWrap,
+              { transform: [{ translateY: sheetY }] }
+            ]}
+          >
+            <View style={[styles.sheet, { backgroundColor: colors.card }]}>
+              <SkyboundText variant="primaryBold" size={18} style={{ marginBottom: 16 }}>Sort By</SkyboundText>
 
               <Pressable
-                style={[styles.closeButton, { backgroundColor: colors.link }]}
-                onPress={() => {
-                  // Apply filters here
-                  setFilterModalVisible(false);
-                }}
+                style={styles.sortOption}
+                onPress={() => { setSortBy('recommended'); setSortDirection('asc'); sortFlights('recommended','asc'); }}
               >
-                <SkyboundText variant="primary" size={16} accessabilityLabel="Apply filters" style={{ color: '#FFF' }}>
-                  Apply Filters
-                </SkyboundText>
+                <SkyboundText size={16}>Recommended</SkyboundText>
+              </Pressable>
+
+              {(['price','duration','stops'] as const).map(crit => (
+                <Pressable
+                  key={crit}
+                  style={styles.sortOption}
+                  onPress={() => { 
+                    const dir = (sortBy === crit) ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+                    sortFlights(crit, dir);
+                  }}
+                >
+                  <SkyboundText size={16} style={{ textTransform:'capitalize' }}>{crit}</SkyboundText>
+                  <Ionicons name={arrowFor(crit)} size={20} color={colors.icon} />
+                </Pressable>
+              ))}
+
+              <Pressable style={[styles.closeButton, { backgroundColor: colors.link }]} onPress={closeSortSheet}>
+                <SkyboundText size={16} style={{ color:'#FFF' }}>Close</SkyboundText>
               </Pressable>
             </View>
-          </Pressable>
+          </Animated.View>
         </Modal>
-      </LinearGradient>
-    </SafeAreaView>
+      </View>
+    </View>
   );
 }
 
@@ -482,6 +458,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
   mapContainer: {
     height: 160,
     margin: 16,
@@ -489,7 +466,9 @@ const styles = StyleSheet.create({
     padding: 16,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden', // lets the fade overlay hug edges nicely
   },
+
   routeInfo: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -498,29 +477,35 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: '100%',
   },
-  routePoint: {
-    alignItems: 'center',
-    gap: 4,
+  routePoint: { alignItems: 'center', gap: 4 },
+  routeCenter: { flex: 1, alignItems: 'center', gap: 4, paddingHorizontal: 16 },
+  routeLine: { height: 1, width: '100%' },
+
+  fadeUnderMap: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    bottom: -1,
+    height: 24,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
+    overflow: 'hidden',
   },
-  dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  routeCenter: {
+  resultsWrapper: {
     flex: 1,
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 16,
+    position: 'relative',
   },
-  routeLine: {
-    height: 1,
-    width: '100%',
+  resultsFadeOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 50, // adjust strength of fade
+    zIndex: 1,
   },
-  scrollContent: {
-    padding: 16,
-    paddingTop: 0,
-  },
+
+  scrollContent: { padding: 16, paddingTop: 0 },
+
   flightCard: {
     borderRadius: 12,
     marginBottom: 16,
@@ -528,18 +513,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
     elevation: 2,
   },
   categoryBadge: {
     paddingVertical: 6,
     paddingHorizontal: 12,
   },
-  cardContent: {
-    padding: 16,
-    gap: 12,
-  },
+  cardContent: { padding: 16, gap: 12, },
   airlineRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -585,18 +567,31 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1,
   },
+  
   baggageBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderTopWidth: 1,
+    backgroundColor: '#16A34A',
     marginTop: 4,
   },
   loadMoreButton: {
-    paddingVertical: 16,
+    marginTop: 8,
+    marginBottom: 32,
+    alignSelf: 'center',
+    backgroundColor: '#0071E2',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
     alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0071E2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,            
   },
   modalOverlay: {
     flex: 1,
@@ -636,4 +631,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 20,
   },
+  animatedOverlay: {
+  ...StyleSheet.absoluteFillObject,
+  backgroundColor: 'rgba(19, 3, 3, 0.5)',
+  },
+  animatedSheetWrap: {
+    position: 'absolute',
+    left: 0, right: 0, bottom: 0,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    backgroundColor: '#FFF',
+  },
+  sheet: { },
 });
