@@ -1,7 +1,7 @@
+import { useColors } from '@constants/theme';
 import React from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { useColors } from '../../constants/theme';
 import SkyboundText from './SkyboundText';
 
 interface FlexibleChipProps {

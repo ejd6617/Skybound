@@ -1,6 +1,6 @@
+import { useColors } from '@constants/theme';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useColors } from '../../constants/theme';
 import SkyboundText from './SkyboundText';
 
 export type TripType = 'one-way' | 'round-trip' | 'multi-city';

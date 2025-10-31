@@ -1,9 +1,9 @@
+import BasicStyles from '@constants/BasicComponents';
 import React, { ReactNode } from 'react';
-import { View, StyleSheet, Image, Dimensions} from 'react-native';
+import { Dimensions, StyleSheet, View } from 'react-native';
+import SkyboundButton from './SkyboundButton';
 import SkyboundItemHolder from './SkyboundItemHolder';
 import SkyboundText from './SkyboundText';
-import SkyboundButton from './SkyboundButton';
-import BasicStyles from '../../constants/BasicComponents'
 
 interface SkyboundNotificationProps {
     notificationTitle: string;

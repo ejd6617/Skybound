@@ -1,22 +1,22 @@
+import SkyboundNavBar from "@components/ui/SkyboundNavBar";
+import SkyboundText from "@components/ui/SkyboundText";
+import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  Easing,
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View
+    Animated,
+    Dimensions,
+    Easing,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View
 } from "react-native";
-import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
-import SkyboundText from "../../components/ui/SkyboundText";
-import { useColors } from "../../constants/theme";
-import type { RootStackParamList } from "../nav/RootNavigator";
 
 const bgWithAlpha = (hex: string, a: number) => {
   const raw = hex.replace('#', '');

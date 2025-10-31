@@ -1,5 +1,9 @@
+import basicStyles from '@constants/BasicComponents';
+import { useColors } from '@constants/theme'; // to use dark/light theme
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@src/nav/RootNavigator';
+import LoadingScreen from '@src/screens/LoadingScreen';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
@@ -11,16 +15,12 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import basicStyles from '../../constants/BasicComponents';
-import { useColors } from '../../constants/theme'; // to use dark/light theme
-import type { RootStackParamList } from '../nav/RootNavigator';
-import LoadingScreen from './LoadingScreen';
 
 // Ethan UI
-import SkyboundButton from '../../components/ui/SkyboundButton';
-import SkyboundItemHolder from '../../components/ui/SkyboundItemHolder';
-import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
-import SkyboundText from '../../components/ui/SkyboundText';
+import SkyboundButton from '@components/ui/SkyboundButton';
+import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
+import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
+import SkyboundText from '@components/ui/SkyboundText';
 
 // To support Login
 import { signInWithEmailAndPassword } from 'firebase/auth';
@@ -80,7 +80,7 @@ export default function LoginScreen() {
         >
           {/* LOGO */}
           <Image
-            source={require('../../assets/images/skybound-logo-white.png')}
+            source={require('@assets/images/skybound-logo-white.png')}
             style={{ width: 250, height: 70, resizeMode: 'contain', marginTop:25, marginBottom: 10 }}
           />
 
@@ -188,7 +188,7 @@ export default function LoginScreen() {
               }}
             >
               <Image
-                source={require('../../assets/images/google.png')}
+                source={require('@assets/images/google.png')}
                 style={{ width: 22, height: 22, resizeMode: 'contain', marginRight: 10 }}
               />
               <Text

@@ -1,20 +1,20 @@
+import SkyboundNavBar from '@components/ui/SkyboundNavBar';
+import SkyboundText from '@components/ui/SkyboundText';
+import { useColors } from '@constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View
+    Image,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import SkyboundNavBar from '../../components/ui/SkyboundNavBar';
-import SkyboundText from '../../components/ui/SkyboundText';
-import { useColors } from '../../constants/theme';
-import type { RootStackParamList } from '../nav/RootNavigator';
 
 export default function AccountScreen() {
   const colors = useColors();
@@ -295,7 +295,7 @@ export default function AccountScreen() {
             {/* Skybound logo at the bottom (like Version 1) */}
             <View style={styles.logoContainer}>
               <Image
-                source={require('../../assets/images/skybound-logo-white.png')}
+                source={require('@assets/images/skybound-logo-white.png')}
                 style={styles.logo}
                 resizeMode="contain"
               />

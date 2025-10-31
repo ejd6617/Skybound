@@ -1,11 +1,11 @@
+import { useColors } from '@constants/theme';
 import Slider from '@react-native-community/slider';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '@src/nav/RootNavigator';
 import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { useColors } from '../../constants/theme';
-import { RootStackParamList } from '../nav/RootNavigator';
 
 const CloseIcon = () => (
   <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">

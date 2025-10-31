@@ -1,7 +1,7 @@
+import { useColors } from '@constants/theme';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-import { useColors } from '../../constants/theme';
 import AirportAutocomplete from './AirportAutocomplete';
 import DateSelector from './DateSelector';
 import SkyboundText from './SkyboundText';

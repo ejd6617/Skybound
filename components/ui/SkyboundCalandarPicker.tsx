@@ -1,8 +1,8 @@
-import React from 'react'
-import CalendarPicker from 'react-native-calendar-picker'
-import SkyboundItemHolder from './SkyboundItemHolder';
+import basicStyles from '@constants/BasicComponents';
+import React from 'react';
 import { Dimensions, useColorScheme } from 'react-native';
-import basicStyles from '../../constants/BasicComponents';
+import CalendarPicker from 'react-native-calendar-picker';
+import SkyboundItemHolder from './SkyboundItemHolder';
 
 //Wrapper component for the Calandar Picker developed by stephy on GitHub. 
 //Calandar picker documentation: https://github.com/stephy/CalendarPicker

@@ -1,25 +1,22 @@
+import AccountIcon from '@assets/images/AccountIcon.svg';
+import AirplaneIcon from '@assets/images/Airplane.svg';
+import BellIcon from '@assets/images/BellIcon.svg';
+import HamburgerIcon from '@assets/images/HamburgerIcon.svg';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Dimensions, View } from 'react-native';
-import AccountIcon from '../../assets/images/AccountIcon.svg';
-import AirplaneIcon from '../../assets/images/Airplane.svg';
-import BellIcon from '../../assets/images/BellIcon.svg';
-import HamburgerIcon from '../../assets/images/HamburgerIcon.svg';
+import { View } from 'react-native';
 //i dont know why these are underlined red. The program builds just fine.
-import SimplifiedFlightDetails from '../../components/ui/SimplifiedFlightDetails';
-import SkyboundButton from '../../components/ui/SkyboundButton';
-import SkyboundFlashDeal from '../../components/ui/SkyboundFlashDeal';
-import SkyboundFlightDetails from '../../components/ui/SkyboundFlightDetails';
-import SkyboundItemHolder from '../../components/ui/SkyboundItemHolder';
-import SkyboundNavBar from '../../components/ui/SkyboundNavBar';
-import SkyboundText from '../../components/ui/SkyboundText';
-import basicStyles from '../../constants/BasicComponents';
-import SkyboundButtonGroup from '../../components/ui/SkyboundButtonGroup'
-import { RootStackParamList } from '../nav/RootNavigator';
+import SkyboundButtonGroup from '@components/ui/SkyboundButtonGroup';
+import SkyboundFlashDeal from '@components/ui/SkyboundFlashDeal';
+import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
+import SkyboundNavBar from '@components/ui/SkyboundNavBar';
+import SkyboundText from '@components/ui/SkyboundText';
+import basicStyles from '@constants/BasicComponents';
+import { RootStackParamList } from '@src/nav/RootNavigator';
 
-import SkyboundCalandarPicker from '../../components/ui/SkyboundCalandarPicker'
+import SkyboundCalandarPicker from '@components/ui/SkyboundCalandarPicker';
 
 
 

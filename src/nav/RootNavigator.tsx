@@ -14,10 +14,9 @@ import LoginScreen from "../screens/LoginScreen";
 import SignupScreen from "../screens/SignupScreen";
 
 // Login listener
+import { auth } from '@firebase/auth';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
-import { Flight } from "../../../../skyboundTypes/SkyboundAPI";
-import { auth } from '..//firebase';
 
 export type RootStackParamList = {
   Login: undefined;

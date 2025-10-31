@@ -1,7 +1,7 @@
+import SkyboundButton from '@components/ui/SkyboundButton';
+import basicStyles from '@constants/BasicComponents';
 import React, { useState } from 'react';
 import { StyleSheet, View, useColorScheme } from 'react-native';
-import SkyboundButton from '../../components/ui/SkyboundButton';
-import basicStyles from '../../constants/BasicComponents';
 
 interface SkyboundButtonGroupProps {
     options: string[]; //array of strings for labels 

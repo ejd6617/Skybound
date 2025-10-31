@@ -4,7 +4,16 @@
     "jsx": "react-native",
     "skipLibCheck": true, 
     "module": "esnext",
+    "baseUrl": ".",
     "paths": {
+      "@/*": ["./*"],
+      "@api/*": ["api/*"],
+      "@components/*": ["components/*"],
+      "@constants/*": ["constants/*"],
+      "@assets/*": ["assets/*"],
+      "@fonts/*": ["assets/fonts/*"],
+      "@src/*": ["src/*"],
+      "@skyboundTypes/*": ["skyboundTypes/*"],
       "@firebase/auth": ["./node_modules/@firebase/auth/dist/index.rn.d.ts"]
     }
   },

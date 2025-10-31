@@ -1,7 +1,7 @@
+import AirplaneTravelGraphic from '@assets/images/AirplaneTravelGraphic.svg';
+import basicStyles from '@constants/BasicComponents';
 import React, { ReactNode } from 'react';
 import { StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
-import AirplaneTravelGraphic from '../../assets/images/AirplaneTravelGraphic.svg';
-import basicStyles from '../../constants/BasicComponents';
 import SkyboundItemHolder from './SkyboundItemHolder';
 import SkyboundText from './SkyboundText';
 

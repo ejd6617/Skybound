@@ -1,7 +1,7 @@
+import { useColors } from '@constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
-import { useColors } from '../../constants/theme';
 
 export default function LoadingScreen() {
   const colors = useColors();
@@ -22,7 +22,7 @@ export default function LoadingScreen() {
 
   const Content = (
     <>
-      <Image source={require('../../assets/images/skybound-logo-white.png')} style={styles.logo} resizeMode="contain" />
+      <Image source={require('@assets/images/skybound-logo-white.png')} style={styles.logo} resizeMode="contain" />
       <Animated.View style={[styles.spinnerContainer, { transform: [{ rotate: spin }] }]}>
         <View style={styles.spinner}>
           <View style={styles.spinnerArc} />

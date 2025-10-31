@@ -1,7 +1,7 @@
+import { useColors } from '@constants/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { Keyboard, LayoutChangeEvent, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
-import { useColors } from '../../constants/theme';
 import SkyboundText from './SkyboundText';
 
 interface Airport {

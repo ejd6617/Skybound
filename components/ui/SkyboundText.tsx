@@ -1,6 +1,6 @@
+import basicStyles from '@constants/BasicComponents';
 import React from 'react';
 import { StyleProp, Text, TextStyle, useColorScheme } from 'react-native';
-import basicStyles from '../../constants/BasicComponents';
 
 
 interface SkyboundTextProps {

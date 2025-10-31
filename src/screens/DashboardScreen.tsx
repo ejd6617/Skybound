@@ -5,15 +5,15 @@ import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
+import SkyboundButton from "@components/ui/SkyboundButton";
+import SkyboundFlashDeal from "@components/ui/SkyboundFlashDeal";
+import SkyboundItemHolder from "@components/ui/SkyboundItemHolder";
+import SkyboundNavBar from "@components/ui/SkyboundNavBar";
+import SkyboundText from "@components/ui/SkyboundText";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RoundTripQueryParams } from "../../../../skyboundTypes/SkyboundAPI";
-import SkyboundButton from "../../components/ui/SkyboundButton";
-import SkyboundFlashDeal from "../../components/ui/SkyboundFlashDeal";
-import SkyboundItemHolder from "../../components/ui/SkyboundItemHolder";
-import SkyboundNavBar from "../../components/ui/SkyboundNavBar";
-import SkyboundText from "../../components/ui/SkyboundText";
-import { skyboundRequest } from "../api/SkyboundUtils";
-import { RootStackParamList } from "../nav/RootNavigator";
+import { RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
+import { skyboundRequest } from "@src/api/SkyboundUtils";
+import { RootStackParamList } from "@src/nav/RootNavigator";
 
 export default function DashboardScreen() {
   const nav = useNavigation<any>();
@@ -62,7 +62,7 @@ export default function DashboardScreen() {
         <View style={{ backgroundColor: "#fff" }}>
           <SkyboundNavBar
             title={ 
-              <Image source={require("../../assets/images/skybound-logo-dark.png")}
+              <Image source={require("@assets/images/skybound-logo-dark.png")}
               style={{ width: 200, height: 100, resizeMode: "contain" }}/>}
             leftHandIcon={<Ionicons name="menu" size={22} color="#0071E2" />}
             leftHandIconOnPressEvent={() => {}}
@@ -106,7 +106,7 @@ export default function DashboardScreen() {
                 {data.map((flight, index) => (
                   <SkyboundFlashDeal
                     key={`flashdeal-${index}`}
-                    airlineImage={<Image source={require("../../assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
+                    airlineImage={<Image source={require("@assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
                     airlineName={flight.airlineName}
                     sourceCode={flight.outbound.sourceCode}
                     destCode={flight.outbound.destCode}

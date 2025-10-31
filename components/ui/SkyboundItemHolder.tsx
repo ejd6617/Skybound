@@ -1,6 +1,6 @@
+import BasicStyles from '@constants/BasicComponents';
 import React, { ReactNode } from 'react';
 import { StyleProp, View, ViewStyle, useColorScheme } from 'react-native';
-import BasicStyles from '../../constants/BasicComponents';
 
 interface SkyboundItemHolderProps {
   style?: StyleProp<ViewStyle>;

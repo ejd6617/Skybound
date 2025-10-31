@@ -1,7 +1,7 @@
+import BallIcon from '@assets/images/BallIcon.svg';
+import SimplifiedFlightGraphic from '@assets/images/SimplifiedFlightGraphic.svg';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import BallIcon from '../../assets/images/BallIcon.svg';
-import SimplifiedFlightGraphic from '../../assets/images/SimplifiedFlightGraphic.svg';
 import SkyboundText from './SkyboundText';
 
 interface SimplifiedFlightDetailsProps {

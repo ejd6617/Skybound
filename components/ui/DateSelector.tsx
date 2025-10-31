@@ -1,7 +1,7 @@
+import { useColors } from '@constants/theme';
 import React, { useState } from 'react';
 import { Modal, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
-import { useColors } from '../../constants/theme';
 import SkyboundButton from './SkyboundButton';
 import SkyboundCalandarPicker from './SkyboundCalandarPicker';
 import SkyboundText from './SkyboundText';
