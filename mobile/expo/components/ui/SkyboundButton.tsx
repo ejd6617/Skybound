@@ -1,7 +1,7 @@
   import React, { ReactNode } from 'react';
-  import { GestureResponderEvent, StyleProp, TouchableOpacity, ViewStyle } from 'react-native';
-  import basicStyles from '../../constants/BasicComponents';
-  import SkyboundText, { TextVariant } from './SkyboundText';
+import { GestureResponderEvent, StyleProp, TouchableOpacity, ViewStyle } from 'react-native';
+import basicStyles from '../../constants/BasicComponents';
+import SkyboundText, { TextVariant } from './SkyboundText';
 
 
 
@@ -14,6 +14,7 @@
     height: number; //height of the button
     textVariant?: TextVariant// type of SkyboundText that is displayed on the button
     textSize?: number // optional text size override 
+    diasabled? : boolean //boolean to determine if the button should be disabled
   }
 
   const CustomButton: React.FC<CustomButtonProps> = ({
@@ -24,11 +25,12 @@
     children,
     style,
     onPress,
+    diasabled = false,
   }) => {
     const fontSize = textSize ?? Math.min(Math.max(height * 0.4, 12), 20);
 
     return (
-      <TouchableOpacity style={[basicStyles.skyboundButton, style, { width, height }]} onPress={onPress}>
+      <TouchableOpacity style={[basicStyles.skyboundButton, style, { width, height }]} onPress={onPress} disabled={diasabled}>
         <SkyboundText  variant={textVariant} size={fontSize} accessabilityLabel={'Label: ' + children}>
           {children}
         </SkyboundText>
