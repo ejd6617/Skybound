@@ -1,70 +1,118 @@
-import { useColors } from '@constants/theme';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
-    Dimensions,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
-// Ethan UI
-import SkyboundButton from '@components/ui/SkyboundButton';
-import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
-import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
-import SkyboundText from '@components/ui/SkyboundText';
 
-//signup functionality with Firebase
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { Alert } from 'react-native';
-import { auth } from "../firebase";
+//firebase imports
+import { createUserWithEmailAndPassword } from "firebase/auth";
+
+import { auth } from '../firebase';
+
+import { useColors } from '../../constants/theme';
+import type { RootStackParamList } from '../nav/RootNavigator';
+
+// Ethan UI
+import SkyboundButton from '../../components/ui/SkyboundButton';
+import SkyboundItemHolder from '../../components/ui/SkyboundItemHolder';
+import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
+import SkyboundText from '../../components/ui/SkyboundText';
+
+//Toast messages
+import Toast from 'react-native-toast-message';
 
 export default function SignupScreen() {
+  //account creation fields
   const [fullName, setFullName]   = useState('');
   const [email, setEmail]         = useState('');
   const [password, setPassword]   = useState('');
   const [password2, setPassword2] = useState('');
+  const [signUpError, setSignUpError] = useState('');
 
+
+  //navigation and color theme
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const c = useColors();
 
+  //calculations to ensure proper scaling on different screen sizes
   const { width: SCREEN_W } = Dimensions.get('window');
   const CARD_W = Math.min(420, Math.round(SCREEN_W * 0.86));
   const H_PADDING = 18;
   const BTN_W = CARD_W - H_PADDING * 2;
   const itemHolderWidth = SCREEN_W * 0.9;
 
-  //signup functionality with Firebase
-  async function handleSignup() {
-    if (!email || !password || !password2 || !fullName) {
-      Alert.alert('Error', 'Please fill out all fields.');
+  const createUser = async (name : string, email : string, password : string, password2) =>
+  {
+    //check if email is in proper format
+    if(!isVaildEmail(email))
+    {
+      Toast.show({
+      type:'error',
+      text1: 'Error: Email incorrect',
+      text2: 'help' });
+      return;
+    }
+    //check if passwords match
+    if(password !== password2)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error:',
+        text2: 'Passwords do not match'
+      });
+      return;
+    }
+    
+    //if the passwords are not long enough
+    if(password.length <=6)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error:',
+        text2: 'Passwords must be 7+ characters long'
+      });
       return;
     }
 
-    if (password !== password2) {
-      Alert.alert('Error', 'Passwords do not match.');
-      return;
-    }
-
+    //send data to auth
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
+      await handleRegister(email, password);
+      //if succeeded, navigate to dashboard
       navigation.navigate('Dashboard');
-
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      Alert.alert('Signup failed', error.message);
+    }catch(error : any)
+    { 
+      setSignUpError(error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Error:',
+        text2: signUpError
+      })
     }
   }
-  
+
+  function isVaildEmail(email) {
+    //regular expression to ensure email is in proper format
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+
+  }
+
+  const handleRegister = async (email : string, password : string) =>
+  {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+    console.log("User with email" + email + " Registered!")
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: c.background }}
@@ -84,9 +132,15 @@ export default function SignupScreen() {
         >
           {/* LOGO */}
           <Image
-            source={require('@assets/images/skybound-logo-white.png')}
+            source={require('../../assets/images/skybound-logo-white.png')}
             style={{ width: 250, height: 70, resizeMode: 'contain', marginTop: 25, marginBottom: 10 }}
           />
+
+          <Toast/>
+
+          {/*check for sign up errors*/
+            signUpError ? <SkyboundText accessabilityLabel={'Error Registering account: ' + signUpError}
+                          variant='primary'>{signUpError}</SkyboundText> : null}
 
           {/* Subtitle */}
           <SkyboundText variant="primary" accessabilityLabel="Skybound: Your Journey Starts Here" style={{ marginBottom: 33 }}>
@@ -112,19 +166,19 @@ export default function SignupScreen() {
               width={BTN_W}
               height={45}
               value={fullName}
-              onChangeText={setFullName}
               autoCapitalize="words"
+              onChange={setFullName}
             />
 
             {/* Email */}
             <View style={{ width: '100%', alignItems: 'center', marginTop: 10 }}>
               <SkyboundLabelledTextBox
-                label="Email"
+                label= "Email" 
                 placeholderText="Enter your email"
                 width={BTN_W}
                 height={45}
                 value={email}
-                onChangeText={setEmail}
+                onChange={setEmail}
                 autoCapitalize="none"
                 keyboardType="email-address"
               />
@@ -138,7 +192,7 @@ export default function SignupScreen() {
                 width={BTN_W}
                 height={45}
                 value={password}
-                onChangeText={setPassword}
+                onChange={setPassword}
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -156,7 +210,7 @@ export default function SignupScreen() {
                 width={BTN_W}
                 height={45}
                 value={password2}
-                onChangeText={setPassword2}
+                onChange={setPassword2}
                 secureTextEntry
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -169,7 +223,7 @@ export default function SignupScreen() {
             {/* Create Account button */}
             <View style={{ marginTop: 25 }}>
               <SkyboundButton
-                onPress={handleSignup}
+                onPress={async () => await createUser(fullName, email, password, password2)}
                 width={BTN_W}
                 height={50}
                 style={{
@@ -225,7 +279,7 @@ export default function SignupScreen() {
               }}
             >
               <Image
-                source={require('@assets/images/google.png')}
+                source={require('../../assets/images/google.png')}
                 style={{ width: 22, height: 22, resizeMode: 'contain', marginRight: 10 }}
               />
               <Text
