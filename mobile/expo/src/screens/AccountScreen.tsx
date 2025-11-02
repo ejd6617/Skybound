@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Image,
   Pressable,
@@ -22,6 +22,7 @@ import type { RootStackParamList } from '../nav/RootNavigator';
 //firebase imports
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
+import LoadingScreen from './LoadingScreen';
 
 export default function AccountScreen() {
   const colors = useColors();
@@ -29,6 +30,7 @@ export default function AccountScreen() {
   const isDark = colors.background !== '#FFFFFF';
   const insets = useSafeAreaInsets();
   const user = auth.currentUser;
+  const [isLoading, setIsLoading] = useState(false);
 
 
   const pressableStyle = ({ pressed }: { pressed: boolean }) => [
@@ -71,6 +73,10 @@ export default function AccountScreen() {
       <Ionicons name="chevron-forward" size={20} color={colors.icon} />
     </Pressable>
   );
+
+  if (isLoading) {
+        return <LoadingScreen />;
+      }
 
   return (
     <SafeAreaView
@@ -125,7 +131,7 @@ export default function AccountScreen() {
                   {user.displayName}
                 </SkyboundText>
                 <SkyboundText variant="primary" size={12} accessabilityLabel="User email" style={{ marginTop: 4 }}>
-                  {'damienguy@gmail.com'}
+                  {user.email}
                 </SkyboundText>
                 <Pressable onPress={() => {}} style={pressableStyle}>
                   <SkyboundText
@@ -280,7 +286,19 @@ export default function AccountScreen() {
 
             <Pressable
               accessibilityRole="button"
-              onPress={() => navigation.navigate('Login')}
+               onPress={async () => {
+                setIsLoading(true);
+                try {
+                  await signOut(auth);
+                  console.log('User Signed out successfully!');
+                  navigation.navigate('Login');
+                }
+                catch(error : any)
+                {
+                  console.error('Error Signing out: ' + error.message);
+                }
+                setIsLoading(false);
+              }}
               style={({ pressed }) => [
                 styles.signOutButton,
                 {
@@ -291,10 +309,7 @@ export default function AccountScreen() {
               ]}
             >
               <Ionicons name="log-out-outline" size={20} color="#DC2626" 
-              onPress={() => {
-                signOut(auth);
-                navigation.navigate('Login');
-              }}/>
+              />
               <SkyboundText
                 variant="primary"
                 size={16}

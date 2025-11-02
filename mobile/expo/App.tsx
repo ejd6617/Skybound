@@ -1,6 +1,7 @@
 // mobile/expo/App.tsx
 import { useFonts } from "expo-font";
 import React from "react";
+import Toast from "react-native-toast-message";
 import RootNavigator from "./src/nav/RootNavigator";
 import LoadingScreen from "./src/screens/LoadingScreen";
 
@@ -29,5 +30,11 @@ export default function App()
 
   if (!fontsLoaded) return <LoadingScreen />;
 
-  return <RootNavigator />;
+  return( 
+  <>
+    <RootNavigator />
+    <Toast/>
+  </>
+          
+  );
 }
