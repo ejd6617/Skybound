@@ -12,13 +12,15 @@
       "backgroundColor": "#2F97FF"
     },
     "ios": {
+      "bundleIdentifier": "com.skyboundTeam.skybound",
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/skybound_icon.png",
         "backgroundColor": "#0071E2"
-      }
+      },
+      "package": "com.yourname.skybound"
     },
     "web": {
       "favicon": "./assets/images/skybound_icon.png"

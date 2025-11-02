@@ -1,11 +1,12 @@
 import basicStyles from '@constants/BasicComponents';
 import { useColors } from '@constants/theme'; // to use dark/light theme
-import { useNavigation } from '@react-navigation/native';
+//react native imports
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import LoadingScreen from '@src/screens/LoadingScreen';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -16,16 +17,21 @@ import {
   View
 } from 'react-native';
 
+
+
 // Ethan UI
 import SkyboundButton from '@components/ui/SkyboundButton';
 import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
 import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
 import SkyboundText from '@components/ui/SkyboundText';
 
-// To support Login
+//Firebase imports
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { Alert } from 'react-native';
-import { auth } from '../firebase';
+import { auth } from './firebase';
+
+//toast imports
+import Toast from 'react-native-toast-message';
+
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -54,9 +60,46 @@ export default function LoginScreen() {
   const BTN_W = CARD_W - H_PADDING * 2;
   const itemHolderWidth = SCREEN_W * .9;
 
+  //resetting email and password when user renavigates to the login screen
+
+  useFocusEffect(
+    useCallback(() =>{
+      setEmail('');
+      setPassword('');
+
+    }, [])
+  );
+
+  //handling login with email
+  const handleLogin = async (email : string, password : string) => {
+    setIsLoading(true);
+    try 
+    {
+      console.log("Attempting Sign in...");
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('sign in successful!');
+      navigation.navigate('Dashboard');
+      setIsLoading(false);
+    }
+    catch(error :any)
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Error:',
+        text2: error.message,
+      });
+      setIsLoading(false);
+      return;
+    }
+
+  }
+
+  //displays loading screen
   if (isLoading) {
     return <LoadingScreen />;
   }
+
+
 
   return (
     <KeyboardAvoidingView
@@ -70,6 +113,8 @@ export default function LoginScreen() {
         end={c.gradientEnd}
         style={{ flex: 1 }}
       >
+
+       
         <View
           style={{
             flexGrow: 1,
@@ -84,10 +129,14 @@ export default function LoginScreen() {
             style={{ width: 250, height: 70, resizeMode: 'contain', marginTop:25, marginBottom: 10 }}
           />
 
+       
+
           {/* Subtitle */}
           <SkyboundText variant="primary" accessabilityLabel="Skybound: Your Journey Starts Here" style={{marginBottom: 33}}> 
             Your Journey Starts Here
           </SkyboundText>
+
+             
 
           {/* Card / holder */}
           <SkyboundItemHolder style={{ alignContent: 'flex-start', gap: 10, backgroundColor: c.card }} width={itemHolderWidth}>
@@ -108,7 +157,7 @@ export default function LoginScreen() {
               width={BTN_W}
               height={45}
               value={email}
-              onChangeText={setEmail}
+              onChange={setEmail}
               autoCapitalize="none"
               keyboardType="email-address"
             />
@@ -121,7 +170,7 @@ export default function LoginScreen() {
                 width={BTN_W}
                 height={45}
                 value={password}
-                onChangeText={setPassword}
+                onChange={setPassword}
                 secureTextEntry
                 textColor={c.text}
                 placeholderColor={c.subText}
@@ -131,8 +180,7 @@ export default function LoginScreen() {
             {/* Login button */}
             <View style={{ marginTop: 25 }}>
               <SkyboundButton
-                // onPress={handleLogin}
-                onPress={() => navigation.navigate('Dashboard')}
+                onPress={async () => await handleLogin(email, password)}
                 width={BTN_W}
                 height={50}
                 style={{

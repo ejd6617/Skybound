@@ -1,7 +1,8 @@
+//react native exports
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -14,11 +15,16 @@ import {
 } from 'react-native';
 
 
-//firebase imports
-import { createUserWithEmailAndPassword } from "firebase/auth";
 
+//firebase and googe imports for registration
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, updateProfile } from "firebase/auth";
 import { auth } from '../firebase';
 
+
+
+//color scheme and root navigator imports
 import { useColors } from '../../constants/theme';
 import type { RootStackParamList } from '../nav/RootNavigator';
 
@@ -31,6 +37,12 @@ import SkyboundText from '../../components/ui/SkyboundText';
 //Toast messages
 import Toast from 'react-native-toast-message';
 
+//Loading Screen Import
+import LoadingScreen from './LoadingScreen';
+
+//window for completing auth sessions with google
+WebBrowser.maybeCompleteAuthSession();
+
 export default function SignupScreen() {
   //account creation fields
   const [fullName, setFullName]   = useState('');
@@ -38,8 +50,9 @@ export default function SignupScreen() {
   const [password, setPassword]   = useState('');
   const [password2, setPassword2] = useState('');
   const [signUpError, setSignUpError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-
+ 
   //navigation and color theme
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const c = useColors();
@@ -51,8 +64,12 @@ export default function SignupScreen() {
   const BTN_W = CARD_W - H_PADDING * 2;
   const itemHolderWidth = SCREEN_W * 0.9;
 
-  const createUser = async (name : string, email : string, password : string, password2) =>
+  // ======= HANDLING SIGN IN WITH EMAIL AND PASSWORD =======
+
+  const registerUserWithEmail = async (name : string, email : string, password : string, password2) =>
   {
+    //disable the register button
+    setIsLoading(true);
     //check if email is in proper format
     if(!isVaildEmail(email))
     {
@@ -60,6 +77,8 @@ export default function SignupScreen() {
       type:'error',
       text1: 'Error: Email incorrect',
       text2: 'help' });
+      //renable the register button
+      setIsLoading(false);
       return;
     }
     //check if passwords match
@@ -70,6 +89,7 @@ export default function SignupScreen() {
         text1: 'Error:',
         text2: 'Passwords do not match'
       });
+      setIsLoading(false);
       return;
     }
     
@@ -81,14 +101,17 @@ export default function SignupScreen() {
         text1: 'Error:',
         text2: 'Passwords must be 7+ characters long'
       });
+      setIsLoading(false);
       return;
     }
 
     //send data to auth
     try {
-      await handleRegister(email, password);
+      await handleRegisterWithEmail(email, password, name);
       //if succeeded, navigate to dashboard
       navigation.navigate('Dashboard');
+      //renable the register button
+      setIsLoading(false);
     }catch(error : any)
     { 
       setSignUpError(error.message);
@@ -97,6 +120,8 @@ export default function SignupScreen() {
         text1: 'Error:',
         text2: signUpError
       })
+      //renable the register button
+      setIsLoading(false);
     }
   }
 
@@ -107,11 +132,58 @@ export default function SignupScreen() {
 
   }
 
-  const handleRegister = async (email : string, password : string) =>
+  const handleRegisterWithEmail = async (email : string, password : string, name : string) =>
   {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+    const user = userCredential.user;
+
+    updateProfile(user, {
+      displayName: name
+    })
     console.log("User with email" + email + " Registered!")
   }
+
+
+  // ======= HANDLING SIGN IN WITH GOOGLE =======
+
+  //for now, this doesnt work. The request sends fine, Google just rejects it because it doesnt recognize the expo go container. 
+
+  //Setting up Google Auth request
+      const [request, response, promptAsync] = Google.useAuthRequest({
+        //this key was generated from a google clould project
+        iosClientId: '367556706415-3ni93vpkp7c6hfsl72po1gf6lfle01up.apps.googleusercontent.com',
+        webClientId: '367556706415-eqnunq32cebub258ogudj9s0h23b8d6v.apps.googleusercontent.com',
+    } );
+
+  //watch for changes in response
+
+  useEffect(() => {
+    //if response was successful
+    if(response?.type === 'success')
+    {
+      const { idToken } = response.params;
+
+      //convert the Google crediantial to a Firebase credential
+      const credential = GoogleAuthProvider.credential(idToken)
+
+      //Sign in with Firebase using crediential 
+      signInWithCredential(auth, credential)
+      .then(userCredential => {
+          console.log('Google sign in successful: ', userCredential.user.email);
+          navigation.navigate('Dashboard');
+      })
+      .catch(error => {
+          console.error("Failed sign in with Google: ", error.message);
+      });
+    }
+  }, [response]) //runs automatically when response changes
+
+
+
+
+  if (isLoading) {
+      return <LoadingScreen />;
+    }
 
   return (
     <KeyboardAvoidingView
@@ -223,7 +295,7 @@ export default function SignupScreen() {
             {/* Create Account button */}
             <View style={{ marginTop: 25 }}>
               <SkyboundButton
-                onPress={async () => await createUser(fullName, email, password, password2)}
+                onPress={async () => await registerUserWithEmail(fullName, email, password, password2)}
                 width={BTN_W}
                 height={50}
                 style={{
@@ -234,6 +306,7 @@ export default function SignupScreen() {
                 }}
                 textVariant="forceWhite"
                 textSize={15}
+                diasabled = {isLoading}
               >
                 Create account
               </SkyboundButton>
@@ -277,6 +350,10 @@ export default function SignupScreen() {
                 paddingVertical: 12,
                 paddingHorizontal: 50,
               }}
+              onPress={async () => 
+                { setIsLoading(true);
+                  await promptAsync();
+                  setIsLoading(false);}}
             >
               <Image
                 source={require('../../assets/images/google.png')}

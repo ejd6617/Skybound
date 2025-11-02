@@ -1,9 +1,9 @@
 // mobile/expo/App.tsx
+import RootNavigator from "@src/nav/RootNavigator";
+import LoadingScreen from "@src/screens/LoadingScreen";
 import { useFonts } from "expo-font";
 import React from "react";
-import "./src/firebase";
-import RootNavigator from "./src/nav/RootNavigator";
-import LoadingScreen from "./src/screens/LoadingScreen";
+import Toast from "react-native-toast-message";
 
 export default function App()
 {
@@ -30,5 +30,11 @@ export default function App()
 
   if (!fontsLoaded) return <LoadingScreen />;
 
-  return <RootNavigator />;
+  return( 
+  <>
+    <RootNavigator />
+    <Toast/>
+  </>
+          
+  );
 }
