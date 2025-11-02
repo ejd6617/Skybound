@@ -4,14 +4,14 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { auth } from "@src/firebase";
 import * as React from "react";
 
-import AccountScreen from "../screens/AccountScreen";
-import ComponentTestScreen from "../screens/ComponentTestScreen";
-import DashboardScreen from "../screens/DashboardScreen";
-import FilterScreen from "../screens/FilterScreen";
-import FlightResultsScreen from "../screens/FlightResultsScreen";
-import FlightSearchScreen from "../screens/FlightSearchScreen";
-import LoginScreen from "../screens/LoginScreen";
-import SignupScreen from "../screens/SignupScreen";
+import AccountScreen from "@src/screens/AccountScreen";
+import ComponentTestScreen from "@src/screens/ComponentTestScreen";
+import DashboardScreen from "@src/screens/DashboardScreen";
+import FilterScreen from "@src/screens/FilterScreen";
+import FlightResultsScreen from "@src/screens/FlightResultsScreen";
+import FlightSearchScreen from "@src/screens/FlightSearchScreen";
+import LoginScreen from "@src/screens/LoginScreen";
+import SignupScreen from "@src/screens/SignupScreen";
 
 // Login listener
 import { onAuthStateChanged } from 'firebase/auth';

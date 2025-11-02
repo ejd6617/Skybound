@@ -26,8 +26,8 @@ import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
 import SkyboundText from '@components/ui/SkyboundText';
 
 //Firebase imports
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from './firebase';
+//import { auth } from '@src/firebase';
+//import { signInWithEmailAndPassword } from 'firebase/auth';
 
 //toast imports
 import Toast from 'react-native-toast-message';
@@ -39,19 +39,6 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const c = useColors(); // current theme (light/dark)
-
-  async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('Error', 'Please enter email and password.');
-      return;
-    }
-    try {
-      await signInWithEmailAndPassword(auth, email.trim(), password);
-      navigation.navigate('Dashboard');
-    } catch (error: any) {
-      Alert.alert('Login failed', error.message);
-    }
-  }
 
   // width for SkyboundButton
   const { width: SCREEN_W } = Dimensions.get("window");
@@ -75,9 +62,14 @@ export default function LoginScreen() {
     setIsLoading(true);
     try 
     {
+      // TEMPORARY: Bypass login requirements
+      /*
       console.log("Attempting Sign in...");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('sign in successful!');
+      navigation.navigate('Dashboard');
+      setIsLoading(false);
+      */
       navigation.navigate('Dashboard');
       setIsLoading(false);
     }
