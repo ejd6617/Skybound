@@ -25,8 +25,8 @@ export default function DashboardScreen() {
   const fetchData = (async () => {
     const endpoint: string = "searchFlightsRoundTrip";
     const params: RoundTripQueryParams = {
-      originAirport: 'LAX',
-      destinationAirport: 'JFK',
+      originAirportIATA: 'LAX',
+      destinationAirportIATA: 'JFK',
       startDate: new Date('2026-01-10'),
       endDate: new Date('2026-01-17'),
     };

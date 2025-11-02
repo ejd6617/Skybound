@@ -1,3 +1,4 @@
+import { Airport, FlightLeg } from '@/skyboundTypes/SkyboundAPI';
 import AccountIcon from '@assets/images/AccountIcon.svg';
 import BellIcon from '@assets/images/BellIcon.svg';
 import HamburgerIcon from '@assets/images/HamburgerIcon.svg';
@@ -20,20 +21,6 @@ import React, { useEffect, useState } from "react";
 import { Dimensions, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 
-interface Airport {
-  iata: string;
-  city: string;
-  name: string;
-  country: string;
-}
-
-interface FlightLeg {
-  from: string;
-  to: string;
-  date: Date | null;
-  fromAirport?: Airport;
-  toAirport?: Airport;
-}
 
 interface ValidationErrors {
   from?: string;
@@ -245,31 +232,39 @@ export default function FlightSearchScreen() {
     setIsLoading(true);
 
     try {
-      const endpoint = tripType === 'one-way' ? 'searchFlightsOneWay' :
-                      tripType === 'round-trip' ? 'searchFlightsRoundTrip' :
-                      'searchFlightsMultiCity';
+      const endpoint =
+        (tripType === 'one-way') ? 'searchFlightsOneWay' :
+        (tripType === 'round-trip') ? 'searchFlightsRoundTrip' :
+        'searchFlightsMultiCity';
       
       const url = `${API_URL}/api/${endpoint}/`;
       console.log(url);
 
-      const jsonBody = tripType === 'multi-city'
-        ? {
-            legs: multiCityLegs.map(leg => ({
-              originAirport: leg.fromAirport?.iata,
-              destinationAirport: leg.toAirport?.iata,
-              date: leg.date?.toISOString().split('T')[0],
-            })),
-            flexibleDates,
-            flexibleAirports,
-          }
-        : {
-            originAirport: fromAirport?.iata,
-            destinationAirport: toAirport?.iata,
-            startDate: departureDate?.toISOString().split('T')[0],
-            endDate: tripType === 'round-trip' ? returnDate?.toISOString().split('T')[0] : undefined,
-            flexibleDates,
-            flexibleAirports,
-          };
+      const jsonBody =
+        (tripType === 'one-way') ? {
+          originAirport: fromAirport?.iata,
+          destinationAirport: toAirport?.iata,
+          date: departureDate?.toISOString().split('T')[0],
+          flexibleDates,
+          flexibleAirports,
+        } :
+        (tripType === 'round-trip') ? {
+          originAirport: fromAirport?.iata,
+          destinationAirport: toAirport?.iata,
+          startDate: departureDate?.toISOString().split('T')[0],
+          endDate: returnDate?.toISOString().split('T')[0],
+          flexibleDates,
+          flexibleAirports,
+        } :
+        {
+          legs: multiCityLegs.map(leg => ({
+            originAirport: leg.fromAirport?.iata,
+            destinationAirport: leg.toAirport?.iata,
+            date: leg.date?.toISOString().split('T')[0],
+          })),
+          flexibleDates,
+          flexibleAirports,
+        };
 
       console.log(jsonBody);
 

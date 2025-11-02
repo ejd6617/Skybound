@@ -1,4 +1,4 @@
-import { Flight, FlightSegment } from "@skyboundTypes/SkyboundAPI";
+import { Flight, FlightLeg } from "@skyboundTypes/SkyboundAPI";
 import puppeteer, { Browser, Page } from 'puppeteer';
 export type FlightQueryType = "roundTrip" | "oneWay" | "multiCity";
 
@@ -316,14 +316,14 @@ function parseOutputRow(raw: string[], roundTrip: boolean): Flight {
 
   const duration1 = parseDuration(durationParts[0]);
 
-  const outbound: FlightSegment = {
-    sourceCode: from1,
-    destCode: to1,
-    departureTime: makeDate(dep1),
-    duration: duration1
+  const outbound: FlightLeg = {
+    from: from1,
+    to: to1,
+    date: makeDate(dep1),
+    fromAirport: duration1
   };
 
-  let returnSection: FlightSegment | undefined = undefined;
+  let returnSection: FlightLeg | undefined = undefined;
 
   if (roundTrip) {
     const [from2, to2] = routeParts[1] ? parseRoute(routeParts[1]) : ["", ""];
@@ -338,16 +338,16 @@ function parseOutputRow(raw: string[], roundTrip: boolean): Flight {
       : new Date(year, month, day + 1); // fallback: next day
 
     returnSection = {
-      sourceCode: from2,
-      destCode: to2,
-      departureTime: makeDate(dep2, returnDate),
-      duration: duration2
+      from: from2,
+      to: to2,
+      date: makeDate(dep2, returnDate),
+      fromAirport: duration2
     };
   }
 
   return {
     price,
-    airlineName: airline,
+    airline: airline,
     outbound,
     ...(returnSection && { return: returnSection })
   };

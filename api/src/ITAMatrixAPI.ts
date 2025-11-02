@@ -5,16 +5,16 @@ import SkyboundAPI, { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTrip
 export default class ITAMatrixAPI implements SkyboundAPI {
   async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]> {
     return await runQuery("roundTrip", {
-      originAirport: params.originAirport,
-      destinationAirport: params.destinationAirport,
+      originAirport: params.originAirportIATA,
+      destinationAirport: params.destinationAirportIATA,
       startDate: params.startDate,
       endDate: params.endDate,
     });
   }
   async searchFlightsOneWay(params: OneWayQueryParams): Promise<Flight[]> {
     return await runQuery("oneWay", {
-      originAirport: params.originAirport,
-      destinationAirport: params.destinationAirport,
+      originAirport: params.originAirportIATA,
+      destinationAirport: params.destinationAirportIATA,
       date: params.date,
     });
   }

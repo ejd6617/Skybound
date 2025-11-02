@@ -1,4 +1,4 @@
-import SkyboundAPI, { Flight, FlightSegment, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
+import SkyboundAPI, { Flight, FlightLeg, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import * as dotenv from 'dotenv';
 const Amadeus = require('amadeus');
 
@@ -58,13 +58,13 @@ export default class AmadeusAPI implements SkyboundAPI {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
   
-  private parseSegment(segment: AmadeusFlightSegment): FlightSegment {
+  private parseSegment(segment: AmadeusFlightSegment): FlightLeg {
     return {
-      sourceCode: segment.departure.iataCode,
-      destCode: segment.arrival.iataCode,
-      departureTime: new Date(segment.departure.at),
+      from: segment.departure.iataCode,
+      to: segment.arrival.iataCode,
+      date: new Date(segment.departure.at),
       arrivalTime: new Date(segment.arrival.at),
-      duration: this.parseISODuration(segment.duration),
+      fromAirport: this.parseISODuration(segment.duration),
     }
   }
 
@@ -80,8 +80,8 @@ export default class AmadeusAPI implements SkyboundAPI {
     // Maps IATA airline codes to human-readable airline names
     const carriersDict: {[airlineCodeIATA: string]: string} = json.result.dictionaries.carriers;
     return json.data.map((offer: any): Flight => {
-      const outboundSegment: FlightSegment = this.parseSegment(offer.itineraries[0].segments[0]);
-      let returnSegment: FlightSegment | undefined = undefined;
+      const outboundSegment: FlightLeg = this.parseSegment(offer.itineraries[0].segments[0]);
+      let returnSegment: FlightLeg | undefined = undefined;
 
       if (offer.itineraries.length > 1) {
         returnSegment = this.parseSegment(offer.itineraries[1].segments[0]);
@@ -89,7 +89,7 @@ export default class AmadeusAPI implements SkyboundAPI {
 
       const flight: Flight = {
         price: parseFloat(offer.price.grandTotal),
-        airlineName: carriersDict[offer.validatingAirlineCodes[0]],
+        airline: carriersDict[offer.validatingAirlineCodes[0]],
         outbound: outboundSegment,
         return: returnSegment,
       };
@@ -100,8 +100,8 @@ export default class AmadeusAPI implements SkyboundAPI {
 
   async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]> {
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.get({
-      originLocationCode: params.originAirport,
-      destinationLocationCode: params.destinationAirport,
+      originLocationCode: params.originAirportIATA,
+      destinationLocationCode: params.destinationAirportIATA,
       departureDate: this.toLocalISOString(new Date(params.startDate)),
       returnDate: this.toLocalISOString(new Date(params.endDate)),
       adults: 1,
@@ -117,8 +117,8 @@ export default class AmadeusAPI implements SkyboundAPI {
 
   async searchFlightsOneWay(params: OneWayQueryParams): Promise<Flight[]> {
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.get({
-      originLocationCode: params.originAirport,
-      destinationLocationCode: params.destinationAirport,
+      originLocationCode: params.originAirportIATA,
+      destinationLocationCode: params.destinationAirportIATA,
       departureDate: this.toLocalISOString(new Date(params.date)),
       adults: 1,
       currencyCode: 'USD',

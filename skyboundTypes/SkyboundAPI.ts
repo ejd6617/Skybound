@@ -1,44 +1,55 @@
 export interface Params {};
 
-export interface RoundTripQueryParams extends Params {
-  originAirport: string, // 3 Letter IATA code
-  destinationAirport: string, // 3 Letter IATA code
-  startDate: Date, // Date of departure
-  endDate: Date, // Date of return
+export interface OneWayQueryParams extends Params {
+  originAirportIATA: string, // 3 Letter IATA code
+  destinationAirportIATA: string, // 3 Letter IATA code
+  flexibleAirports: boolean, // Whether or not to search multiple nearby airports
+  flexibleDates: boolean, // Whether or not to search +/- 3 days from specified
+  date: Date, // Date of departure
 }
 
-export interface OneWayQueryParams extends Params {
-  originAirport: string,
-  destinationAirport: string,
-  date: Date,
+export interface RoundTripQueryParams extends Params {
+  originAirportIATA: string,
+  destinationAirportIATA: string,
+  flexibleAirports: boolean,
+  flexibleDates: boolean,
+  startDate: Date,
+  endDate: Date,
 }
 
 export interface MultiCityQueryParams extends Params {
-  layovers: [
-    {
-      originAirport: string,
-      destinationAirport: string,
-      startDate: Date,
-      endDate: Date,
-    }
-  ]
+  flexibleAirports: boolean,
+  flexibleDates: boolean,
+  layovers: FlightLeg[],
 }
 
 // Represents the flight to/from destination, but not both
-export interface FlightSegment {
-  sourceCode: string, // Origin airport
-  destCode: string, // Destination airport
-  departureTime: Date, // Specific time, not just a date
-  arrivalTime: Date, // Same as above, but for arrival
-  duration: number, // Duration of flight in minutes
+export interface FlightLeg {
+  from: string, // Origin airport
+  to: string, // Destination airport
+  date: Date | null, // Specific time, not just a date
+  fromAirport?: Airport, // Duration of flight in minutes
+  toAirport?: Airport, // Duration of flight in minutes
+}
+
+export interface Airline {
+  iata: string,
+  name: string,
+}
+
+export interface Airport {
+  iata: string;
+  city: string;
+  name: string;
+  country: string;
 }
 
 // Represents a full flight ticket, may be round trip
 export interface Flight {
   price: number,
-  airlineName: string,
-  outbound: FlightSegment,
-  return?: FlightSegment, // Optional, may not be set for one way flights
+  airline: string,
+  outbound: FlightLeg[],
+  return?: FlightLeg[], // Optional, may not be set for one way flights
 }
 
 export default interface SkyboundAPI {
