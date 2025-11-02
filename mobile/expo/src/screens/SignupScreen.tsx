@@ -153,8 +153,7 @@ export default function SignupScreen() {
         //this key was generated from a google clould project
         iosClientId: '367556706415-3ni93vpkp7c6hfsl72po1gf6lfle01up.apps.googleusercontent.com',
         webClientId: '367556706415-eqnunq32cebub258ogudj9s0h23b8d6v.apps.googleusercontent.com',
-        useProxy: true;
-    } as Partial<Google.GoogleAuthRequestConfig>);
+    } );
 
   //watch for changes in response
 
