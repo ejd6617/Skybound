@@ -1,3 +1,4 @@
+//react imports
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -10,17 +11,25 @@ import {
   StyleSheet,
   View
 } from 'react-native';
+
+//Components and navigator imports
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import SkyboundNavBar from '../../components/ui/SkyboundNavBar';
 import SkyboundText from '../../components/ui/SkyboundText';
 import { useColors } from '../../constants/theme';
 import type { RootStackParamList } from '../nav/RootNavigator';
 
+//firebase imports
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+
 export default function AccountScreen() {
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isDark = colors.background !== '#FFFFFF';
   const insets = useSafeAreaInsets();
+  const user = auth.currentUser;
+
 
   const pressableStyle = ({ pressed }: { pressed: boolean }) => [
     { opacity: pressed ? 0.7 : 1 },
@@ -113,7 +122,7 @@ export default function AccountScreen() {
 
               <View style={styles.userInfoText}>
                 <SkyboundText variant="primaryBold" size={20} accessabilityLabel="User name">
-                  Damien Guy
+                  {user.displayName}
                 </SkyboundText>
                 <SkyboundText variant="primary" size={12} accessabilityLabel="User email" style={{ marginTop: 4 }}>
                   {'damienguy@gmail.com'}
@@ -281,12 +290,17 @@ export default function AccountScreen() {
                 { opacity: pressed ? 0.85 : 1 },
               ]}
             >
-              <Ionicons name="log-out-outline" size={20} color="#DC2626" />
+              <Ionicons name="log-out-outline" size={20} color="#DC2626" 
+              onPress={() => {
+                signOut(auth);
+                navigation.navigate('Login');
+              }}/>
               <SkyboundText
                 variant="primary"
                 size={16}
                 accessabilityLabel="Sign Out"
                 style={{ color: '#DC2626', marginLeft: 8 }}
+
               >
                 Sign Out
               </SkyboundText>

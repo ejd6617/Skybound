@@ -19,7 +19,7 @@ import {
 //firebase and googe imports for registration
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
-import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, updateProfile } from "firebase/auth";
 import { auth } from '../firebase';
 
 
@@ -107,7 +107,7 @@ export default function SignupScreen() {
 
     //send data to auth
     try {
-      await handleRegisterWithEmail(email, password);
+      await handleRegisterWithEmail(email, password, name);
       //if succeeded, navigate to dashboard
       navigation.navigate('Dashboard');
       //renable the register button
@@ -132,21 +132,29 @@ export default function SignupScreen() {
 
   }
 
-  const handleRegisterWithEmail = async (email : string, password : string) =>
+  const handleRegisterWithEmail = async (email : string, password : string, name : string) =>
   {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+    const user = userCredential.user;
+
+    updateProfile(user, {
+      displayName: name
+    })
     console.log("User with email" + email + " Registered!")
   }
 
 
   // ======= HANDLING SIGN IN WITH GOOGLE =======
 
+  //for now, this doesnt work. The request sends fine, Google just rejects it because it doesnt recognize the expo go container. 
+
   //Setting up Google Auth request
-   const [request, response, promptAsync] = Google.useAuthRequest({
-    //this key was generated from a google clould project
-    iosClientId: '367556706415-3ni93vpkp7c6hfsl72po1gf6lfle01up.apps.googleusercontent.com',
-    webClientId: '367556706415-eqnunq32cebub258ogudj9s0h23b8d6v.apps.googleusercontent.com',
-  });
+      const [request, response, promptAsync] = Google.useAuthRequest({
+        //this key was generated from a google clould project
+        iosClientId: '367556706415-3ni93vpkp7c6hfsl72po1gf6lfle01up.apps.googleusercontent.com',
+        webClientId: '367556706415-eqnunq32cebub258ogudj9s0h23b8d6v.apps.googleusercontent.com',
+        useProxy: true;
+    } as Partial<Google.GoogleAuthRequestConfig>);
 
   //watch for changes in response
 
