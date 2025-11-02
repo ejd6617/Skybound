@@ -4,7 +4,7 @@ import {
   getAuth,
   getReactNativePersistence,
   initializeAuth,
-  type Auth,
+  type Auth
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
