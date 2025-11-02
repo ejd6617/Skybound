@@ -1,4 +1,4 @@
-import SkyboundAPI, { Flight, FlightLeg, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
+import SkyboundAPI, { Airline, Flight, FlightLeg, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import * as dotenv from 'dotenv';
 const Amadeus = require('amadeus');
 
@@ -8,7 +8,7 @@ export interface AmadeusResponse {
   data: any;
 }
 
-export interface AmadeusFlightSegment {
+export interface AmadeusFlightLeg {
   duration: string,
   departure: {
     iataCode: string,
@@ -58,15 +58,17 @@ export default class AmadeusAPI implements SkyboundAPI {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
   
-  private parseSegment(segment: AmadeusFlightSegment): FlightLeg {
+  private parseLeg(leg: AmadeusFlightLeg): FlightLeg {
     return {
-      from: segment.departure.iataCode,
-      to: segment.arrival.iataCode,
-      date: new Date(segment.departure.at),
-      arrivalTime: new Date(segment.arrival.at),
-      fromAirport: this.parseISODuration(segment.duration),
+      from: leg.departure.iataCode,
+      to: leg.arrival.iataCode,
+      date: new Date(leg.departure.at),
+      //fromAirportIATA: this.parseISODuration(leg.duration),
+      //arrivalTime: new Date(leg.arrival.at),
     }
   }
+  
+
 
   private parseFlights(json: any): Flight[] {
     if (!json) {
@@ -77,21 +79,32 @@ export default class AmadeusAPI implements SkyboundAPI {
       throw new Error("Error parsing flights from Amadeus API response: json.data is not an array");
     }
 
-    // Maps IATA airline codes to human-readable airline names
+    // Maps IATA airline codes to human-friendly airline names
     const carriersDict: {[airlineCodeIATA: string]: string} = json.result.dictionaries.carriers;
+
     return json.data.map((offer: any): Flight => {
-      const outboundSegment: FlightLeg = this.parseSegment(offer.itineraries[0].segments[0]);
-      let returnSegment: FlightLeg | undefined = undefined;
+      // Determine if this is a one way flight (if we expect a return or not)
+      const oneWay: boolean = (offer.itineraries.length > 1);
 
-      if (offer.itineraries.length > 1) {
-        returnSegment = this.parseSegment(offer.itineraries[1].segments[0]);
-      }
+      // Build an airline object with an iata code and human-friendly name
+      const iata = offer.validatingAirlineCodes[0];
+      const airline: Airline = {
+        iata: iata,
+        name: carriersDict[iata],
+      };
 
-      const flight: Flight = {
+      // Flight has no  return if one way
+      const flight: Flight = (oneWay)
+      ? {
         price: parseFloat(offer.price.grandTotal),
-        airline: carriersDict[offer.validatingAirlineCodes[0]],
-        outbound: outboundSegment,
-        return: returnSegment,
+        airline: airline,
+        outbound: offer.itineraries[0].map(this.parseLeg),
+      }
+      : {
+        price: parseFloat(offer.price.grandTotal),
+        airline: airline,
+        outbound: offer.itineraries[0].map(this.parseLeg),
+        return: offer.itineraries[1].map(this.parseLeg),
       };
 
       return flight;

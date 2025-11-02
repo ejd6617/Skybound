@@ -28,8 +28,6 @@ export interface FlightLeg {
   from: string, // Origin airport
   to: string, // Destination airport
   date: Date | null, // Specific time, not just a date
-  fromAirport?: Airport, // Duration of flight in minutes
-  toAirport?: Airport, // Duration of flight in minutes
 }
 
 export interface Airline {
@@ -47,7 +45,7 @@ export interface Airport {
 // Represents a full flight ticket, may be round trip
 export interface Flight {
   price: number,
-  airline: string,
+  airline: Airline,
   outbound: FlightLeg[],
   return?: FlightLeg[], // Optional, may not be set for one way flights
 }

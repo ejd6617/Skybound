@@ -320,7 +320,7 @@ function parseOutputRow(raw: string[], roundTrip: boolean): Flight {
     from: from1,
     to: to1,
     date: makeDate(dep1),
-    fromAirport: duration1
+    fromAirportIATA: duration1
   };
 
   let returnSection: FlightLeg | undefined = undefined;
@@ -341,7 +341,7 @@ function parseOutputRow(raw: string[], roundTrip: boolean): Flight {
       from: from2,
       to: to2,
       date: makeDate(dep2, returnDate),
-      fromAirport: duration2
+      fromAirportIATA: duration2
     };
   }
 

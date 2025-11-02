@@ -92,7 +92,7 @@ export default function FlightSearchScreen() {
         from: lastLeg.to,
         to: '',
         date: null,
-        fromAirport: lastLeg.toAirport,
+        fromAirportIATA: lastLeg.toAirport,
       };
       setMultiCityLegs([...multiCityLegs, newLeg]);
     }
@@ -111,7 +111,7 @@ export default function FlightSearchScreen() {
     newLegs[index] = {
       ...newLegs[index],
       from: `${airport.city} (${airport.iata})`,
-      fromAirport: airport,
+      fromAirportIATA: airport,
     };
     setMultiCityLegs(newLegs);
   };
@@ -129,7 +129,7 @@ export default function FlightSearchScreen() {
       newLegs[index + 1] = {
         ...newLegs[index + 1],
         from: `${airport.city} (${airport.iata})`,
-        fromAirport: airport,
+        fromAirportIATA: airport,
       };
       setMultiCityLegs(newLegs);
     }
@@ -258,7 +258,7 @@ export default function FlightSearchScreen() {
         } :
         {
           legs: multiCityLegs.map(leg => ({
-            originAirport: leg.fromAirport?.iata,
+            originAirport: leg.fromAirportIATA?.iata,
             destinationAirport: leg.toAirport?.iata,
             date: leg.date?.toISOString().split('T')[0],
           })),
