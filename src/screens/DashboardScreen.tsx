@@ -27,6 +27,8 @@ export default function DashboardScreen() {
     const params: RoundTripQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
+      flexibleAirports: true,
+      flexibleDates: true,
       startDate: new Date('2026-01-10'),
       endDate: new Date('2026-01-17'),
     };
@@ -110,8 +112,8 @@ export default function DashboardScreen() {
                     airlineName={flight.airlineName}
                     sourceCode={flight.outbound.sourceCode}
                     destCode={flight.outbound.destCode}
-                    departureTime={flight.outbound.departureTime.split('T')[0]}
-                    arrivalTime={flight.outbound.arrivalTime.split('T')[0]}
+                    departureTime={flight.outbound[0].departureTime.split('T')[0]}
+                    arrivalTime={flight.outbound[flight.outbound.length-1].arrivalTime.split('T')[0]}
                     travelTime={parseDuration(flight.outbound.duration)}
                     originalPrice=""
                     newPrice={`$${flight.price}`}

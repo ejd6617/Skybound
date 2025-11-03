@@ -8,14 +8,14 @@ import type { RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    Easing,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    View
+  Animated,
+  Dimensions,
+  Easing,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View
 } from "react-native";
 
 const bgWithAlpha = (hex: string, a: number) => {

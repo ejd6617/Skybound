@@ -17,17 +17,26 @@ export interface RoundTripQueryParams extends Params {
   endDate: Date,
 }
 
+export interface QueryLeg {
+  originAirportIATA: string,
+  destinationAirportIATA: string,
+  date: Date,
+}
+
 export interface MultiCityQueryParams extends Params {
   flexibleAirports: boolean,
   flexibleDates: boolean,
-  layovers: FlightLeg[],
+  legs: QueryLeg[],
 }
 
 // Represents the flight to/from destination, but not both
 export interface FlightLeg {
-  from: string, // Origin airport
-  to: string, // Destination airport
-  date: Date | null, // Specific time, not just a date
+  from: Airport, // Origin airport
+  to: Airport, // Destination airport
+  date: Date, // Specific time, not just a date
+  departureTime: Date,
+  arrivalTime: Date,
+  duration: number, // In minutes
 }
 
 export interface Airline {
@@ -46,6 +55,8 @@ export interface Airport {
 export interface Flight {
   price: number,
   airline: Airline,
+  freeBaggage: boolean, // Does the flight include free baggage?
+  class: "ECONOMY" | "PREMIUM_ECONOMY" | "BUSINESS" | "FIRST",
   outbound: FlightLeg[],
   return?: FlightLeg[], // Optional, may not be set for one way flights
 }

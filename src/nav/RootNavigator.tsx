@@ -14,6 +14,7 @@ import LoginScreen from "@src/screens/LoginScreen";
 import SignupScreen from "@src/screens/SignupScreen";
 
 // Login listener
+import { Flight } from "@/skyboundTypes/SkyboundAPI";
 import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 
@@ -22,7 +23,7 @@ export type RootStackParamList = {
   Signup: undefined;
   Dashboard: undefined;
   ComponentTest: undefined;
-  FlightSearch: undefined;
+  FlightSearch: {searchResults: Flight[]};
   Account: undefined;
   FlightResults: {
     from?: string;

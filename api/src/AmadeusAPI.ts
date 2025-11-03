@@ -1,4 +1,4 @@
-import SkyboundAPI, { Airline, Flight, FlightLeg, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
+import SkyboundAPI, { Airline, Airport, Flight, FlightLeg, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import * as dotenv from 'dotenv';
 const Amadeus = require('amadeus');
 
@@ -6,6 +6,10 @@ const ENV_FILE = '/.env.amadeus.local';
 
 export interface AmadeusResponse {
   data: any;
+}
+
+export interface AmadeusFlightEndPoint {
+  iataCode: string;
 }
 
 export interface AmadeusFlightLeg {
@@ -41,7 +45,38 @@ export default class AmadeusAPI implements SkyboundAPI {
       clientSecret: AMADEUS_SECRET,
     });
   }
-  
+
+  private hasFreeBaggage(offer: any): boolean {
+    if (!offer) return false;
+
+    // Check traveler-level fare details (most reliable source)
+    if (Array.isArray(offer.travelerPricings)) {
+      for (const traveler of offer.travelerPricings) {
+        for (const fareDetail of traveler.fareDetailsBySegment ?? []) {
+          const included = fareDetail?.includedCheckedBags;
+          if (included && typeof included.quantity === "number" && included.quantity > 0) {
+            return true;
+          }
+        }
+      }
+    }
+
+    // Fallback: check segment-level baggage info if present
+    if (Array.isArray(offer.itineraries)) {
+      for (const itinerary of offer.itineraries) {
+        for (const segment of itinerary.segments ?? []) {
+          const included = segment?.includedCheckedBags;
+          if (included && typeof included.quantity === "number" && included.quantity > 0) {
+            return true;
+          }
+        }
+      }
+    }
+
+    // Otherwise, assume no free checked bag included
+    return false;
+  }
+
   // ISO 8601 string -> number of minutes
   private parseISODuration(duration: string): number {
     const regex = /PT(?:(\d+)H)?(?:(\d+)M)?/;
@@ -58,17 +93,25 @@ export default class AmadeusAPI implements SkyboundAPI {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
   
-  private parseLeg(leg: AmadeusFlightLeg): FlightLeg {
-    return {
-      from: leg.departure.iataCode,
-      to: leg.arrival.iataCode,
-      date: new Date(leg.departure.at),
-      //fromAirportIATA: this.parseISODuration(leg.duration),
-      //arrivalTime: new Date(leg.arrival.at),
-    }
+  private parseAirport(endpoint: AmadeusFlightEndPoint): Airport {
+      return {
+        iata: endpoint.iataCode,
+        city: "PlaceholderCity",
+        name: "PlaceholderName",
+        country: "PlaceholderCountry",
+      }
   }
   
-
+  private parseLeg(leg: AmadeusFlightLeg): FlightLeg {
+    return {
+      from: this.parseAirport(leg.departure),
+      to: this.parseAirport(leg.arrival),
+      duration: this.parseISODuration(leg.duration),
+      date: new Date(leg.departure.at),
+      departureTime: new Date(leg.departure.at),
+      arrivalTime: new Date(leg.arrival.at),
+    }
+  }
 
   private parseFlights(json: any): Flight[] {
     if (!json) {
@@ -83,8 +126,12 @@ export default class AmadeusAPI implements SkyboundAPI {
     const carriersDict: {[airlineCodeIATA: string]: string} = json.result.dictionaries.carriers;
 
     return json.data.map((offer: any): Flight => {
+      if (offer.itineraries.length == 0) {
+        throw new Error("No itinerary associated with offer in Amadeus response");
+      }
+
       // Determine if this is a one way flight (if we expect a return or not)
-      const oneWay: boolean = (offer.itineraries.length > 1);
+      const oneWay: boolean = (offer.itineraries.length == 1);
 
       // Build an airline object with an iata code and human-friendly name
       const iata = offer.validatingAirlineCodes[0];
@@ -93,18 +140,22 @@ export default class AmadeusAPI implements SkyboundAPI {
         name: carriersDict[iata],
       };
 
-      // Flight has no  return if one way
+      // Flight has no return if one way
       const flight: Flight = (oneWay)
       ? {
         price: parseFloat(offer.price.grandTotal),
         airline: airline,
-        outbound: offer.itineraries[0].map(this.parseLeg),
+        class: offer.TravelClass,
+        freeBaggage: this.hasFreeBaggage(offer),
+        outbound: offer.itineraries[0].segments.map((leg:any) => this.parseLeg(leg)),
       }
       : {
         price: parseFloat(offer.price.grandTotal),
         airline: airline,
-        outbound: offer.itineraries[0].map(this.parseLeg),
-        return: offer.itineraries[1].map(this.parseLeg),
+        class: offer.TravelClass,
+        freeBaggage: this.hasFreeBaggage(offer),
+        outbound: offer.itineraries[0].segments.map((leg:any) => this.parseLeg(leg)),
+        return: offer.itineraries[1].segments.map((leg:any) => this.parseLeg(leg)),
       };
 
       return flight;
