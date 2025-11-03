@@ -242,7 +242,6 @@ export default function FlightSearchScreen() {
     setIsLoading(true);
 
     try {
-      const baseURL = `${API_URL}/api/`;
       switch (tripType) {
 
         case 'one-way': {

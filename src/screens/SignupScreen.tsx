@@ -18,30 +18,26 @@ import {
 
 //firebase and googe imports for registration
 import * as Google from "expo-auth-session/providers/google";
-import * as WebBrowser from "expo-web-browser";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithCredential, updateProfile } from "firebase/auth";
-import { auth } from '../firebase';
 
 
 
 //color scheme and root navigator imports
-import { useColors } from '../../constants/theme';
-import type { RootStackParamList } from '../nav/RootNavigator';
+import { useColors } from '@constants/theme';
+import type { RootStackParamList } from '@src/nav/RootNavigator';
 
 // Ethan UI
-import SkyboundButton from '../../components/ui/SkyboundButton';
-import SkyboundItemHolder from '../../components/ui/SkyboundItemHolder';
-import SkyboundLabelledTextBox from '../../components/ui/SkyboundLabelledTextBox';
-import SkyboundText from '../../components/ui/SkyboundText';
+import SkyboundButton from '@components/ui/SkyboundButton';
+import SkyboundItemHolder from '@components/ui/SkyboundItemHolder';
+import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
+import SkyboundText from '@components/ui/SkyboundText';
 
-//Toast messages
+//signup functionality with Firebase
+import { auth } from "@src/firebase";
+import { setUserData } from '@src/firestoreFunctions';
+import LoadingScreen from '@src/screens/LoadingScreen';
+import { Alert } from 'react-native';
 import Toast from 'react-native-toast-message';
-
-//Loading Screen Import
-import LoadingScreen from './LoadingScreen';
-
-//window for completing auth sessions with google
-WebBrowser.maybeCompleteAuthSession();
 
 export default function SignupScreen() {
   //account creation fields
@@ -107,8 +103,16 @@ export default function SignupScreen() {
 
     //send data to auth
     try {
-      await handleRegisterWithEmail(email, password, name);
-      //if succeeded, navigate to dashboard
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      //using setUserData to store new user info into db
+      const success = await setUserData(user.uid, fullName, email);
+      if (!success) {
+        Alert.alert('Error', 'Failed to save user data.');
+        return;
+      }
+
       navigation.navigate('Dashboard');
       //renable the register button
       setIsLoading(false);
