@@ -72,7 +72,10 @@ export default function FlightSearchScreen() {
   const emptyFlightLeg = {
     from: structuredClone(emptyAirline),
     to: structuredClone(emptyAirline),
-    date: null
+    date: null,
+    departureTime: new Date(),
+    arrivalTime: new Date(),
+    duration: 0
   };
 
   const [multiCityLegs, setMultiCityLegs] = useState<FlightLeg[]>([

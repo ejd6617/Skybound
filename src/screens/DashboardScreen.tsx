@@ -112,8 +112,8 @@ export default function DashboardScreen() {
                     airlineName={flight.airlineName}
                     sourceCode={flight.outbound.sourceCode}
                     destCode={flight.outbound.destCode}
-                    departureTime={flight.outbound[0].departureTime.split('T')[0]}
-                    arrivalTime={flight.outbound[flight.outbound.length-1].arrivalTime.split('T')[0]}
+                    departureTime={flight.outbound[0].departureTime.toISOString().split("T")[0]}
+                    arrivalTime={flight.outbound[flight.outbound.length-1].arrivalTime.toISOString().split("T")[0]}
                     travelTime={parseDuration(flight.outbound.duration)}
                     originalPrice=""
                     newPrice={`$${flight.price}`}

@@ -1,3 +1,4 @@
+import { Flight, FlightLeg } from "@/skyboundTypes/SkyboundAPI";
 import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
@@ -29,7 +30,7 @@ const bgWithAlpha = (hex: string, a: number) => {
   return `rgba(${r},${g},${b},${a})`;
 };
 
-interface Flight {
+interface UIFlight {
   id: string;
   airline: string;
   airlineCode: string;
@@ -46,56 +47,71 @@ interface Flight {
   hasBaggage?: boolean;
 }
 
-// Utility function to format time
-const formatTime = (time: string) => {
-  const date = new Date(time);
+// output example: 8:30 AM
+function formatTime(date: Date) {
   return new Intl.DateTimeFormat('en-US', {
     hour: 'numeric',
     minute: 'numeric',
     hour12: true
   }).format(date);
-};
+}
+
+// output example: 10h 22m
+function formatDuration(duration: number): string {
+  const hours = Math.floor(duration / 60);
+  const minutes = duration % 60;
+  return `${hours}h ${minutes}m`;
+}
+
+// output example: 1 stop ATL
+function formatStops(legs: FlightLeg[]): string {
+  const numStops: number = legs.length;
+  return (numStops == 0) ? 'Nonstop'
+  : (numStops == 1) ? `${numStops} stop ${legs[0].from.iata}`
+  : `${numStops} stops`;
+}
 
 // Convert API flights to local flight datatype
-const convertDataToFlights = (data: any[]): Flight[] => {
-  return data.map((item, index) => {
-    const { outbound, price, airlineName } = item;
-
+function toUIFlights(data: Flight[]): UIFlight[] {
+  let flights: UIFlight[] = data.map((flight: Flight, index) => {
     // Placeholder values for missing fields
     const id = (index + 1).toString();
-    const airlineCode = 'JB'; // Placeholder airline code
     const airlineColor = '#1E40AF'; // Placeholder airline color (JetBlue)
-    const category: string = ['best', 'cheapest', 'fastest'][Math.floor(Math.random() * 3)];
-    const cabinClass = 'Economy'; // Placeholder cabin class
-    const stops = 'Nonstop'; // Placeholder stop value
-    const hasBaggage = true; // Placeholder baggage availability
 
-    // Convert duration from minutes to hours and minutes
-    const hours = Math.floor(outbound.duration / 60);
-    const minutes = outbound.duration % 60;
-    const duration = `${hours}h ${minutes}m`;
-
+    const outboundLength = flight.outbound.length
+    const firstOutbound = flight.outbound[0];
+    const lastOutbound = flight.outbound[outboundLength-1];
+    
+    const totalDuration = flight.outbound.reduce((sum, leg) => sum + leg.duration, 0);
+    
     // Return the formatted flight object
     return {
       id,
-      airline: airlineName,
-      airlineCode,
+      airline: flight.airline.name,
+      airlineCode: flight.airline.iata,
       airlineColor,
-      category,
-      price,
-      cabinClass,
-      departureTime: formatTime(outbound.departureTime),
-      arrivalTime: formatTime(outbound.arrivalTime),
-      departureCode: outbound.sourceCode,
-      arrivalCode: outbound.destCode,
-      duration,
-      stops,
-      hasBaggage
+      price: flight.price,
+      cabinClass: flight.class,
+      departureTime: formatTime(firstOutbound.departureTime),
+      arrivalTime: formatTime(lastOutbound.arrivalTime),
+      departureCode: firstOutbound.from.iata,
+      arrivalCode: lastOutbound.to.iata,
+      duration: formatDuration(totalDuration),
+      stops: formatStops(flight.outbound),
+      hasBaggage: flight.freeBaggage,
     };
   });
+  
+  // Shuffle
+  for (let i = flights.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [flights[i], flights[j]] = [flights[j], flights[i]];
+  }
+  
+  return flights;
 };
 
-const MOCK_FLIGHTS: Flight[] = [
+const MOCK_FLIGHTS: UIFlight[] = [
   {
     id: '1',
     airline: 'American Airlines',
@@ -162,11 +178,9 @@ export default function FlightResultsScreen() {
   const route = useRoute();
   const {searchResults} = route.params;
   
-  console.log(searchResults);
-
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [flights, setFlights] = useState<Flight[]>(MOCK_FLIGHTS);
+  const [flights, setFlights] = useState<UIFlight[]>(toUIFlights(searchResults));
   const [visibleCount, setVisibleCount] = useState(3);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<'recommended'|'price'|'duration'|'stops'>('recommended');
@@ -210,6 +224,10 @@ export default function FlightResultsScreen() {
         return null;
     }
   };
+  
+  const generateTitle = () => {
+    return `Outbound: ${flights[0].departureCode} to ${flights[0].arrivalCode}`
+  }
 
   const sortFlights = (criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') => {
     const sorted = [...flights].sort((a, b) => {
@@ -327,7 +345,7 @@ export default function FlightResultsScreen() {
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
           <SkyboundNavBar
-            title="Outbound: CLE - LAX"
+            title={generateTitle()}
             leftHandIcon={<Ionicons name="arrow-back" size={22} color={colors.link} />}
             leftHandIconOnPressEvent={() => navigation.goBack()}
             rightHandFirstIcon={<Ionicons name="filter" size={22} color={colors.link} />}
