@@ -230,6 +230,38 @@ export default function FlightResultsScreen() {
     return `Outbound: ${flights[0].departureCode} to ${flights[0].arrivalCode}`
   }
 
+  const generateDateRange = () => {
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+
+    const start = new Date(flights[0].departureTime).toLocaleString('en-US', options);
+    const end = new Date(flights[0].arrivalTime).toLocaleString('en-US', options);
+
+    return `${start} - ${end}`;
+  }
+  
+  
+  const generateFlightOverview = () => {
+    const sourceAirport: string = flights[0].departureCode;
+    const destAirport: string = flights[0].arrivalCode;
+    return <View style={[styles.routeInfo, { backgroundColor: 'rgba(239, 246, 255, 0.95)' }]}>
+      <View style={[styles.routePoint, { width: 96 }]}>
+        <View style={[styles.dot, { backgroundColor: colors.link }]} />
+        <SkyboundText variant="primaryBold" size={14} accessabilityLabel={sourceAirport}>{sourceAirport}</SkyboundText>
+        {/* <SkyboundText variant="secondary" size={12} accessabilityLabel="Cleveland">Cleveland</SkyboundText> */}
+      </View>
+      <View style={styles.routeCenter}>
+        <View style={[styles.routeLine, { backgroundColor: colors.link }]} />
+        <Ionicons name="airplane" size={20} color={colors.link} />
+        <SkyboundText variant="secondary" size={12} accessabilityLabel="2,048 miles">2,048 miles</SkyboundText>
+      </View>
+      <View style={[styles.routePoint, { width: 96 }]}>
+        <View style={[styles.dot, { backgroundColor: colors.link }]} />
+        <SkyboundText variant="primaryBold" size={14} accessabilityLabel={destAirport}>{destAirport}</SkyboundText>
+        {/* <SkyboundText variant="secondary" size={12} accessabilityLabel="Los Angeles">Los Angeles</SkyboundText> */}
+      </View>
+    </View>
+  };
+  
   const sortFlights = (criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') => {
     const sorted = [...flights].sort((a, b) => {
       let cmp = 0;
@@ -358,7 +390,7 @@ export default function FlightResultsScreen() {
             <SkyboundText
               variant="secondary"
               size={14}
-              accessabilityLabel="Nov 7 - Nov 12"
+              accessabilityLabel={generateDateRange()}
               style={{ textAlign: 'center' }}
             >
               Nov 7 - Nov 12
@@ -368,23 +400,7 @@ export default function FlightResultsScreen() {
 
         {/* Map Placeholder */}
         <View style={[styles.mapContainer, { backgroundColor: colors.surfaceMuted }]}>
-          <View style={[styles.routeInfo, { backgroundColor: 'rgba(239, 246, 255, 0.95)' }]}>
-            <View style={[styles.routePoint, { width: 96 }]}>
-              <View style={[styles.dot, { backgroundColor: colors.link }]} />
-              <SkyboundText variant="primaryBold" size={14} accessabilityLabel="CLE">CLE</SkyboundText>
-              <SkyboundText variant="secondary" size={12} accessabilityLabel="Cleveland">Cleveland</SkyboundText>
-            </View>
-            <View style={styles.routeCenter}>
-              <View style={[styles.routeLine, { backgroundColor: colors.link }]} />
-              <Ionicons name="airplane" size={20} color={colors.link} />
-              <SkyboundText variant="secondary" size={12} accessabilityLabel="2,048 miles">2,048 miles</SkyboundText>
-            </View>
-            <View style={[styles.routePoint, { width: 96 }]}>
-              <View style={[styles.dot, { backgroundColor: colors.link }]} />
-              <SkyboundText variant="primaryBold" size={14} accessabilityLabel="LAX">LAX</SkyboundText>
-              <SkyboundText variant="secondary" size={12} accessabilityLabel="Los Angeles">Los Angeles</SkyboundText>
-            </View>
-          </View>
+          {generateFlightOverview()}
           <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 40, marginBottom: -10 }}>
             Google Maps integration would display route here
           </SkyboundText>
