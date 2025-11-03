@@ -25,6 +25,7 @@ import SkyboundText from '../../components/ui/SkyboundText';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Alert } from 'react-native';
 import { auth } from "../firebase";
+import { setUserData } from '../firestoreFunctions';
 
 export default function SignupScreen() {
   const [fullName, setFullName]   = useState('');
@@ -56,6 +57,13 @@ export default function SignupScreen() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+
+      //using setUserData to store new user info into db
+      const success = await setUserData(user.uid, fullName, email);
+      if (!success) {
+        Alert.alert('Error', 'Failed to save user data.');
+        return;
+      }
 
       navigation.navigate('Dashboard');
 

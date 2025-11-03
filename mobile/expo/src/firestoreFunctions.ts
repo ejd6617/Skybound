@@ -1,7 +1,7 @@
 import { db } from "./firebase";
 import { doc, getDoc, setDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 
-//CRUD operations for the user data in our Firestore db
+//basic CRUD operations for the user data in our Firestore db
 const setUserData = async (userID: string, name: string, email: string): Promise<boolean> => {
     try {
       if (!userID || typeof userID !== "string") {
