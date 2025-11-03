@@ -12,7 +12,7 @@ import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
-import { skyboundRequest } from "@src/api/SkyboundUtils";
+import { reviveDates, skyboundRequest } from "@src/api/SkyboundUtils";
 import { RootStackParamList } from "@src/nav/RootNavigator";
 
 export default function DashboardScreen() {
@@ -22,6 +22,7 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true); // Is loading in new data (default true)
   const [refreshing, setRefreshing] = useState(false); // Is refreshing data (default false)
 
+  // TODO: More useful query here
   const fetchData = (async () => {
     const endpoint: string = "searchFlightsRoundTrip";
     const params: RoundTripQueryParams = {
@@ -32,7 +33,9 @@ export default function DashboardScreen() {
       startDate: new Date('2026-01-10'),
       endDate: new Date('2026-01-17'),
     };
-    setData(await skyboundRequest(endpoint, params));
+    const responseData = await skyboundRequest(endpoint, params);
+    const revivedData = reviveDates(responseData);
+    setData(revivedData);
   });
 
   useEffect(() => {
@@ -184,3 +187,7 @@ const styles = StyleSheet.create({
     borderRadius: 12 
   },
 });
+
+function reviveDate(arg0: any): React.SetStateAction<any[]> {
+  throw new Error("Function not implemented.");
+}

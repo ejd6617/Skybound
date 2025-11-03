@@ -1,3 +1,4 @@
+import { Airport, FlightLeg } from '@/skyboundTypes/SkyboundAPI';
 import { useColors } from '@constants/theme';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -5,21 +6,6 @@ import Svg, { Path } from 'react-native-svg';
 import AirportAutocomplete from './AirportAutocomplete';
 import DateSelector from './DateSelector';
 import SkyboundText from './SkyboundText';
-
-interface Airport {
-  iata: string;
-  city: string;
-  name: string;
-  country: string;
-}
-
-interface FlightLeg {
-  from: string;
-  to: string;
-  date: Date | null;
-  fromAirport?: Airport;
-  toAirport?: Airport;
-}
 
 interface MultiCityLegProps {
   leg: FlightLeg;
@@ -76,7 +62,7 @@ const MultiCityLeg: React.FC<MultiCityLegProps> = ({
 
       <AirportAutocomplete
         label="From"
-        value={leg.from}
+        value={leg.from.iata ? `${leg.from.city} (${leg.from.iata})` : ''}
         onSelect={onFromChange}
         placeholder="Departure airport"
         error={errors?.from}
@@ -84,7 +70,7 @@ const MultiCityLeg: React.FC<MultiCityLegProps> = ({
 
       <AirportAutocomplete
         label="To"
-        value={leg.to}
+        value={leg.to.iata ? `${leg.to.city} (${leg.to.iata})` : ''}
         onSelect={onToChange}
         placeholder="Arrival airport"
         error={errors?.to}

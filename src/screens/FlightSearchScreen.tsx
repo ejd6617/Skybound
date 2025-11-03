@@ -1,4 +1,4 @@
-import { Airport, Flight, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
+import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
 import AccountIcon from '@assets/images/AccountIcon.svg';
 import BellIcon from '@assets/images/BellIcon.svg';
 import HamburgerIcon from '@assets/images/HamburgerIcon.svg';
@@ -60,27 +60,26 @@ export default function FlightSearchScreen() {
   const [toAirport, setToAirport] = useState<Airport | undefined>();
   const [departureDate, setDepartureDate] = useState<Date | null>(null);
   const [returnDate, setReturnDate] = useState<Date | null>(null);
-  const [searchResults, setSearchResults] = useState<Flight[]>([]);
 
-  const emptyAirline = {
+  const createEmptyAirport = (): Airport => ({
     iata: "",
     city: "",
     name: "",
     country: ""
-  };
+  });
 
-  const emptyFlightLeg = {
-    from: structuredClone(emptyAirline),
-    to: structuredClone(emptyAirline),
+  const createEmptyFlightLeg = (): FlightLeg => ({
+    from: createEmptyAirport(),
+    to: createEmptyAirport(),
     date: null,
-    departureTime: new Date(),
-    arrivalTime: new Date(),
+    departureTime: null,
+    arrivalTime: null,
     duration: 0
-  };
+  });
 
   const [multiCityLegs, setMultiCityLegs] = useState<FlightLeg[]>([
-    structuredClone(emptyFlightLeg),
-    structuredClone(emptyFlightLeg),
+    createEmptyFlightLeg(),
+    createEmptyFlightLeg()
   ]);
 
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -88,8 +87,8 @@ export default function FlightSearchScreen() {
   useEffect(() => {
     if (tripType === 'multi-city' && multiCityLegs.length < 2) {
       setMultiCityLegs([
-        structuredClone(emptyFlightLeg),
-        structuredClone(emptyFlightLeg),
+        createEmptyFlightLeg(),
+        createEmptyFlightLeg(),
       ]);
     }
   }, [tripType]);
@@ -106,7 +105,7 @@ export default function FlightSearchScreen() {
   const handleAddLeg = () => {
     if (multiCityLegs.length < 6) {
       const lastLeg = multiCityLegs[multiCityLegs.length - 1];
-      const newLeg: FlightLeg = structuredClone(emptyFlightLeg);
+      const newLeg: FlightLeg = createEmptyFlightLeg();
       setMultiCityLegs([...multiCityLegs, newLeg]);
     }
   };
@@ -242,58 +241,55 @@ export default function FlightSearchScreen() {
     setIsLoading(true);
 
     try {
-      switch (tripType) {
-
-        case 'one-way': {
-          const endpoint = "searchFlightsOneWay"
-          const jsonBody: OneWayQueryParams = {
-            originAirportIATA: fromAirport?.iata,
-            destinationAirportIATA: toAirport?.iata,
-            date: departureDate,
-            flexibleDates,
-            flexibleAirports,
+      const searchResults = await (async () => {
+        switch (tripType) {
+          case 'one-way': {
+            const endpoint = "searchFlightsOneWay"
+            const jsonBody: OneWayQueryParams = {
+              originAirportIATA: fromAirport?.iata,
+              destinationAirportIATA: toAirport?.iata,
+              date: departureDate,
+              flexibleDates,
+              flexibleAirports,
+            }
+            return await skyboundRequest(endpoint, jsonBody);
           }
-          setSearchResults(await skyboundRequest(endpoint, jsonBody));
-          break;
-        }
 
-        case 'round-trip': {
-          const endpoint = "searchFlightsRoundTrip"
-          const jsonBody: RoundTripQueryParams = {
-            originAirportIATA: fromAirport?.iata,
-            destinationAirportIATA: toAirport?.iata,
-            startDate: departureDate,
-            endDate: returnDate,
-            flexibleDates,
-            flexibleAirports,
+          case 'round-trip': {
+            const endpoint = "searchFlightsRoundTrip"
+            const jsonBody: RoundTripQueryParams = {
+              originAirportIATA: fromAirport?.iata,
+              destinationAirportIATA: toAirport?.iata,
+              startDate: departureDate,
+              endDate: returnDate,
+              flexibleDates,
+              flexibleAirports,
+            }
+            return await skyboundRequest(endpoint, jsonBody);
           }
-          setSearchResults(await skyboundRequest(endpoint, jsonBody));
-          break;
-        }
 
-        case 'multi-city': {
-          const endpoint = "searchFlightsMultiCity"
-          const jsonBody: MultiCityQueryParams = {
-            flexibleDates,
-            flexibleAirports,
-            legs: multiCityLegs.map((leg): QueryLeg => ({
-              originAirportIATA: leg.from?.iata,
-              destinationAirportIATA: leg.to?.iata,
-              date: leg.date,
-            })), 
+          case 'multi-city': {
+            const endpoint = "searchFlightsMultiCity"
+            const jsonBody: MultiCityQueryParams = {
+              flexibleDates,
+              flexibleAirports,
+              legs: multiCityLegs.map((leg): QueryLeg => ({
+                originAirportIATA: leg.from?.iata,
+                destinationAirportIATA: leg.to?.iata,
+                date: leg.date,
+              })), 
+            }
+            return await skyboundRequest(endpoint, jsonBody);
           }
-          setSearchResults(await skyboundRequest(endpoint, jsonBody));
-          break;
-        }
-        
-        default: {
-          throw new Error(`Invalid flight search type "${tripType}"`)          
-        }
+          
+          default: {
+            throw new Error(`Invalid flight search type "${tripType}"`)          
+          }
 
-      }
+        }
+      })();
 
       setIsLoading(false);
-      console.log(searchResults);
       navigation.navigate('FlightResults', {searchResults: searchResults});
     } catch (err) {
       console.error('API call failed', err);

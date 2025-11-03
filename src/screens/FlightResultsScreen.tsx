@@ -5,6 +5,7 @@ import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { reviveDates } from "@src/api/SkyboundUtils";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from "react";
@@ -180,7 +181,7 @@ export default function FlightResultsScreen() {
   
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [flights, setFlights] = useState<UIFlight[]>(toUIFlights(searchResults));
+  const [flights, setFlights] = useState<UIFlight[]>(toUIFlights(reviveDates(searchResults)));
   const [visibleCount, setVisibleCount] = useState(3);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<'recommended'|'price'|'duration'|'stops'>('recommended');

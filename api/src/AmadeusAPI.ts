@@ -167,6 +167,9 @@ export default class AmadeusAPI implements SkyboundAPI {
       originLocationCode: params.originAirportIATA,
       destinationLocationCode: params.destinationAirportIATA,
       departureDate: this.toLocalISOString(new Date(params.startDate)),
+      ...(params.flexibleDates ? // Optional 3 day window
+        {dateTimeRange: { date: this.toLocalISOString(new Date(params.startDate)), dateWindow: 'P3D' }} : {}
+      ),
       returnDate: this.toLocalISOString(new Date(params.endDate)),
       adults: 1,
       currencyCode: 'USD',
@@ -184,6 +187,9 @@ export default class AmadeusAPI implements SkyboundAPI {
       originLocationCode: params.originAirportIATA,
       destinationLocationCode: params.destinationAirportIATA,
       departureDate: this.toLocalISOString(new Date(params.date)),
+      ...(params.flexibleDates ? // Optional 3 day window
+        {dateTimeRange: { date: this.toLocalISOString(new Date(params.date)), dateWindow: 'P3D' }} : {}
+      ),
       adults: 1,
       currencyCode: 'USD',
     });
@@ -196,6 +202,29 @@ export default class AmadeusAPI implements SkyboundAPI {
   }
 
   async searchFlightsMultiCity(params: MultiCityQueryParams): Promise<Flight[]> {
-    throw new Error("Multi flight search is not yet implemented");
+    const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
+      sources: ["GDS"],
+      travelers: [
+        {
+          id: "1",
+          travelerType: "ADULT"
+        }
+      ],
+      originDestinations: params.legs.map((leg, index) => ({
+        id: (index + 1).toString(),
+        originLocationCode: leg.originAirportIATA,
+        destinationLocationCode: leg.destinationAirportIATA,
+        departureDateTimeRange: {
+          date: this.toLocalISOString(new Date(leg.date)),
+          ...(params.flexibleDates ? { dateWindow: "P3D" } : {}), // Optional 3 day window
+        },
+      })),
+    });
+    
+    if (response == undefined) {
+      throw new Error("Error in Amadeus backend: expected response from API, got undefined");
+    }
+    
+    return this.parseFlights(response);
   }
 }

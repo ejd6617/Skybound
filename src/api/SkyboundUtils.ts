@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 
-function reviveDates<T>(data: T): T {
+export function reviveDates<T>(data: T): T {
   // ISO 8601 regex for most common date-time formats
   const isoDateRegex =
     /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
@@ -48,5 +48,5 @@ export async function skyboundRequest(endpoint: string, params: object) {
 
   const json: any = await response.json();
   console.log(JSON.stringify(json, null, 2));
-  return reviveDates(json);
+  return json;
 }
