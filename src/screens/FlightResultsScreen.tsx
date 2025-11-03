@@ -5,7 +5,7 @@ import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { reviveDates } from "@src/api/SkyboundUtils";
+import { getURL, reviveDates } from "@src/api/SkyboundUtils";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from "react";
@@ -13,6 +13,7 @@ import {
   Animated,
   Dimensions,
   Easing,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -283,9 +284,10 @@ export default function FlightResultsScreen() {
   const toggleDirection = () => setSortDirection(d => d === 'asc' ? 'desc' : 'asc');
   const arrowFor = (crit: typeof sortBy) => (sortBy === crit && sortDirection === 'desc') ? 'arrow-down' : 'arrow-up';
 
-  const FlightCard = ({ flight }: { flight: Flight }) => {
+  const FlightCard = ({ flight }: { flight: UIFlight }) => {
     const badge = getCategoryBadge(flight.category);
 
+    console.log(`${getURL()}/logos/${flight.airlineCode}.png`);
     return (
       <Pressable 
         style={[styles.flightCard, { backgroundColor: colors.card }]}
@@ -302,10 +304,15 @@ export default function FlightResultsScreen() {
         <View style={styles.cardContent}>
           <View style={styles.airlineRow}>
             <View style={styles.airlineInfo}>
-              <View style={[styles.airlineLogo, { backgroundColor: flight.airlineColor }]}>
-                <SkyboundText variant="primary" size={12} accessabilityLabel={flight.airlineCode} style={{ color: '#FFF', fontWeight: 'bold' }}>
+              <View style={{height: 25, width: 100, justifyContent: 'center', alignItems: 'flex-start' }}>
+                <Image
+                  source={{ uri: `${getURL()}/logos/${flight.airlineCode}.png` }}
+                  style={{ height: '100%', width: '100%'}}
+                  resizeMode="contain"
+                />
+                {/* <SkyboundText variant="primary" size={12} accessabilityLabel={flight.airlineCode} style={{ color: '#FFF', fontWeight: 'bold' }}>
                   {flight.airlineCode}
-                </SkyboundText>
+                </SkyboundText> */}
               </View>
               <View>
                 <SkyboundText variant="primary" size={14} accessabilityLabel={flight.airline}>

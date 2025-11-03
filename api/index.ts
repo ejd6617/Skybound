@@ -14,6 +14,8 @@ const api: SkyboundAPI = new AmadeusAPI();
 
 app.use(express.json()); // add this before any routes
 
+app.use('/api/logos', express.static('./logos')); // Logos are publicly accessible
+
 app.get('/hello', (_: Request, res: Response) => {
   res.send('Hello world!');
 });
@@ -58,24 +60,3 @@ app.post('/api/searchFlightsMultiCity', async (req: Request, res: Response) => {
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`API server is listening on port ${PORT} on all network interfaces`);
 });
-
-// const queryType: QueryType = "roundTrip"; 
-// const fieldInputs: FieldInputs = {
-//   "originAirport": "JFK",
-//   "destinationAirport": "LAX",
-//   "startDate": new Date(2026, 5, 10),
-//   "endDate": new Date(2026, 5, 20),
-//   // "numAdults": 1,
-//   // "numSeniors": 0,
-//   // "numYouths": 0,
-//   // "numChildren": 0,
-//   // "numInfantsInSeat": 0,
-//   // "numInfantsInLap": 0,
-//   // "stops": "No limit",
-//   // "extraStops": "Up to 1 extra stop",
-//   // "currency": "United States Dollar (USD)",
-//   // "salesCity": "New York",
-//   // "cabin": "Cheapest available",
-//   // "allowAirportChanges": true,
-//   // "onlyShowAvailableFlights": true,
-// };

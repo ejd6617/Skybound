@@ -29,14 +29,18 @@ export function reviveDates<T>(data: T): T {
   return data;
 }
 
-export async function skyboundRequest(endpoint: string, params: object) {
+export function getURL() {
   const API_URL = Constants.expoConfig?.extra?.API_URL;
 
   if (API_URL === undefined) {
     throw new Error('API_URL (URL for our internal API) is undefined. Requests will not work.');
   }
 
-  const response = await fetch(`${API_URL}/api/${endpoint}/`, {
+  return `${API_URL}/api`;
+}
+
+export async function skyboundRequest(endpoint: string, params: object) {
+  const response = await fetch(`${getURL()}/${endpoint}/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
