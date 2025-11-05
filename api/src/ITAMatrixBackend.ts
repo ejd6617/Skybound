@@ -1,3 +1,5 @@
+// WARNING: This code is retired (for now). We can update it later if we would like to have an option to web scrape for flight data
+
 import { Flight, FlightLeg } from "@skyboundTypes/SkyboundAPI";
 import puppeteer, { Browser, Page } from 'puppeteer';
 export type FlightQueryType = "roundTrip" | "oneWay" | "multiCity";

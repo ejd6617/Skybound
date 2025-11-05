@@ -4,15 +4,31 @@ const Amadeus = require('amadeus');
 
 const ENV_FILE = '/.env.amadeus.local';
 
+// Represents a generic response from the Amadeus API
 export interface AmadeusResponse {
   data: any;
+  result?: any;
 }
 
+// Represents a "flight endpoint" (effectively an airport)
 export interface AmadeusFlightEndPoint {
   iataCode: string;
 }
 
-export interface AmadeusFlightLeg {
+// In theory contains various information about the fare
+// Checked bags is what we care about
+interface AmadeusFareDetail {
+  includedCheckedBags?: {
+    quantity?: number;
+  };
+}
+
+interface AmadeusTravelerPricing {
+  fareDetailsBySegment?: AmadeusFareDetail[];
+}
+
+// Represents a segment (or leg) of the flight
+interface AmadeusSegment {
   duration: string,
   departure: {
     iataCode: string,
@@ -22,11 +38,28 @@ export interface AmadeusFlightLeg {
     iataCode: string,
     at: string,
   },
+
+  includedCheckedBags?: {
+    quantity?: number;
+  };
+}
+
+// Represents a possible route from an origin to destination
+// May include more than one segment/leg
+interface AmadeusItinerary {
+  segments?: AmadeusSegment[];
+}
+
+// An offer of several itineraries
+interface AmadeusOffer {
+  travelerPricings?: AmadeusTravelerPricing[];
+  itineraries?: AmadeusItinerary[];
 }
 
 export default class AmadeusAPI implements SkyboundAPI {
   private amadeus: typeof Amadeus | null = null;
   
+  // Authenticate with AmadeusAPI upon creation of new object
   constructor() {
     dotenv.config({ path: ENV_FILE });
 
@@ -46,7 +79,8 @@ export default class AmadeusAPI implements SkyboundAPI {
     });
   }
 
-  private hasFreeBaggage(offer: any): boolean {
+
+  private hasFreeBaggage(offer: AmadeusOffer): boolean {
     if (!offer) return false;
 
     // Check traveler-level fare details (most reliable source)
@@ -93,6 +127,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
   
+  // Amadeus flight endpoint -> Skybound Airport
   private parseAirport(endpoint: AmadeusFlightEndPoint): Airport {
       return {
         iata: endpoint.iataCode,
@@ -102,7 +137,8 @@ export default class AmadeusAPI implements SkyboundAPI {
       }
   }
   
-  private parseLeg(leg: AmadeusFlightLeg): FlightLeg {
+  // Amadeus segment -> Skybound FlightLeg
+  private parseLeg(leg: AmadeusSegment): FlightLeg {
     return {
       from: this.parseAirport(leg.departure),
       to: this.parseAirport(leg.arrival),
@@ -113,7 +149,8 @@ export default class AmadeusAPI implements SkyboundAPI {
     }
   }
 
-  private parseFlights(json: any): Flight[] {
+  // Amadeus flight search response -> Skybound Flights[]
+  private parseFlights(json: AmadeusResponse): Flight[] {
     if (!json) {
       throw new Error("Error parsing flights from Amadeus API response: no response json provided");
     }

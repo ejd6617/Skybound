@@ -1,3 +1,5 @@
+// WARNING: This code is retired (for now). We can update it later if we would like to have an option to web scrape for flight data
+
 import { runQuery } from "@/ITAMatrixBackend";
 import SkyboundAPI, { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 ;

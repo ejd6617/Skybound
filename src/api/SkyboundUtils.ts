@@ -1,5 +1,8 @@
 import Constants from 'expo-constants';
 
+// This module contains utility functions for interacting with our internal API
+
+// Recursively finds dates in a returned JSON and converts to actual JS Date values
 export function reviveDates<T>(data: T): T {
   // ISO 8601 regex for most common date-time formats
   const isoDateRegex =
@@ -39,6 +42,7 @@ export function getURL() {
   return `${API_URL}/api`;
 }
 
+// Make a request to the internal API
 export async function skyboundRequest(endpoint: string, params: object) {
   const response = await fetch(`${getURL()}/${endpoint}/`, {
     method: 'POST',
