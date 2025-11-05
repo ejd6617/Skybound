@@ -1,3 +1,4 @@
+import airports from "@assets/airports.json";
 import { useColors } from '@constants/theme';
 import React, { useEffect, useRef, useState } from 'react';
 import { Keyboard, LayoutChangeEvent, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -79,8 +80,8 @@ const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
     if (query.length < 2) return [];
 
     const lowerQuery = query.toLowerCase();
-
-    return MOCK_AIRPORTS.filter(airport => {
+    
+    return airports.filter(airport => {
       const iataMatch = airport.iata.toLowerCase().includes(lowerQuery);
       const cityMatch = airport.city.toLowerCase().includes(lowerQuery);
       const nameMatch = airport.name.toLowerCase().includes(lowerQuery);

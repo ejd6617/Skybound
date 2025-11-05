@@ -160,7 +160,10 @@ export default class AmadeusAPI implements SkyboundAPI {
     }
 
     // Maps IATA airline codes to human-friendly airline names
-    const carriersDict: {[airlineCodeIATA: string]: string} = json.result.dictionaries.carriers;
+    const carriersDict: { [iata: string]: string } =
+      (json as any).result?.dictionaries?.carriers ||
+      (json as any).dictionaries?.carriers ||
+      {};
 
     return json.data.map((offer: any): Flight => {
       if (offer.itineraries.length == 0) {
@@ -184,15 +187,15 @@ export default class AmadeusAPI implements SkyboundAPI {
         airline: airline,
         class: offer.TravelClass,
         freeBaggage: this.hasFreeBaggage(offer),
-        outbound: offer.itineraries[0].segments.map((leg:any) => this.parseLeg(leg)),
+        outbound: offer.itineraries[0].segments.map((leg:AmadeusSegment) => this.parseLeg(leg)),
       }
       : {
         price: parseFloat(offer.price.grandTotal),
         airline: airline,
         class: offer.TravelClass,
         freeBaggage: this.hasFreeBaggage(offer),
-        outbound: offer.itineraries[0].segments.map((leg:any) => this.parseLeg(leg)),
-        return: offer.itineraries[1].segments.map((leg:any) => this.parseLeg(leg)),
+        outbound: offer.itineraries[0].segments.map((leg:AmadeusSegment) => this.parseLeg(leg)),
+        return: offer.itineraries[1].segments.map((leg:AmadeusSegment) => this.parseLeg(leg)),
       };
 
       return flight;
