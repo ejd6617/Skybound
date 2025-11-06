@@ -28,9 +28,9 @@ FROM node:22
 
 # Install app source
 WORKDIR /app
-COPY package*.json ./
+COPY ./api/package*.json ./
 RUN npm install 
-COPY . .
+COPY ./api/. .
 EXPOSE 4000
 
 # Run as non-root user
