@@ -1,16 +1,10 @@
 import AmadeusAPI from '@/AmadeusAPI';
-import exposeServer from '@/ngrok';
 import SkyboundAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import express, { Request, Response } from 'express';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const api: SkyboundAPI = new AmadeusAPI();
-
-// Expose the local dev server
-(async () => {
-  await exposeServer("127.0.0.1", PORT); 
-})();
 
 app.use(express.json()); // add this before any routes
 

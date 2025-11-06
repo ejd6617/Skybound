@@ -2,15 +2,13 @@ services:
   api:
     build:
       context: ./
-      dockerfile: ./api/Dockerfile
+      dockerfile: ./Dockerfile
     volumes:
       - ./api:/app
       - ./skyboundTypes:/skyboundTypes
-      - .env.ngrok.local:/.env.ngrok.local
       - .env.amadeus.local:/.env.amadeus.local
     ports:
       - 4000:4000 # API
-      - 4040:4040 # ngrok
     environment:
       - PORT=4000
     command: ["npm", "start"]

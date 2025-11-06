@@ -28,9 +28,8 @@ FROM node:22
 
 # Install app source
 WORKDIR /app
-COPY package.json ./
-COPY package-lock.json ./
-RUN npm ci 
+COPY package*.json ./
+RUN npm install 
 COPY . .
 EXPOSE 4000
 

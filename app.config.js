@@ -1,10 +1,6 @@
-import * as dotenv from 'dotenv';
-const ENV_FILE = '.env.ngrok.local';
-dotenv.config({ path: ENV_FILE });
-
 export default ({ config }) => ({
   ...config,
   extra: {
-    API_URL: process.env.NGROK_URL,
+    API_URL: "http://129.80.33.141/",
   },
 });
