@@ -28,8 +28,8 @@ export default function DashboardScreen() {
     const params: RoundTripQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
-      flexibleAirports: true,
-      flexibleDates: true,
+      flexibleAirports: false,
+      flexibleDates: false,
       startDate: new Date('2026-01-10'),
       endDate: new Date('2026-01-17'),
     };
