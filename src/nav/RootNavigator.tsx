@@ -8,8 +8,14 @@ import AccountScreen from "@src/screens/AccountScreen";
 import ComponentTestScreen from "@src/screens/ComponentTestScreen";
 import DashboardScreen from "@src/screens/DashboardScreen";
 import FilterScreen from "@src/screens/FilterScreen";
-import FlightResultsScreen from "@src/screens/FlightResultsScreen";
+import FlightConfirmationScreen from "@src/screens/FlightConfirmationScreen";
+import FlightResultsScreen, {
+  FlightFilters,
+  ItineraryPayload,
+  SearchDetails,
+} from "@src/screens/FlightResultsScreen";
 import FlightSearchScreen from "@src/screens/FlightSearchScreen";
+import FlightSummaryScreen from "@src/screens/FlightSummaryScreen";
 import LoginScreen from "@src/screens/LoginScreen";
 import SignupScreen from "@src/screens/SignupScreen";
 
@@ -25,15 +31,16 @@ export type RootStackParamList = {
   ComponentTest: undefined;
   FlightSearch: {searchResults: Flight[]};
   Account: undefined;
-  FlightResults: {
-    from?: string;
-    to?: string;
-    fromCity?: string;
-    toCity?: string;
-    tripType?: 'one-way' | 'round-trip' | 'multi-city' | 'return';
-    outboundFlight?: any;
+    FlightResults: {
+    flightsByLeg?: Flight[][];
+    searchDetails?: SearchDetails;
+    legIndex?: number;
+    selections?: ItineraryPayload["flights"];
+    filters?: FlightFilters;
   } | undefined;
-  FilterScreen: undefined;
+  FlightSummary: { itinerary: ItineraryPayload };
+  FlightConfirmation: { itinerary: ItineraryPayload };
+  FilterScreen: { filters?: FlightFilters } | undefined;
 };
 
 const Stack = createNativeStackNavigator();
@@ -64,7 +71,9 @@ export default function RootNavigator(): React.JSX.Element
         <Stack.Screen name="FlightSearch"  component={FlightSearchScreen}/>
         <Stack.Screen name="Account" component={AccountScreen} />
         <Stack.Screen name="FlightResults" component={FlightResultsScreen} />
-        <Stack.Screen name="FilterScreen" component={FilterScreen} options={{presentation: 'modal'}} />
+        <Stack.Screen name="FlightSummary" component={FlightSummaryScreen} />
+        <Stack.Screen name="FlightConfirmation" component={FlightConfirmationScreen} />
+        <Stack.Screen name="FilterScreen" component={FilterScreen} options={{ presentation: 'modal' }} />
       </Stack.Navigator>
     </NavContainer>
   );
