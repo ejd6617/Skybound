@@ -15,9 +15,11 @@ import SkyboundNavBar from '@components/ui/SkyboundNavBar';
 import SkyboundText from '@components/ui/SkyboundText';
 import basicStyles from '@constants/BasicComponents';
 import { RootStackParamList } from '@src/nav/RootNavigator';
+import DisplayMap from '../../components/ui/DisplayMap'
 
 import SkyboundCalandarPicker from '@components/ui/SkyboundCalandarPicker';
 
+import InteractiveMap from '../../components/ui/InteractiveMap';
 
 
 
@@ -37,48 +39,13 @@ export default function ComponentTestScreen() {
 
     
     return(
-        <View style={[basicStyles.background, {width: "100%", height: "100%"}]}>
+        <View style={[basicStyles.background, {width: "100%", height: "100%", justifyContent: 'center', alignItems: 'center'}]}>
 
-      <StatusBar style='dark' translucent={false}></StatusBar>
-    <SkyboundNavBar leftHandIcon={<HamburgerIcon width={24} height={24}> </HamburgerIcon>}
-    leftHandIconOnPressEvent={() => navigation.navigate("Login")}
-    rightHandFirstIcon={<BellIcon width={24} height={24}></BellIcon>}
-    rightHandFirstIconOnPressEvent={() => console.log("first right hand icon pressed")}
-    rightHandSecondIcon={<AccountIcon width={24} height={24}></AccountIcon>}
-    rightHandSecondIconOnPressEvent={()=> console.log("right hand second icon pressed")}
-    title={"Nav Bar Test"}></SkyboundNavBar>
+      <InteractiveMap>
 
+      </InteractiveMap>
 
-      <SkyboundItemHolder>
-        <SkyboundText accessabilityLabel='help'  variant = 'primary' size = {60}>Test</SkyboundText>
-
-
-
-       <SkyboundFlashDeal airlineImage={<AirplaneIcon width={24} height={24}></AirplaneIcon> } 
-       airlineName='Test Airline'
-       sourceCode='ERI'
-       destCode='LAX'
-       departureTime='1:11 PM'
-       arrivalTime='2:22 PM'
-       travelTime='1h 11m'
-       originalPrice='$20000'
-       newPrice='$0'
-       onPress={() => console.log('What a great deal!')}>
-       </SkyboundFlashDeal>
-
-       
-      <SkyboundButtonGroup
-      options ={['Option 1', 'Option 2', 'Option 3',]}
-      onChange={setSelected}>
-
-      </SkyboundButtonGroup>
-
-      <SkyboundText accessabilityLabel='test' variant='primary'>{'Active option: ' + selected}</SkyboundText>
-
-      <SkyboundText variant='primary' accessabilityLabel='penis'>{'Selected Date:' + selectedDate}</SkyboundText>
-    </SkyboundItemHolder>
-
-    <SkyboundCalandarPicker onDateChange={handleDateChange}></SkyboundCalandarPicker>
+      <DisplayMap mapWidth={300} mapHeight={200}></DisplayMap>
 
 
 
