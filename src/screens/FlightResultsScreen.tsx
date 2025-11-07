@@ -8,7 +8,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getURL, reviveDates } from "@src/api/SkyboundUtils";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -16,7 +16,6 @@ import {
   Image,
   Modal,
   Pressable,
-  ScrollView,
   StyleSheet,
   View
 } from "react-native";
@@ -178,24 +177,86 @@ const MOCK_FLIGHTS: UIFlight[] = [
 
 export default function FlightResultsScreen() {
   const route = useRoute();
-  const {searchResults} = route.params;
-  
+  const {
+    searchResults,
+    tripType = 'one-way',
+    fromCode,
+    toCode,
+    departureDate,
+    returnDate,
+    legsCount,
+    legsDates,
+  } = (route.params as any) || {};
+
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [flights, setFlights] = useState<UIFlight[]>(toUIFlights(reviveDates(searchResults)));
+  const revived = useMemo(() => reviveDates(searchResults), [searchResults]);
+  const [flights, setFlights] = useState<UIFlight[]>(toUIFlights(revived));
   const [visibleCount, setVisibleCount] = useState(3);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<'recommended'|'price'|'duration'|'stops'>('recommended');
   const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const canLoadMore = visibleCount < flights.length;
-  
+
   // Filter states
   const [maxStops, setMaxStops] = useState(2);
   const [maxDuration, setMaxDuration] = useState(10);
 
   const overlayOp = React.useRef(new Animated.Value(0)).current;
   const sheetY = React.useRef(new Animated.Value(40)).current;
+
+  // Selection + animation state
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const animsRef = useRef<Record<string, Animated.Value>>({});
+  const getAnim = (id: string) => {
+    if (!animsRef.current[id]) animsRef.current[id] = new Animated.Value(0);
+    return animsRef.current[id];
+  };
+  const requiredSelections = useMemo(() => {
+    if (tripType === 'multi-city') return Math.max(legsCount || 0, 2);
+    if (tripType === 'round-trip') return 2;
+    return 1;
+  }, [tripType, legsCount]);
+  const [stepIndex, setStepIndex] = useState(0);
+  const [selectedFlights, setSelectedFlights] = useState<UIFlight[]>([]);
+  const listFade = useRef(new Animated.Value(1)).current;
+  const animateOpen = (id: string) => Animated.timing(getAnim(id), { toValue: 1, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true });
+  const animateClose = (id: string) => Animated.timing(getAnim(id), { toValue: 0, duration: 200, easing: Easing.in(Easing.cubic), useNativeDriver: true });
+  const onCardPress = (id: string) => {
+    if (selectedId === id) {
+      animateClose(id).start(() => setSelectedId(null));
+    } else {
+      if (selectedId) animateClose(selectedId).start();
+      setSelectedId(id);
+      animateOpen(id).start();
+    }
+  };
+  const handleChoose = (flight: UIFlight) => {
+    const next = [...selectedFlights, flight];
+
+    if (stepIndex + 1 < requiredSelections) {
+      Animated.sequence([
+        Animated.timing(listFade, { toValue: 0, duration: 140, useNativeDriver: true }),
+      ]).start(() => {
+        setSelectedFlights(next);
+        setStepIndex(stepIndex + 1);
+        setSelectedId(null);
+        Animated.timing(listFade, { toValue: 1, duration: 160, useNativeDriver: true }).start();
+      });
+    } else {
+      navigation.navigate('FlightSummary', {
+        selectedFlights: next,
+        tripType,
+        fromCode,
+        toCode,
+        departureDate,
+        returnDate,
+        legsCount,
+        legsDates,
+      });
+    }
+  };
 
   function openSortSheet() {
     setSortModalVisible(true);
@@ -228,27 +289,36 @@ export default function FlightResultsScreen() {
   };
   
   const generateTitle = () => {
-    return `Outbound: ${flights[0].departureCode} to ${flights[0].arrivalCode}`
+    const dep = fromCode || flights[0]?.departureCode;
+    const arr = toCode || flights[0]?.arrivalCode;
+    const labelPrefix = (tripType === 'round-trip' && stepIndex === 1) ? 'Return' : `Outbound`;
+    return `${labelPrefix}: ${dep} to ${arr}`;
   }
 
   const generateDateRange = () => {
     const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-
-    const start = new Date(flights[0].departureTime).toLocaleString('en-US', options);
-    const end = new Date(flights[0].arrivalTime).toLocaleString('en-US', options);
-
-    return `${start} - ${end}`;
+    const fmt = (d: any) => d ? new Date(d).toLocaleDateString('en-US', options) : '';
+    if (tripType === 'round-trip') {
+      const start = departureDate || revived?.[0]?.outbound?.[0]?.date;
+      const end = returnDate || revived?.[0]?.return?.[revived?.[0]?.return?.length - 1]?.date;
+      return `${fmt(start)} - ${fmt(end)}`;
+    }
+    if (tripType === 'multi-city') {
+      const first = (legsDates && legsDates[0]) || revived?.[0]?.outbound?.[0]?.date;
+      const last = (legsDates && legsDates[legsDates.length - 1]) || revived?.[0]?.outbound?.[revived?.[0]?.outbound?.length - 1]?.date;
+      return `${fmt(first)} - ${fmt(last)}`;
+    }
+    const start = departureDate || revived?.[0]?.outbound?.[0]?.date;
+    return fmt(start);
   }
-  
   
   const generateFlightOverview = () => {
     const sourceAirport: string = flights[0].departureCode;
     const destAirport: string = flights[0].arrivalCode;
-    return <View style={[styles.routeInfo, { backgroundColor: 'rgba(239, 246, 255, 0.95)' }]}>
+    return <View style={[styles.routeInfo, { backgroundColor: 'rgba(216, 233, 255, 0.95)' }]}>
       <View style={[styles.routePoint, { width: 96 }]}>
         <View style={[styles.dot, { backgroundColor: colors.link }]} />
-        <SkyboundText variant="primaryBold" size={14} accessabilityLabel={sourceAirport}>{sourceAirport}</SkyboundText>
-        {/* <SkyboundText variant="secondary" size={12} accessabilityLabel="Cleveland">Cleveland</SkyboundText> */}
+        <SkyboundText variant="primaryBold" size={16} accessabilityLabel={sourceAirport}>{sourceAirport}</SkyboundText>
       </View>
       <View style={styles.routeCenter}>
         <View style={[styles.routeLine, { backgroundColor: colors.link }]} />
@@ -257,8 +327,7 @@ export default function FlightResultsScreen() {
       </View>
       <View style={[styles.routePoint, { width: 96 }]}>
         <View style={[styles.dot, { backgroundColor: colors.link }]} />
-        <SkyboundText variant="primaryBold" size={14} accessabilityLabel={destAirport}>{destAirport}</SkyboundText>
-        {/* <SkyboundText variant="secondary" size={12} accessabilityLabel="Los Angeles">Los Angeles</SkyboundText> */}
+        <SkyboundText variant="primaryBold" size={16} accessabilityLabel={destAirport}>{destAirport}</SkyboundText>
       </View>
     </View>
   };
@@ -267,7 +336,7 @@ export default function FlightResultsScreen() {
     const sorted = [...flights].sort((a, b) => {
       let cmp = 0;
       if (criteria === 'recommended' || criteria === 'price') {
-        cmp = a.price - b.price;                       // default “recommended”: price asc
+        cmp = a.price - b.price;
       } else if (criteria === 'duration') {
         const m = (s:string)=>{const [h,m]=s.replace('h','').replace('m','').split(' ').map(n=>parseInt(n));return h*60+m;};
         cmp = m(a.duration) - m(b.duration);
@@ -286,104 +355,111 @@ export default function FlightResultsScreen() {
 
   const FlightCard = ({ flight }: { flight: UIFlight }) => {
     const badge = getCategoryBadge(flight.category);
+    const anim = getAnim(flight.id);
 
-    console.log(`${getURL()}/logos/${flight.airlineCode}.png`);
     return (
-      <Pressable 
-        style={[styles.flightCard, { backgroundColor: colors.card }]}
-        onPress={() => navigation.navigate('ComponentTest')}
-      >
-        {badge && (
-          <View style={[styles.categoryBadge, { backgroundColor: badge.color }]}>
-            <SkyboundText variant="primary" size={12} accessabilityLabel={badge.label} style={{ color: '#FFF' }}>
-              {badge.label}
-            </SkyboundText>
-          </View>
-        )}
-
-        <View style={styles.cardContent}>
-          <View style={styles.airlineRow}>
-            <View style={styles.airlineInfo}>
-              <View style={{height: 25, width: 100, justifyContent: 'center', alignItems: 'flex-start' }}>
-                <Image
-                  source={{ uri: `${getURL()}/logos/${flight.airlineCode}.png` }}
-                  style={{ height: '100%', width: '100%'}}
-                  resizeMode="contain"
-                />
-                {/* <SkyboundText variant="primary" size={12} accessabilityLabel={flight.airlineCode} style={{ color: '#FFF', fontWeight: 'bold' }}>
-                  {flight.airlineCode}
-                </SkyboundText> */}
-              </View>
-              <View>
-                <SkyboundText variant="primary" size={14} accessabilityLabel={flight.airline}>
-                  {flight.airline}
-                </SkyboundText>
-                <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.cabinClass}>
-                  {flight.cabinClass}
-                </SkyboundText>
-              </View>
-            </View>
-            <View style={styles.priceInfo}>
-              <SkyboundText variant="blue" size={20} accessabilityLabel={`$${flight.price}`} style={{ fontWeight: 'bold', color: colors.link }}>
-                ${flight.price}
-              </SkyboundText>
-              <SkyboundText variant="secondary" size={12} accessabilityLabel="round trip">
-                round trip
-              </SkyboundText>
-            </View>
-          </View>
-
-          <View style={styles.flightDetails}>
-            <View style={styles.timeBlock}>
-              <SkyboundText variant="primaryBold" size={18} accessabilityLabel={flight.departureTime}>
-                {flight.departureTime}
-              </SkyboundText>
-              <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.departureCode}>
-                {flight.departureCode}
-              </SkyboundText>
-            </View>
-
-            <View style={styles.durationBlock}>
-              <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.duration}>
-                {flight.duration}
-              </SkyboundText>
-              <View style={styles.flightLine}>
-                <View style={[styles.line, { backgroundColor: colors.divider }]} />
-                <Ionicons name="airplane" size={16} color={colors.link} />
-                <View style={[styles.line, { backgroundColor: colors.divider }]} />
-              </View>
-              <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.stops}>
-                {flight.stops}
-              </SkyboundText>
-            </View>
-
-            <View style={styles.timeBlock}>
-              <SkyboundText variant="primaryBold" size={18} accessabilityLabel={flight.arrivalTime}>
-                {flight.arrivalTime}
-              </SkyboundText>
-              <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.arrivalCode}>
-                {flight.arrivalCode}
-              </SkyboundText>
-            </View>
-          </View>
-
-          {flight.hasBaggage && (
-            <View style={styles.baggageBanner}>
-              <Ionicons name="briefcase-outline" size={12} color="#FFFFFF" />
-              <SkyboundText variant="primary" size={12} style={{ color: '#FFFFFF' }}>
-                Free Baggage Included
+      <View style={[styles.flightCard, { backgroundColor: colors.card }]}>
+        <Pressable onPress={() => onCardPress(flight.id)}>
+          {badge && (
+            <View style={[styles.categoryBadge, { backgroundColor: badge.color }]}>
+              <SkyboundText variant="primary" size={12} accessabilityLabel={badge.label} style={{ color: '#FFF' }}>
+                {badge.label}
               </SkyboundText>
             </View>
           )}
-        </View>
-      </Pressable>
+
+          <View style={styles.cardContent}>
+            <View style={styles.airlineRow}>
+              <View style={styles.airlineInfo}>
+                <View style={{height: 25, width: 100, justifyContent: 'center', alignItems: 'flex-start' }}>
+                  <Image
+                    source={{ uri: `${getURL()}/logos/${flight.airlineCode}.png` }}
+                    style={{ height: '100%', width: '100%'}}
+                    resizeMode="contain"
+                  />
+                </View>
+                <View>
+                  <SkyboundText variant="primary" size={14} accessabilityLabel={flight.airline}>
+                    {flight.airline}
+                  </SkyboundText>
+                  <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.cabinClass}>
+                    {flight.cabinClass}
+                  </SkyboundText>
+                </View>
+              </View>
+              <View style={styles.priceInfo}>
+                <SkyboundText variant="blue" size={20} accessabilityLabel={`$${flight.price}`} style={{ fontWeight: 'bold', color: colors.link }}>
+                  ${flight.price}
+                </SkyboundText>
+                <SkyboundText variant="secondary" size={12} accessabilityLabel="round trip">
+                  round trip
+                </SkyboundText>
+              </View>
+            </View>
+
+            <View style={styles.flightDetails}>
+              <View style={styles.timeBlock}>
+                <SkyboundText variant="primaryBold" size={18} accessabilityLabel={flight.departureTime}>
+                  {flight.departureTime}
+                </SkyboundText>
+                <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.departureCode}>
+                  {flight.departureCode}
+                </SkyboundText>
+              </View>
+
+              <View style={styles.durationBlock}>
+                <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.duration}>
+                  {flight.duration}
+                </SkyboundText>
+                <View style={styles.flightLine}>
+                  <View style={[styles.line, { backgroundColor: colors.divider }]} />
+                  <Ionicons name="airplane" size={16} color={colors.link} />
+                  <View style={[styles.line, { backgroundColor: colors.divider }]} />
+                </View>
+                <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.stops}>
+                  {flight.stops}
+                </SkyboundText>
+              </View>
+
+              <View style={styles.timeBlock}>
+                <SkyboundText variant="primaryBold" size={18} accessabilityLabel={flight.arrivalTime}>
+                  {flight.arrivalTime}
+                </SkyboundText>
+                <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.arrivalCode}>
+                  {flight.arrivalCode}
+                </SkyboundText>
+              </View>
+            </View>
+
+            {flight.hasBaggage && (
+              <View style={styles.baggageBanner}>
+                <Ionicons name="briefcase-outline" size={12} color="#FFFFFF" />
+                <SkyboundText variant="primary" size={12} style={{ color: '#FFFFFF' }}>
+                  Free Baggage Included
+                </SkyboundText>
+              </View>
+            )}
+          </View>
+        </Pressable>
+
+        <Animated.View
+          style={{
+            opacity: anim,
+            transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] }) }],
+          }}
+        >
+          <Pressable style={styles.chooseBtn} onPress={() => handleChoose(flight)}>
+            <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFFFFF' }}>Choose Flight</SkyboundText>
+          </Pressable>
+        </Animated.View>
+      </View>
     );
   };
 
   return (
     <View style={styles.container}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
+        <View style={{ backgroundColor: colors.card, marginTop: 25 }}>
           <SkyboundNavBar
             title={generateTitle()}
             leftHandIcon={<Ionicons name="arrow-back" size={22} color={colors.link} />}
@@ -393,14 +469,14 @@ export default function FlightResultsScreen() {
             rightHandSecondIcon={<Ionicons name="swap-vertical" size={22} color={colors.link} />}
             rightHandSecondIconOnPressEvent={() => openSortSheet()}
           />
-          <View style={{ paddingBottom: 8 }}>
+          <View style={{ paddingBottom: 5 }}>
             <SkyboundText
               variant="secondary"
-              size={14}
+              size={16}
               accessabilityLabel={generateDateRange()}
               style={{ textAlign: 'center' }}
-            >
-              Nov 7 - Nov 12
+>
+              {generateDateRange()}
             </SkyboundText>
           </View>
         </View>
@@ -408,7 +484,7 @@ export default function FlightResultsScreen() {
         {/* Map Placeholder */}
         <View style={[styles.mapContainer, { backgroundColor: colors.surfaceMuted }]}>
           {generateFlightOverview()}
-          <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 40, marginBottom: -10 }}>
+          <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 15, marginBottom: -10 }}>
             Google Maps integration would display route here
           </SkyboundText>
         </View>
@@ -423,8 +499,8 @@ export default function FlightResultsScreen() {
             />
           </View>
 
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            <SkyboundText variant="secondary" size={14} style={{ marginTop: 35, marginBottom: 16 }}>
+          <Animated.ScrollView contentContainerStyle={styles.scrollContent} style={{ opacity: listFade }}>
+            <SkyboundText variant="secondary" size={14} style={{ marginTop: 30, marginBottom: 30 }}>
               {flights.length} flights found
             </SkyboundText>
 
@@ -446,7 +522,7 @@ export default function FlightResultsScreen() {
                 </SkyboundText>
               </Pressable>
             )}
-          </ScrollView>
+          </Animated.ScrollView>
         </View>
 
         {/* Filter Modal */}
@@ -550,14 +626,15 @@ const styles = StyleSheet.create({
 
   flightCard: {
     borderRadius: 12,
-    marginBottom: 16,
+    marginBottom: 20,
     overflow: 'hidden',
-    borderWidth: 1,
+    borderWidth: 3,
+    borderColor: '#0753d5ff',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   categoryBadge: {
     paddingVertical: 6,
@@ -570,13 +647,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   airlineInfo: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: 12,
+    paddingTop: 25,
   },
   airlineLogo: {
-    width: 32,
-    height: 32,
+    width: 30,
+    height: 30,
     borderRadius: 4,
     justifyContent: 'center',
     alignItems: 'center',
@@ -591,7 +668,7 @@ const styles = StyleSheet.create({
   },
   timeBlock: {
     alignItems: 'center',
-    gap: 4,
+    gap: 5,
   },
   durationBlock: {
     flex: 1,
@@ -686,4 +763,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   sheet: { },
+  chooseBtn: {
+    marginHorizontal: 16,
+    marginBottom: 0,
+    marginTop: -4,
+    backgroundColor: '#0071E2',
+    borderRadius: 12,
+    paddingVertical: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#0071E2',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
 });
