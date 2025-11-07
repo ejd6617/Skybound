@@ -1,10 +1,12 @@
 import { useColors } from '@constants/theme';
 import Slider from '@react-native-community/slider';
-import { useNavigation } from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/nav/RootNavigator';
+import type { FlightFilters } from '@src/screens/FlightResultsScreen';
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 const CloseIcon = () => (
@@ -13,19 +15,41 @@ const CloseIcon = () => (
   </Svg>
 );
 
+const AIRLINE_CODE_MAP: Record<string, string> = {
+  delta: 'DL',
+  united: 'UA',
+  american: 'AA',
+  southwest: 'WN',
+  'air-canada': 'AC',
+  jetblue: 'B6',
+};
+
+const DEFAULT_FILTERS: FlightFilters = {
+  stops: undefined,
+  maxPrice: 2000,
+  departureTimes: [],
+  arrivalTimes: [],
+  cabinClass: undefined,
+  maxDurationHours: 24,
+  airlines: [],
+};
+
 export default function FilterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'FilterScreen'>>();
   const colors = useColors();
 
-  const [stops, setStops] = useState<'nonstop' | '1-stop' | '2plus'>('nonstop');
-  const [priceRange, setPriceRange] = useState(0);
-  const [departureTime, setDepartureTime] = useState<string[]>(['early-morning']);
-  const [arrivalTime, setArrivalTime] = useState<string[]>(['afternoon']);
-  const [cabinClass, setCabinClass] = useState('economy');
+    const initialFilters = route.params?.filters ?? DEFAULT_FILTERS;
+
+  const [stops, setStops] = useState<'nonstop' | '1-stop' | '2plus' | 'any'>(initialFilters.stops ?? 'any');
+  const [priceRange, setPriceRange] = useState(initialFilters.maxPrice ?? 2000);
+  const [departureTime, setDepartureTime] = useState<string[]>(initialFilters.departureTimes ?? []);
+  const [arrivalTime, setArrivalTime] = useState<string[]>(initialFilters.arrivalTimes ?? []);
+  const [cabinClass, setCabinClass] = useState(initialFilters.cabinClass ?? 'any');
   const [flexibleDates, setFlexibleDates] = useState(false);
-  const [duration, setDuration] = useState(10);
-  const [alliance, setAlliance] = useState<string[]>(['oneworld']);
-  const [airlines, setAirlines] = useState<string[]>(['delta', 'american']);
+  const [duration, setDuration] = useState(initialFilters.maxDurationHours ?? 24);
+  const [alliance, setAlliance] = useState<string[]>([]);
+  const [airlines, setAirlines] = useState<string[]>(initialFilters.airlines ?? []);
 
   const toggleTimeSlot = (list: string[], setList: (val: string[]) => void, value: string) => {
     if (list.includes(value)) {
@@ -35,11 +59,12 @@ export default function FilterScreen() {
     }
   };
 
-  const toggleAirline = (airline: string) => {
-    if (airlines.includes(airline)) {
-      setAirlines(airlines.filter(a => a !== airline));
+  const toggleAirline = (airlineKey: string) => {
+    const code = AIRLINE_CODE_MAP[airlineKey] ?? airlineKey.toUpperCase();
+    if (airlines.includes(code)) {
+      setAirlines(airlines.filter(a => a !== code));
     } else {
-      setAirlines([...airlines, airline]);
+      setAirlines([...airlines, code]);
     }
   };
 
@@ -51,14 +76,53 @@ export default function FilterScreen() {
     }
   };
 
+  const handleApply = () => {
+    const applied: FlightFilters = {
+      stops: stops === 'any' ? undefined : stops,
+      maxPrice: priceRange >= 2000 ? undefined : priceRange,
+      departureTimes: departureTime,
+      arrivalTimes: arrivalTime,
+      cabinClass: cabinClass === 'any' ? undefined : cabinClass,
+      maxDurationHours: duration >= 24 ? undefined : duration,
+      airlines,
+    };
+
+    navigation.navigate({
+      name: 'FlightResults',
+      params: { filters: applied },
+      merge: true,
+    });
+    navigation.goBack();
+  };
+
+  const handleReset = () => {
+    setStops('any');
+    setPriceRange(2000);
+    setDepartureTime([]);
+    setArrivalTime([]);
+    setCabinClass('any');
+    setFlexibleDates(false);
+    setDuration(24);
+    setAlliance([]);
+    setAirlines([]);
+  };
+
+  const handleStopPress = (value: 'nonstop' | '1-stop' | '2plus') => {
+    setStops(prev => (prev === value ? 'any' : value));
+  };
+
+  const handleCabinPress = (value: string) => {
+    setCabinClass(prev => (prev === value ? 'any' : value));
+  };
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.divider }]}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}> 
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.divider }]}> 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
           <CloseIcon />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Filters</Text>
-        <TouchableOpacity onPress={() => console.log('Reset filters')}>
+        <TouchableOpacity onPress={handleReset}>
           <Text style={styles.resetButton}>Reset</Text>
         </TouchableOpacity>
       </View>
@@ -68,21 +132,21 @@ export default function FilterScreen() {
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Stops</Text>
           <TouchableOpacity
             style={styles.radioRow}
-            onPress={() => setStops('nonstop')}
+            onPress={() => handleStopPress('nonstop')}
           >
             <View style={[styles.radio, stops === 'nonstop' && styles.radioSelected]} />
             <Text style={[styles.radioLabel, { color: colors.text }]}>Nonstop</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.radioRow}
-            onPress={() => setStops('1-stop')}
+            onPress={() => handleStopPress('1-stop')}
           >
             <View style={[styles.radio, stops === '1-stop' && styles.radioSelected]} />
             <Text style={[styles.radioLabel, { color: colors.text }]}>1 Stop</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.radioRow}
-            onPress={() => setStops('2plus')}
+            onPress={() => handleStopPress('2plus')}
           >
             <View style={[styles.radio, stops === '2plus' && styles.radioSelected]} />
             <Text style={[styles.radioLabel, { color: colors.text }]}>2+ Stops</Text>
@@ -104,7 +168,7 @@ export default function FilterScreen() {
           />
           <View style={styles.sliderLabels}>
             <Text style={[styles.sliderLabel, { color: colors.text }]}>$0</Text>
-            <Text style={[styles.sliderLabel, { color: colors.text }]}>$2000+</Text>
+            <Text style={[styles.sliderLabel, { color: colors.text }]}>${priceRange === 2000 ? '2000+' : priceRange}</Text>
           </View>
         </View>
 
@@ -217,7 +281,7 @@ export default function FilterScreen() {
             <TouchableOpacity
               key={item.value}
               style={styles.radioRow}
-              onPress={() => setCabinClass(item.value)}
+              onPress={() => handleCabinPress(item.value)}
             >
               <View style={[styles.radio, cabinClass === item.value && styles.radioSelected]} />
               <Text style={[styles.radioLabel, { color: colors.text }]}>{item.label}</Text>
@@ -235,7 +299,7 @@ export default function FilterScreen() {
               <View style={[styles.toggleThumb, flexibleDates && styles.toggleThumbOn]} />
             </TouchableOpacity>
           </View>
-          <Text style={[styles.flexibilitySubtext, { color: colors.subText }]}>
+          <Text style={[styles.flexibilitySubtext, { color: colors.subText }]}> 
             Show flexible dates
           </Text>
         </View>
@@ -255,7 +319,9 @@ export default function FilterScreen() {
           />
           <View style={styles.sliderLabels}>
             <Text style={[styles.sliderLabel, { color: colors.text }]}>1h</Text>
-            <Text style={[styles.sliderLabel, { color: colors.text }]}>24h+</Text>
+            <Text style={[styles.sliderLabel, { color: colors.text }]}>
+              {duration >= 24 ? '24h+' : `${duration}h`}
+            </Text>
           </View>
         </View>
 
@@ -288,30 +354,34 @@ export default function FilterScreen() {
             { value: 'southwest', label: 'Southwest' },
             { value: 'air-canada', label: 'Air Canada' },
             { value: 'jetblue', label: 'JetBlue' },
-          ].map(item => (
-            <TouchableOpacity
-              key={item.value}
-              style={styles.checkboxRow}
-              onPress={() => toggleAirline(item.value)}
-            >
-              <View style={[styles.checkbox, airlines.includes(item.value) && styles.checkboxSelected]}>
-                {airlines.includes(item.value) && <Text style={styles.checkmark}>✓</Text>}
-              </View>
-              <Text style={[styles.checkboxLabel, { color: colors.text }]}>{item.label}</Text>
-            </TouchableOpacity>
-          ))}
+          ].map(item => {
+            const code = AIRLINE_CODE_MAP[item.value] ?? item.value.toUpperCase();
+            const selected = airlines.includes(code);
+            return (
+              <TouchableOpacity
+                key={item.value}
+                style={styles.checkboxRow}
+                onPress={() => toggleAirline(item.value)}
+              >
+                <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                  {selected && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={[styles.checkboxLabel, { color: colors.text }]}>{item.label}</Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { backgroundColor: colors.background, marginBottom: 20 }]}>
+      <View style={[styles.footer, { backgroundColor: colors.background, marginBottom: 20 }]}> 
         <TouchableOpacity
           style={styles.applyButton}
-          onPress={() => navigation.goBack()}
+          onPress={handleApply}
         >
           <Text style={styles.applyButtonText}>Show Flights</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -439,31 +509,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#0075FF',
     borderColor: '#0075FF',
   },
-  checkmark: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
-  },
   checkboxLabel: {
     fontSize: 16,
     fontFamily: 'Regular',
   },
+  checkmark: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },  
   flexibilityRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  flexibilitySubtext: {
-    fontSize: 14,
-    fontFamily: 'Regular',
   },
   toggle: {
     width: 44,
     height: 24,
     borderRadius: 12,
     backgroundColor: '#E5E7EB',
-    justifyContent: 'center',
     padding: 2,
   },
   toggleOn: {
@@ -474,37 +538,30 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     backgroundColor: '#FFFFFF',
+    transform: [{ translateX: 0 }],
   },
   toggleThumbOn: {
-    alignSelf: 'flex-end',
+    transform: [{ translateX: 20 }],
+  },
+  flexibilitySubtext: {
+    marginTop: 8,
+    fontSize: 12,
   },
   footer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#E5E7EB',
   },
   applyButton: {
     backgroundColor: '#0071E2',
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
   },
   applyButtonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '500',
-    fontFamily: 'Medium',
+    fontWeight: '600',
   },
 });
