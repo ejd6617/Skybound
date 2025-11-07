@@ -18,7 +18,7 @@ import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
 import React, { useEffect, useState } from "react";
-import { Dimensions, SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 import { skyboundRequest } from '../api/SkyboundUtils';
 
@@ -290,7 +290,16 @@ export default function FlightSearchScreen() {
       })();
 
       setIsLoading(false);
-      navigation.navigate('FlightResults', {searchResults: searchResults});
+      navigation.navigate('FlightResults', {
+        searchResults: searchResults,
+        tripType: tripType,
+        fromCode: fromAirport?.iata,
+        toCode: toAirport?.iata,
+        departureDate: departureDate,
+        returnDate: returnDate,
+        legsCount: tripType === 'multi-city' ? multiCityLegs.length : (tripType === 'round-trip' ? 2 : 1),
+        legsDates: tripType === 'multi-city' ? multiCityLegs.map(l => l.date) : undefined,
+      });
     } catch (err) {
       console.error('API call failed', err);
       setIsLoading(false);
@@ -303,7 +312,7 @@ export default function FlightSearchScreen() {
 
   return (
     <View style={[basicStyles.background, { backgroundColor: colors.background }]}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: 30 }}>
         <SkyboundNavBar
           title="Flight Search"
           leftHandIcon={<HamburgerIcon width={24} height={24} />}
@@ -342,7 +351,7 @@ export default function FlightSearchScreen() {
                     error={errors.from}
                   />
 
-                  <View style={{ height: 8 }} />
+                  <View style={{ height: 0 }} />
 
                   <AirportAutocomplete
                     label="To"
@@ -450,7 +459,7 @@ export default function FlightSearchScreen() {
             </View>
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </View>
   );
 }
@@ -461,12 +470,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 18,
     paddingBottom: 40,
   },
   container: {
     paddingHorizontal: 16,
-    paddingTop: 12,
   },
   columnContainer: {
     flexDirection: 'column',
@@ -482,14 +490,14 @@ const styles = StyleSheet.create({
   },
   flexibleOptionsRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 16,
-    marginBottom: 16,
+    gap: 8,
+    marginTop: 12,
+    marginBottom: 0,
   },
   tooltip: {
     padding: 12,
     borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 0,
   },
   addLegButton: {
     flexDirection: 'row',

@@ -44,9 +44,9 @@ const TripTypeSelector: React.FC<TripTypeSelectorProps> = ({ selectedType, onTyp
           >
             <SkyboundText
               variant={isSelected ? 'forceWhite' : 'primary'}
-              size={13}
+              size={14}
               accessabilityLabel={tab.label}
-              style={{ color: isSelected ? '#FFFFFF' : SKYBOUND_BLUE }}
+              style={{ color: isSelected ? '#FFFFFF' : SKYBOUND_BLUE, textAlign: 'center', }}
             >
               {tab.label}
             </SkyboundText>
@@ -63,16 +63,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    marginVertical: 12,
-    paddingHorizontal: 12,
+    paddingBottom: 25
   },
   tab: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 15,
     paddingVertical: 10,
     minHeight: 44,
-    borderRadius: 12,
+    borderRadius: 15,
     borderWidth: 1,
   },
 });

@@ -26,6 +26,9 @@ export const Colors = {
     gradient: ['#FFFFFF', '#0071E2'] as [string, string],
     gradientStart: { x: -1, y: 1 },
     gradientEnd: { x: 2, y: 0 },
+    successBg: 'rgba(34, 197, 94, 0.1)',
+    successText: '#22C55E',
+    surfaceMuted: '#F9FAFB',
   },
   dark: {
     text: '#ECEDEE',
@@ -44,6 +47,9 @@ export const Colors = {
     gradient: ['#2F97FF', '#000000'] as [string, string],
     gradientStart: { x: -1, y: 1 },
     gradientEnd: { x: 1, y: 0 },
+    successBg: 'rgba(34, 197, 94, 0.2)',
+    successText: '#4ADE80',
+    surfaceMuted: '#1F2937',
   },
 };
 
