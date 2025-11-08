@@ -1,9 +1,9 @@
-import airportData from '../../airports.json'
-import React, { useState } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
 import Slider from '@react-native-community/slider';
-import MapView, { Marker, Circle, MapPressEvent } from 'react-native-maps';
-import { getDistance, latitudeKeys } from 'geolib';
+import { getDistance } from 'geolib';
+import React, { useEffect, useState } from 'react';
+import { Dimensions, StyleSheet, View } from 'react-native';
+import MapView, { Circle, MapPressEvent, Marker } from 'react-native-maps';
+import airportData from '../../airports.json';
 import SkyboundItemHolder from './SkyboundItemHolder';
 import SkyboundText from './SkyboundText';
 
@@ -17,7 +17,9 @@ interface InteractiveMapProps {
     initialRadius?: number;
     minRadius?: number;
     maxRadius?: number;
-    onChange?: (location: LatLng, radius: number) => void;
+    onChange?: (airports: any[]) => void;
+    mapWidth?: number;
+    mapHeight?: number;
 
 }   
 
@@ -28,29 +30,72 @@ export default function InteractiveMap({
     minRadius = 1000,
     maxRadius = 100000,
     onChange,
+    mapWidth,
+    mapHeight,
 }: InteractiveMapProps)
 
 {
     
     const [location, setLocation] = useState<LatLng>(initialLocation);
     const [radius, setRadus] = useState(initialRadius);
+    const [nearbyAirports, setNearbyAirports] = useState<any[]>([]);
 
     const handleMapPress = (e : MapPressEvent) => {
         const coord = e.nativeEvent.coordinate;
         setLocation(coord);
-        onChange?.(coord, radius);
     };
 
     const handleRadiusChange = (value : number) => {
         setRadus(value);
-        onChange?.(location, value);
     }
+
+    function findNearbyAirports(center: LatLng, range: number)
+    {
+        const results = airportData.filter((airport) =>
+        {
+            if(!airport.lat || !airport.lon)
+                return false
+            const distance =getDistance(center, {latitude : airport.lat, longitude: airport.lon})
+            return distance <= range
+        })
+
+        return results;
+    }
+
+
+    //detect changes in marker or circle
+    useEffect(() => {
+        if(!location || !radius)
+            return;
+        
+        let timeout: NodeJS.Timeout | null = null;
+        let hasRun = false
+
+        const computeAirports = () => {
+            if(hasRun)
+                return; //prevent double calls
+            hasRun = true;
+            const nearby = findNearbyAirports(location, radius);
+            setNearbyAirports(nearby);
+            onChange(nearby);
+        };
+
+        //start debounce
+        setTimeout(computeAirports, 500) // half a second
+
+        //cleanup: clear timeout and flush pending computation
+        return () => {
+            if(timeout)
+                clearTimeout(timeout);
+                computeAirports();
+        };
+    }, [location, radius]) //useEffect tracking location and radius for rerender
 
 
     return(
         <SkyboundItemHolder>
             <MapView
-            style={{ width: SCREEN_W * 0.95, height: SCREEN_H * 0.90}}
+            style={{ width: mapWidth ? mapWidth : SCREEN_W * .95, height:mapHeight ? mapHeight : SCREEN_H * .85}}
             initialRegion={{
                 ...location,
                 latitudeDelta: 1,
@@ -65,6 +110,15 @@ export default function InteractiveMap({
                     fillColor='rgba(0,150,255,0.2)'
                     strokeColor='rgba(0,150,255,0.5)'
                     />
+                    {/*Show Nearby Airports */}
+                    {nearbyAirports.map((a,i) => (
+                        <Marker
+                        key={i}
+                        coordinate={{ latitude: a.lat, longitude: a.lon }}
+                        title={a.code}
+                        pinColor="#0096FF"
+                        />
+                    ))}
 
 
             </MapView>

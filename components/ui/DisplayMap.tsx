@@ -1,92 +1,83 @@
-import airportData from '../../airports.json'
-import React, { FC, LabelHTMLAttributes, useState } from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
-import Slider from '@react-native-community/slider';
-import MapView, { Marker, Circle, MapPressEvent, LatLng, Polyline } from 'react-native-maps';
-import { getDistance, latitudeKeys } from 'geolib';
+import React, { useEffect, useRef, useState } from 'react';
+import MapView, { LatLng, Marker, Polyline } from 'react-native-maps';
+import airportData from '../../airports.json';
 import SkyboundItemHolder from './SkyboundItemHolder';
-import SkyboundText from './SkyboundText';
-import { Line } from 'react-native-svg';
 
 interface DisplayMapProps {
-    sourceAirportCode?: string;
-    destAirportCode?: string;
-    mapWidth: number;
-    mapHeight: number;
+  sourceAirportCode?: string;
+  destAirportCode?: string;
+  mapWidth: number;
+  mapHeight: number;
 }
-
-
-
 
 const DisplayMap: React.FC<DisplayMapProps> = ({
-    sourceAirportCode,
-    destAirportCode, 
-    mapWidth,
-    mapHeight
-
+  sourceAirportCode,
+  destAirportCode,
+  mapWidth,
+  mapHeight,
 }) => {
-    
-    //function for finding the source and dest airports 
-    function getAirportByCode(code: string) {
-        return airportData.find(
-        (airport) =>
-            airport.code?.toUpperCase() === code.toUpperCase() 
-        );
+    //reference to the MapView to control it programmically
+  const mapRef = useRef<MapView>(null);
+
+  const [sourceAirportLatLng, setSourceAirportLatLng] = useState<LatLng | null>(null);
+  const [destAirportLatLng, setDestAirportLatLng] = useState<LatLng | null>(null);
+
+  function getAirportByCode(code?: string) {
+    if (!code) return null;
+    return airportData.find(
+      (airport) => airport.code?.toUpperCase() === code.toUpperCase()
+    );
+  }
+
+  // Update coordinates whenever codes change
+  useEffect(() => {
+    const source = getAirportByCode(sourceAirportCode);
+    const dest = getAirportByCode(destAirportCode);
+
+    if (source && dest) {
+      setSourceAirportLatLng({ latitude: source.lat, longitude: source.lon });
+      setDestAirportLatLng({ latitude: dest.lat, longitude: dest.lon });
+
+      //move/zoom the map to fit both markers
+      mapRef.current?.fitToCoordinates(
+        [
+          { latitude: source.lat, longitude: source.lon },
+          { latitude: dest.lat, longitude: dest.lon },
+        ],
+        {
+          edgePadding: { top: 50, right: 50, bottom: 50, left: 50 },
+          animated: true,
+        }
+      );
     }
+  }, [sourceAirportCode, destAirportCode]);
 
-    if(sourceAirportCode)
-    {
-        const sourceAirport = getAirportByCode(sourceAirportCode);
-    }
-    else
-    {
-         const sourceAirport = getAirportByCode(sourceAirportCode);
-    }
-    
-    if(destAirportCode)
-    {
-    const destAirport = getAirportByCode(destAirportCode);
-    }
+  return (
+    <SkyboundItemHolder>
+      <MapView
+        ref={mapRef}
+        style={{ width: mapWidth, height: mapHeight }}
+        initialRegion={{
+          latitude: sourceAirportLatLng?.latitude || 0,
+          longitude: sourceAirportLatLng?.longitude || 0,
+          latitudeDelta: 20,
+          longitudeDelta: 20,
+        }}
+      >
+        {sourceAirportLatLng && destAirportLatLng && (
+          <>
+            <Marker coordinate={sourceAirportLatLng} title="Source Airport" />
+            <Marker coordinate={destAirportLatLng} title="Destination Airport" />
+            <Polyline
+              coordinates={[sourceAirportLatLng, destAirportLatLng]}
+              strokeColor="#0096FF"
+              strokeWidth={3}
+            />
+          </>
+        )}
+      </MapView>
+    </SkyboundItemHolder>
+  );
+};
 
-    //gather the lat and lon of source airport
-    const [sourceAirportLatLng, setSourceAirportLatLng] = useState<LatLng>({
-    latitude: sourceAirport.lat,
-    longitude: sourceAirport.lon,       
-    });
-   
-    //gather the lat and lon of dest airport 
-     const [destAirportLatLng, setDestAirportLatLng] = useState<LatLng>({
-    latitude: destAirport.lat,
-    longitude: destAirport.lon,       
-    });
-    
-
-
-    return (
-
-        <SkyboundItemHolder>
-            <MapView
-            style={{width: mapWidth, height: mapHeight}}
-            initialRegion={{
-                latitude: sourceAirportLatLng?.latitude,
-                longitude: sourceAirportLatLng?.longitude,
-                latitudeDelta: 20,
-                longitudeDelta: 20,}}
-                >
-                {sourceAirportLatLng && destAirportLatLng && (
-                    <>
-                    <Marker coordinate={sourceAirportLatLng} title='Source Airport'/>
-                    <Marker coordinate={destAirportLatLng} title ='Destination Airport'/>
-
-                    <Polyline 
-                    coordinates={[sourceAirportLatLng, destAirportLatLng]}
-                    strokeColor="#0096FF"        
-                    strokeWidth={3} />
-                    </>
-                )}
-            </MapView>
-        </SkyboundItemHolder>
-    )
-}
-
-export default DisplayMap
+export default DisplayMap;

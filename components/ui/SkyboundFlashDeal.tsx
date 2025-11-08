@@ -42,7 +42,7 @@ const SkyboundFlashDeal: React.FC<SkyboundFlashDealProps> = ({
                     <View style={{alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'center'}}>
                         {airlineImage}
 
-                        <SkyboundText accessabilityLabel={'Airline: ' + airlineName} variant='primary' style={{fontWeight: 'bold'}}>{airlineName}</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Airline: ' + airlineName} variant='primary'>{airlineName}</SkyboundText>
                     </View>
                     <View style={styles.flashDeal}>
                         <SkyboundText accessabilityLabel={'Flash Deal'} variant='primaryButton' style={{fontWeight: 'bold'}}>Flash Deal</SkyboundText>
