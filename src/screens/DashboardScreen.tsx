@@ -36,11 +36,15 @@ export default function DashboardScreen() {
     const responseData = await skyboundRequest(endpoint, params);
     const revivedData = reviveDates(responseData);
     setData(revivedData);
+    
   });
 
   useEffect(() => {
     setLoading(true);
-    fetchData().finally(() => setLoading(false));
+    fetchData().finally(() => {setLoading(false);
+      console.log('Data before map: ', data);
+    });
+    
   }, []);
 
   const onRefresh = async () => {
@@ -107,26 +111,30 @@ export default function DashboardScreen() {
                 <ActivityIndicator size="large" color="#000000" />
               </View>
             ) : (
+             
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 16, gap: 12 }}>
-                {data.map((flight, index) => (
-                  <SkyboundFlashDeal
-                    key={`flashdeal-${index}`}
-                    airlineImage={<Image source={require("@assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
-                    airlineName={flight.airlineName}
-                    sourceCode={flight.outbound.sourceCode}
-                    destCode={flight.outbound.destCode}
-                    departureTime={flight.outbound[0].departureTime.toISOString().split("T")[0]}
-                    arrivalTime={flight.outbound[flight.outbound.length-1].arrivalTime.toISOString().split("T")[0]}
-                    travelTime={parseDuration(flight.outbound.duration)}
-                    originalPrice=""
-                    newPrice={`$${flight.price}`}
-                    onPress={() => {}}
-                  />
-                ))}
+                {data.map((flight, index) => {
+                  console.log('Mapping flight', index, flight.airline.name, flight.outbound[0].from.iata);
+                  return (
+                    <SkyboundFlashDeal
+                      key={`${flight.airline.iata}-${flight.price}-${index}`}
+                      airlineName={flight.airline.name}
+                      sourceCode={flight.outbound[0].from.iata}
+                      destCode={flight.outbound[0].to.iata}
+                      departureTime={flight.outbound[0].departureTime.toISOString().split("T")[0]}
+                      arrivalTime={flight.outbound[flight.outbound.length-1].arrivalTime.toISOString().split("T")[0]}
+                      travelTime={parseDuration(flight.outbound[0].duration)}
+                      originalPrice="0"
+                      newPrice={`$${flight.price}`}
+                      onPress={() => {}}
+                      airlineImage={<Image source={require("@assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
+                     />
+  );
+})}
               </ScrollView>
             )}
           </View>
-
+            {/* airlineImage={<Image source={require("@assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />} */}
           {/* CTA */}
           <SkyboundItemHolder style={{margin: 40}}>
             <SkyboundText accessabilityLabel="Ready to book button" variant="primaryBold" size={16}>Ready to Book?</SkyboundText>
