@@ -2,9 +2,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Image, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, FlatList, Image, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
+import DisplayMap from "@/components/ui/DisplayMap";
 import SkyboundButton from "@components/ui/SkyboundButton";
 import SkyboundFlashDeal from "@components/ui/SkyboundFlashDeal";
 import SkyboundItemHolder from "@components/ui/SkyboundItemHolder";
@@ -21,6 +22,9 @@ export default function DashboardScreen() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true); // Is loading in new data (default true)
   const [refreshing, setRefreshing] = useState(false); // Is refreshing data (default false)
+  const [focusedFlight, setFocusedFlight] = useState(null); //keeping track which flash deal is in focus
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 70 }).current;
+
 
   // TODO: More useful query here
   const fetchData = (async () => {
@@ -42,7 +46,6 @@ export default function DashboardScreen() {
   useEffect(() => {
     setLoading(true);
     fetchData().finally(() => {setLoading(false);
-      console.log('Data before map: ', data);
     });
     
   }, []);
@@ -52,6 +55,18 @@ export default function DashboardScreen() {
     await fetchData();
     setRefreshing(false);
   };
+
+  //function for setting the markers dynamically for which flash deal is in focus
+  const onViewableItemsChanged = useRef(({viewableItems}) => {
+    if(viewableItems.length > 0)
+    {
+      const flight = viewableItems[0].item;
+      setFocusedFlight({
+        source: flight.outbound[0].from.iata,
+        dest: flight.outbound[0].to.iata,
+      });
+    }
+  }).current;
 
   function parseDuration(totalMinutes: number): string {
     const hours = Math.floor(totalMinutes / 60);
@@ -106,32 +121,49 @@ export default function DashboardScreen() {
               </Pressable>
             </View>
 
+            <DisplayMap
+            sourceAirportCode={focusedFlight?.source}
+            destAirportCode={focusedFlight?.dest}
+            mapHeight={300}
+            mapWidth={300}/>
+
             {loading ? (
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
                 <ActivityIndicator size="large" color="#000000" />
               </View>
             ) : (
              
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ padding: 16, gap: 12 }}>
-                {data.map((flight, index) => {
-                  console.log('Mapping flight', index, flight.airline.name, flight.outbound[0].from.iata);
-                  return (
-                    <SkyboundFlashDeal
-                      key={`${flight.airline.iata}-${flight.price}-${index}`}
-                      airlineName={flight.airline.name}
-                      sourceCode={flight.outbound[0].from.iata}
-                      destCode={flight.outbound[0].to.iata}
-                      departureTime={flight.outbound[0].departureTime.toISOString().split("T")[0]}
-                      arrivalTime={flight.outbound[flight.outbound.length-1].arrivalTime.toISOString().split("T")[0]}
-                      travelTime={parseDuration(flight.outbound[0].duration)}
-                      originalPrice="0"
-                      newPrice={`$${flight.price}`}
-                      onPress={() => {}}
-                      airlineImage={<Image source={require("@assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />}
-                     />
-  );
-})}
-              </ScrollView>
+              <FlatList
+                horizontal
+                data={data}
+                showsHorizontalScrollIndicator={false}
+                keyExtractor={(flight, index) =>
+                  `${flight.airline.iata}-${flight.price}-${index}`
+                }       
+                renderItem={({ item, index }) => (
+                  <SkyboundFlashDeal
+                    key={`${item.airline.iata}-${item.price}-${index}`}
+                    airlineName={item.airline.name}
+                    sourceCode={item.outbound[0].from.iata}
+                    destCode={item.outbound[0].to.iata}
+                    departureTime={item.outbound[0].departureTime.toISOString().split('T')[0]}
+                    arrivalTime={item.outbound[item.outbound.length - 1].arrivalTime.toISOString().split('T')[0]}
+                    travelTime={parseDuration(item.outbound[0].duration)}
+                    originalPrice="0"
+                    newPrice={`$${item.price}`}
+                    onPress={() => {}}
+                    airlineImage={
+                      <Image
+                        source={require('@assets/images/Notification Photo.png')}
+                        style={{ width: 24, height: 24, marginRight: 6 }}
+                    />
+            }
+          />
+        )}
+        contentContainerStyle={{ padding: 16, gap: 12 }}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+      />
             )}
           </View>
             {/* airlineImage={<Image source={require("@assets/images/Notification Photo.png")} style={{ width: 24, height: 24, marginRight: 6 }} />} */}

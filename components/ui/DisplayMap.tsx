@@ -54,9 +54,9 @@ const DisplayMap: React.FC<DisplayMapProps> = ({
 
   return (
     <SkyboundItemHolder>
-      <MapView
+      <MapView 
         ref={mapRef}
-        style={{ width: mapWidth, height: mapHeight }}
+        style={{ width: mapWidth, height: mapHeight, borderRadius: 16, padding: -16 }}
         initialRegion={{
           latitude: sourceAirportLatLng?.latitude || 0,
           longitude: sourceAirportLatLng?.longitude || 0,
