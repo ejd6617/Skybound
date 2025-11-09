@@ -45,7 +45,7 @@ const SkyboundFlashDeal: React.FC<SkyboundFlashDealProps> = ({
                         <SkyboundText accessabilityLabel={'Airline: ' + airlineName} variant='primary'>{airlineName}</SkyboundText>
                     </View>
                     <View style={styles.flashDeal}>
-                        <SkyboundText accessabilityLabel={'Flash Deal'} variant='primaryButton' style={{fontWeight: 'bold'}}>Flash Deal</SkyboundText>
+                        <SkyboundText accessabilityLabel={'Flash Deal'} variant='primaryButton'>Flash Deal</SkyboundText>
                     </View>
                 </View>
 
