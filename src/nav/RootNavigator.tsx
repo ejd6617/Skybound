@@ -17,6 +17,8 @@ import FlightResultsScreen, {
 import FlightSearchScreen from "@src/screens/FlightSearchScreen";
 import FlightSummaryScreen from "@src/screens/FlightSummaryScreen";
 import LoginScreen from "@src/screens/LoginScreen";
+import PaymentMethodScreen from "@src/screens/PaymentMethodScreen";
+import PaymentScreen from "@src/screens/PaymentScreen";
 import SignupScreen from "@src/screens/SignupScreen";
 
 // Login listener
@@ -31,6 +33,15 @@ export type RootStackParamList = {
   ComponentTest: undefined;
   FlightSearch: {searchResults: Flight[]};
   Account: undefined;
+  PaymentMethod: undefined;
+  Payment: {
+    selectedFlights?: any[];
+    tripType?: string;
+    fromCode?: string;
+    toCode?: string;
+    departureDate?: Date | string | null;
+    returnDate?: Date | string | null;
+  } | undefined;
     FlightResults: {
     flightsByLeg?: Flight[][];
     searchDetails?: SearchDetails;
@@ -70,6 +81,8 @@ export default function RootNavigator(): React.JSX.Element
         <Stack.Screen name ="ComponentTest" component={ComponentTestScreen}/>
         <Stack.Screen name="FlightSearch"  component={FlightSearchScreen}/>
         <Stack.Screen name="Account" component={AccountScreen} />
+        <Stack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
+        <Stack.Screen name="Payment" component={PaymentScreen} />
         <Stack.Screen name="FlightResults" component={FlightResultsScreen} />
         <Stack.Screen name="FlightSummary" component={FlightSummaryScreen} />
         <Stack.Screen name="FlightConfirmation" component={FlightConfirmationScreen} />

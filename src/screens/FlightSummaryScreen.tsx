@@ -277,15 +277,13 @@ export default function FlightSummaryScreen() {
         <Pressable
           style={styles.ctaButton}
           onPress={() =>
-            navigation.navigate('FlightConfirmation', {
+            navigation.navigate('Payment', {
               selectedFlights,
               tripType,
               fromCode,
               toCode,
               departureDate,
               returnDate,
-              legsCount,
-              legsDates,
             })
           }
         >

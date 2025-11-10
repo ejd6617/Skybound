@@ -94,7 +94,7 @@ export default function AccountScreen() {
         <SkyboundNavBar
           title="Account"
           leftHandIcon={<Ionicons name="menu" size={30} color={colors.link} />}
-          leftHandIconOnPressEvent={() => {}}
+          leftHandIconOnPressEvent={() => navigation.navigate('Dashboard')}
           rightHandFirstIcon={<Ionicons name="notifications-outline" size={28} color={colors.link} />}
           rightHandFirstIconOnPressEvent={() => {}}
           rightHandSecondIcon={<Ionicons name="person-circle-outline" size={30} color={colors.link} />}
@@ -247,7 +247,7 @@ export default function AccountScreen() {
                 icon={<Ionicons name="card-outline" size={20} color={colors.link} />}
                 title="Payment Methods"
                 subtitle="Manage cards & payments"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('PaymentMethod')}
               />
               <SettingsItem
                 icon={<Ionicons name="briefcase-outline" size={20} color={colors.link} />}
