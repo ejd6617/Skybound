@@ -17,7 +17,7 @@ import FlightResultsScreen, {
 import FlightSearchScreen from "@src/screens/FlightSearchScreen";
 import FlightSummaryScreen from "@src/screens/FlightSummaryScreen";
 import LoginScreen from "@src/screens/LoginScreen";
-import PaymentMethodScreen from "@src/screens/PaymentMethodScreen";
+import PaymentMethodScreen from "@/src/screens/Account/PaymentMethodScreen";
 import PaymentScreen from "@src/screens/PaymentScreen";
 import SignupScreen from "@src/screens/SignupScreen";
 
