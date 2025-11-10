@@ -19,6 +19,8 @@ import {
   StyleSheet,
   View
 } from "react-native";
+import DisplayMap from "@/components/ui/DisplayMap";
+import SimplifiedFlightDetails from "@/components/ui/SimplifiedFlightDetails";
 
 const bgWithAlpha = (hex: string, a: number) => {
   const raw = hex.replace('#', '');
@@ -112,69 +114,6 @@ function toUIFlights(data: Flight[]): UIFlight[] {
   return flights;
 };
 
-const MOCK_FLIGHTS: UIFlight[] = [
-  {
-    id: '1',
-    airline: 'American Airlines',
-    airlineCode: 'AA',
-    airlineColor: '#DC2626',
-    category: 'best',
-    price: 428,
-    cabinClass: 'Main Basic',
-    departureTime: '7:20 AM',
-    arrivalTime: '1:05 PM',
-    departureCode: 'CLE',
-    arrivalCode: 'LAX',
-    duration: '5h 45m',
-    stops: '1 stop DFW',
-    hasBaggage: true,
-  },
-  {
-    id: '2',
-    airline: 'Southwest Airlines',
-    airlineCode: 'SW',
-    airlineColor: '#EAB308',
-    category: 'cheapest',
-    price: 384,
-    cabinClass: 'Wanna Get Away',
-    departureTime: '6:15 AM',
-    arrivalTime: '11:35 AM',
-    departureCode: 'CLE',
-    arrivalCode: 'LAX',
-    duration: '7h 20m',
-    stops: '1 stop PHX',
-  },
-  {
-    id: '3',
-    airline: 'United Airlines',
-    airlineCode: 'UA',
-    airlineColor: '#1E40AF',
-    category: 'fastest',
-    price: 512,
-    cabinClass: 'Basic Economy',
-    departureTime: '2:45 PM',
-    arrivalTime: '5:20 PM',
-    departureCode: 'CLE',
-    arrivalCode: 'LAX',
-    duration: '4h 35m',
-    stops: 'Nonstop',
-  },
-  {
-    id: '4',
-    airline: 'Delta Airlines',
-    airlineCode: 'DL',
-    airlineColor: '#9333EA',
-    price: 467,
-    cabinClass: 'Main Cabin',
-    departureTime: '10:30 AM',
-    arrivalTime: '2:45 PM',
-    departureCode: 'CLE',
-    arrivalCode: 'LAX',
-    duration: '6h 15m',
-    stops: '1 stop ATL',
-  },
-];
-
 export default function FlightResultsScreen() {
   const route = useRoute();
   const {
@@ -198,6 +137,9 @@ export default function FlightResultsScreen() {
   const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const canLoadMore = visibleCount < flights.length;
+  const [focusedFlight, setFocusedFlight] = useState(null);
+  const visibleFlights = flights.slice(0, visibleCount)
+  const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 70 }).current;
 
   // Filter states
   const [maxStops, setMaxStops] = useState(2);
@@ -258,6 +200,21 @@ export default function FlightResultsScreen() {
     }
   };
 
+   const onViewableItemsChanged = useRef(({ viewableItems }) => {
+    if (!viewableItems || viewableItems.length === 0) return;
+
+  const item = viewableItems[0].item; // simplest choice
+  if (!item) return;
+
+  setFocusedFlight({
+    source: item.departureCode,
+    dest: item.arrivalCode,
+    id: item.id,
+    duration: item.duration,
+
+  });
+  }).current;
+
   function openSortSheet() {
     setSortModalVisible(true);
     Animated.parallel([
@@ -312,6 +269,7 @@ export default function FlightResultsScreen() {
     return fmt(start);
   }
   
+  /*
   const generateFlightOverview = () => {
     const sourceAirport: string = flights[0].departureCode;
     const destAirport: string = flights[0].arrivalCode;
@@ -330,7 +288,10 @@ export default function FlightResultsScreen() {
         <SkyboundText variant="primaryBold" size={16} accessabilityLabel={destAirport}>{destAirport}</SkyboundText>
       </View>
     </View>
-  };
+  };*/
+
+  //TODO: What is the point of this function?
+
   
   const sortFlights = (criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') => {
     const sorted = [...flights].sort((a, b) => {
@@ -353,6 +314,7 @@ export default function FlightResultsScreen() {
   const toggleDirection = () => setSortDirection(d => d === 'asc' ? 'desc' : 'asc');
   const arrowFor = (crit: typeof sortBy) => (sortBy === crit && sortDirection === 'desc') ? 'arrow-down' : 'arrow-up';
 
+  //TODO: Move this to a seperate components file
   const FlightCard = ({ flight }: { flight: UIFlight }) => {
     const badge = getCategoryBadge(flight.category);
     const anim = getAnim(flight.id);
@@ -434,7 +396,7 @@ export default function FlightResultsScreen() {
             {flight.hasBaggage && (
               <View style={styles.baggageBanner}>
                 <Ionicons name="briefcase-outline" size={12} color="#FFFFFF" />
-                <SkyboundText variant="primary" size={12} style={{ color: '#FFFFFF' }}>
+                <SkyboundText accessabilityLabel="Free Baggage Included" variant="primary" size={12} style={{ color: '#FFFFFF' }}>
                   Free Baggage Included
                 </SkyboundText>
               </View>
@@ -449,7 +411,7 @@ export default function FlightResultsScreen() {
           }}
         >
           <Pressable style={styles.chooseBtn} onPress={() => handleChoose(flight)}>
-            <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFFFFF' }}>Choose Flight</SkyboundText>
+            <SkyboundText variant="primaryBold" accessabilityLabel="Choose Flight" size={16} style={{ color: '#FFFFFF' }}>Choose Flight</SkyboundText>
           </Pressable>
         </Animated.View>
       </View>
@@ -483,7 +445,14 @@ export default function FlightResultsScreen() {
 
         {/* Map Placeholder */}
         <View style={[styles.mapContainer, { backgroundColor: colors.surfaceMuted }]}>
-          {generateFlightOverview()}
+          <DisplayMap
+          mapHeight={300}
+          mapWidth={300}
+          sourceAirportCode={focusedFlight?.source ?? ''}
+          destAirportCode={focusedFlight?.dest ?? ''}
+          >
+            
+          </DisplayMap>
           <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 15, marginBottom: -10 }}>
             Google Maps integration would display route here
           </SkyboundText>
@@ -499,30 +468,48 @@ export default function FlightResultsScreen() {
             />
           </View>
 
-          <Animated.ScrollView contentContainerStyle={styles.scrollContent} style={{ opacity: listFade }}>
-            <SkyboundText variant="secondary" size={14} style={{ marginTop: 30, marginBottom: 30 }}>
-              {flights.length} flights found
+         <Animated.FlatList
+            style={{ opacity: listFade }}
+            data={visibleFlights}
+            keyExtractor={(flight) => flight.id.toString()}
+            renderItem={({ item }) => <FlightCard flight={item} />}
+            contentContainerStyle={styles.scrollContent}
+            ListHeaderComponent={
+            <SkyboundText
+              variant="secondary"
+              size={14}
+              accessabilityLabel="Found Flights:"
+              style={{ marginTop: 30, marginBottom: 30 }}
+            >
+            {flights.length} flights found
             </SkyboundText>
-
-            {flights.slice(0, visibleCount).map((flight) => (
-              <FlightCard key={flight.id} flight={flight} />
-            ))}
-
-            {visibleCount < flights.length && (
-              <Pressable
-                style={[
-                  styles.loadMoreButton,
-                  !canLoadMore && { opacity: 0.5 }
-                ]}
-                disabled={!canLoadMore}
-                onPress={() => setVisibleCount(prev => Math.min(prev + 4, flights.length))}
-              >
-                <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFFFFF' }}>
-                  {canLoadMore ? 'Load More Flights' : 'No More Flights'}
-                </SkyboundText>
-              </Pressable>
-            )}
-          </Animated.ScrollView>
+          }
+          ListFooterComponent={
+          <Pressable
+            style={[
+              styles.loadMoreButton,
+              !canLoadMore && { opacity: 0.5 },
+            ]}
+            disabled={!canLoadMore}
+            onPress={() =>
+              setVisibleCount((prev) => Math.min(prev + 4, flights.length))
+            }
+          >
+            <SkyboundText
+              variant="primaryBold"
+              accessabilityLabel={
+                canLoadMore ? 'Load More Flights' : 'No More Flights'
+              }
+              size={16}
+              style={{ color: '#FFFFFF' }}
+            >
+              {canLoadMore ? 'Load More Flights' : 'No More Flights'}
+            </SkyboundText>
+          </Pressable>
+        }
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={viewabilityConfig}
+      />
         </View>
 
         {/* Filter Modal */}
@@ -538,13 +525,13 @@ export default function FlightResultsScreen() {
             ]}
           >
             <View style={[styles.sheet, { backgroundColor: colors.card }]}>
-              <SkyboundText variant="primaryBold" size={18} style={{ marginBottom: 16 }}>Sort By</SkyboundText>
+              <SkyboundText variant="primaryBold" size={18} accessabilityLabel="Sort By: " style={{ marginBottom: 16 }}>Sort By</SkyboundText>
 
               <Pressable
                 style={styles.sortOption}
                 onPress={() => { setSortBy('recommended'); setSortDirection('asc'); sortFlights('recommended','asc'); }}
               >
-                <SkyboundText size={16}>Recommended</SkyboundText>
+                <SkyboundText accessabilityLabel='Reccomended' variant='primary'size={16}>Recommended</SkyboundText>
               </Pressable>
 
               {(['price','duration','stops'] as const).map(crit => (
@@ -556,13 +543,13 @@ export default function FlightResultsScreen() {
                     sortFlights(crit, dir);
                   }}
                 >
-                  <SkyboundText size={16} style={{ textTransform:'capitalize' }}>{crit}</SkyboundText>
+                  <SkyboundText accessabilityLabel={crit} variant="primary" size={16} style={{ textTransform:'capitalize' }}>{crit}</SkyboundText>
                   <Ionicons name={arrowFor(crit)} size={20} color={colors.icon} />
                 </Pressable>
               ))}
 
               <Pressable style={[styles.closeButton, { backgroundColor: colors.link }]} onPress={closeSortSheet}>
-                <SkyboundText size={16} style={{ color:'#FFF' }}>Close</SkyboundText>
+                <SkyboundText variant='primary' accessabilityLabel='Close'size={16} style={{ color:'#FFF' }}>Close</SkyboundText>
               </Pressable>
             </View>
           </Animated.View>
