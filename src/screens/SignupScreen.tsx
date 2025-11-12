@@ -265,16 +265,12 @@ export default function SignupScreen() {
               <SkyboundLabelledTextBox
                 label="Password"
                 placeholderText="Create a password"
-                width={BTN_W}
+                 width={BTN_W}
                 height={45}
-                value={password}
                 onChange={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="password"
-                textColor={c.text}
-                placeholderColor={c.subText}
+                secureTextEntry={true}
+                enableinfoIcon={true}
+                infoIconText='Password must be 7+ characters'
               />
             </View>
 
@@ -285,14 +281,8 @@ export default function SignupScreen() {
                 placeholderText="Re-enter password"
                 width={BTN_W}
                 height={45}
-                value={password2}
                 onChange={setPassword2}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="password"
-                textColor={c.text}
-                placeholderColor={c.subText}
+                secureTextEntry={true}
               />
             </View>
 

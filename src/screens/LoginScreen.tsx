@@ -162,7 +162,7 @@ export default function LoginScreen() {
                 height={45}
                 value={password}
                 onChange={setPassword}
-                secureTextEntry
+                secureTextEntry={true}
                 textColor={c.text}
                 placeholderColor={c.subText}
               />
