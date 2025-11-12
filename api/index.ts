@@ -1,4 +1,5 @@
 import AmadeusAPI from '@/AmadeusAPI';
+import exposeServer from '@/ngrok';
 import SkyboundAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import express, { Request, Response } from 'express';
 
@@ -9,6 +10,13 @@ const api: SkyboundAPI = new AmadeusAPI();
 app.use(express.json()); // add this before any routes
 
 app.use('/api/logos', express.static('./logos')); // Logos are publicly accessible
+
+// Expose the local dev server with NGROK (if USE_NGROK=true)
+(async () => {
+  if (process.env.USE_NGROK === 'true') {
+    await exposeServer("127.0.0.1", PORT);
+  }
+})();
 
 app.get('/hello', (_: Request, res: Response) => {
   res.send('Hello world!');

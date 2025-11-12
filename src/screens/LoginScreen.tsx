@@ -26,11 +26,8 @@ import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
 import SkyboundText from '@components/ui/SkyboundText';
 
 //Firebase imports
-import { auth } from '@src/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
 
 //toast imports
-import Toast from 'react-native-toast-message';
 
 
 export default function LoginScreen() {
@@ -59,29 +56,9 @@ export default function LoginScreen() {
 
   //handling login with email
   const handleLogin = async (email : string, password : string) => {
-    setIsLoading(true);
-    try 
-    {
-     
-      console.log("Attempting Sign in...");
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('sign in successful!');
-      navigation.navigate('Dashboard');
-      setIsLoading(false);
-      
-      navigation.navigate('Dashboard');
-      setIsLoading(false);
-    }
-    catch(error :any)
-    {
-      Toast.show({
-        type: 'error',
-        text1: 'Error:',
-        text2: error.message,
-      });
-      setIsLoading(false);
-      return;
-    }
+    navigation.navigate('Dashboard');
+    return;
+
 
   }
 
