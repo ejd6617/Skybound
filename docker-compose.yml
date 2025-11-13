@@ -7,8 +7,10 @@ services:
       - ./api:/app
       - ./skyboundTypes:/skyboundTypes
       - ./.env.amadeus.local:/.env.amadeus.local
+      - ./.env.ngrok.local:/.env.ngrok.local
     ports:
       - 4000:4000 # API
     environment:
       - PORT=4000
+      - USE_NGROK=true
     command: ["npm", "start"]

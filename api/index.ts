@@ -1,4 +1,5 @@
 import AmadeusAPI from '@/AmadeusAPI';
+import abbreviatedLog from '@/logging';
 import exposeServer from '@/ngrok';
 import SkyboundAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import express, { Request, Response } from 'express';
@@ -7,9 +8,10 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const api: SkyboundAPI = new AmadeusAPI();
 
-app.use(express.json()); // add this before any routes
+app.use(express.json());
 
-app.use('/api/logos', express.static('./logos')); // Logos are publicly accessible
+// Logos are publicly accessible
+app.use('/api/logos', express.static('./logos'));
 
 // Expose the local dev server with NGROK (if USE_NGROK=true)
 (async () => {
@@ -25,9 +27,9 @@ app.get('/hello', (_: Request, res: Response) => {
 app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
   try {
     const query: OneWayQueryParams = req.body;
-    console.log(query);
+    abbreviatedLog("Input", query, Infinity);
     const data = await api.searchFlightsOneWay(query);
-    console.log(data);
+    abbreviatedLog("Output", data);
     res.json(data);
   } catch (error) {
     console.error('Error:', error);
@@ -38,9 +40,9 @@ app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
 app.post('/api/searchFlightsRoundTrip', async (req: Request, res: Response) => {
   try {
     const query: RoundTripQueryParams = req.body;
-    console.log(query);
+    abbreviatedLog("Input", query, Infinity);
     const data = await api.searchFlightsRoundTrip(query);
-    console.log(data);
+    abbreviatedLog("Output", data);
     res.json(data);
   } catch (error) {
     console.error('Error:', error);
@@ -51,7 +53,9 @@ app.post('/api/searchFlightsRoundTrip', async (req: Request, res: Response) => {
 app.post('/api/searchFlightsMultiCity', async (req: Request, res: Response) => {
   try {
     const query: MultiCityQueryParams = req.body;
+    abbreviatedLog("Input", query, Infinity);
     const data = await api.searchFlightsMultiCity(query);
+    abbreviatedLog("Output", data);
     res.json(data);
   } catch (error) {
     console.error('Error:', error);
