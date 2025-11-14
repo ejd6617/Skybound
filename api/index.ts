@@ -21,7 +21,7 @@ app.use('/api/logos', express.static('./logos'));
 })();
 
 app.get('/hello', (_: Request, res: Response) => {
-  res.send('Hello world!');
+  res.json({hello: 'Hello world!'});
 });
 
 app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {

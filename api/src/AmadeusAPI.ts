@@ -238,6 +238,8 @@ export default class AmadeusAPI implements SkyboundAPI {
       throw new Error("Error in Amadeus backend: expected response from API, got undefined");
     }
     
+    console.log(response);
+    
     return this.parseFlights(response);
   }
 

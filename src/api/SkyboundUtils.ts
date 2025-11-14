@@ -57,7 +57,5 @@ export async function skyboundRequest(endpoint: string, params: object) {
     throw new Error(`HTTP error ${response.status}`);
   }
 
-  const json: any = await response.json();
-  console.log(JSON.stringify(json, null, 2));
-  return json;
+  return await response.json();
 }
