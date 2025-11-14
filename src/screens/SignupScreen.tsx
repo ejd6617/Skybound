@@ -47,6 +47,15 @@ export default function SignupScreen() {
   const [password2, setPassword2] = useState('');
   const [signUpError, setSignUpError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState(false);
+  const [nameError, setNameError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [passwrodError, setPasswordError ] = useState(false);
+  const [passwordsNotMatchError, setPasswordsNotMatchError] = useState(false);
+  const [passwordInsufficentLengthError, setPasswordInsufficentLengthError] = useState(false);
+  const [nameBoxErrorText, setNameBoxErrorText] = useState('');
+  const [emailBoxErrorText, setEmailBoxErrorText] = useState('');
+  const [passwordBoxErrorText, setPasswordBoxErrorText] = useState('');
 
  
   //navigation and color theme
@@ -64,54 +73,74 @@ export default function SignupScreen() {
 
   const registerUserWithEmail = async (name : string, email : string, password : string, password2) =>
   {
-    //disable the register button
-    setIsLoading(true);
-    //check if email is in proper format
-    if(!isVaildEmail(email))
-    {
-      Toast.show({
-      type:'error',
-      text1: 'Error: Email incorrect',
-      text2: 'help' });
-      //renable the register button
-      setIsLoading(false);
-      return;
-    }
-    //check if passwords match
-    if(password !== password2)
-    {
-      Toast.show({
-        type: 'error',
-        text1: 'Error:',
-        text2: 'Passwords do not match'
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    //if the passwords are not long enough
-    if(password.length <=6)
-    {
-      Toast.show({
-        type: 'error',
-        text1: 'Error:',
-        text2: 'Passwords must be 7+ characters long'
-      });
-      setIsLoading(false);
-      return;
-    }
+     setIsLoading(true);
+
+  // reset flags
+  setNameError(false);
+  setEmailError(false);
+  setPasswordError(false);
+
+  let localHasError = false;
+
+  // empty fields
+  if (fullName === '' || email === '' || password === '' || password2 === '') {
+    console.log("one or more fields is empty");
+    localHasError = true;
+    setLoginError(true);
+  }
+
+  // bad email
+  if (!isVaildEmail(email)) {
+    console.log("email is invalid");
+    setEmailError(true);
+    localHasError = true;
+  }
+
+  // password mismatch
+  if (password !== password2) {
+    console.log("passwords do not match");
+    setPasswordError(true);
+    setPasswordsNotMatchError(true);
+    localHasError = true;
+  }
+
+  // password too short
+  if (password.length <= 6) {
+    console.log("Password insufficient");
+    setPasswordError(true);
+    setPasswordInsufficentLengthError(true);
+    localHasError = true;
+  }
+
+  // 🚨 USE YOUR LOCAL VARIABLE, NOT loginError
+  if (localHasError) {
+    // gather UI errors
+    getNameBoxErrors();
+    getEmailBoxErrors();
+    getPasswordBoxErrors();
+
+    setIsLoading(false);
+    return;   // properly returns every time
+  }
 
     //send data to auth
     try {
+
+      console.log("attempting login")
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
+    
+
       //using setUserData to store new user info into db
       const success = await setUserData(user.uid, fullName, email);
+      //add to stripe
       if (!success) {
         Alert.alert('Error', 'Failed to save user data.');
         return;
       }
+
+      
 
       navigation.navigate('Dashboard');
       //renable the register button
@@ -147,6 +176,49 @@ export default function SignupScreen() {
     console.log("User with email" + email + " Registered!")
   }
 
+  //error message helper functions
+
+ function getNameBoxErrors() {
+    
+  let text = "";
+
+  if (fullName === "") {
+    setNameError(true);
+    text += "Name Cannot Be Empty.";
+  }
+
+  setNameBoxErrorText(text);
+ }
+
+ function getEmailBoxErrors() {
+    
+  let text = "";
+
+  if (email === "") {
+    text += "Email Cannot Be Empty.";
+  } else if (emailError) {
+    text += "Email is invalid.";
+  }
+
+  setEmailBoxErrorText(text);
+
+    
+ }
+
+ function getPasswordBoxErrors() {
+  
+  let text = "";
+
+  if (passwordsNotMatchError) {
+    text += "Passwords do not match. ";
+  }
+
+  if (passwordInsufficentLengthError) {
+    text += "Password must be 7+ characters.";
+  }
+
+  setPasswordBoxErrorText(text);
+ }
 
   // ======= HANDLING SIGN IN WITH GOOGLE =======
 
@@ -212,12 +284,6 @@ export default function SignupScreen() {
             style={{ width: 250, height: 70, resizeMode: 'contain', marginTop: 25, marginBottom: 10 }}
           />
 
-          <Toast/>
-
-          {/*check for sign up errors*/
-            signUpError ? <SkyboundText accessabilityLabel={'Error Registering account: ' + signUpError}
-                          variant='primary'>{signUpError}</SkyboundText> : null}
-
           {/* Subtitle */}
           <SkyboundText variant="primary" accessabilityLabel="Skybound: Your Journey Starts Here" style={{ marginBottom: 33 }}>
             Your Journey Starts Here
@@ -241,9 +307,9 @@ export default function SignupScreen() {
               placeholderText="Enter your name"
               width={BTN_W}
               height={45}
-              value={fullName}
-              autoCapitalize="words"
               onChange={setFullName}
+              enableErrorText={nameError}
+              errorText={nameBoxErrorText}
             />
 
             {/* Email */}
@@ -253,10 +319,9 @@ export default function SignupScreen() {
                 placeholderText="Enter your email"
                 width={BTN_W}
                 height={45}
-                value={email}
                 onChange={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
+                enableErrorText={emailError}
+                errorText={emailBoxErrorText}
               />
             </View>
 
@@ -271,6 +336,8 @@ export default function SignupScreen() {
                 secureTextEntry={true}
                 enableinfoIcon={true}
                 infoIconText='Password must be 7+ characters'
+                enableErrorText={passwrodError}
+                errorText={passwordBoxErrorText}
               />
             </View>
 
@@ -283,6 +350,8 @@ export default function SignupScreen() {
                 height={45}
                 onChange={setPassword2}
                 secureTextEntry={true}
+                enableErrorText={passwrodError}
+                errorText={passwordBoxErrorText}
               />
             </View>
 

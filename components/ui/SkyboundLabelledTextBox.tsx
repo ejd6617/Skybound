@@ -18,7 +18,8 @@ interface SkyboundLabelledTextBoxProps {
     enableinfoIcon? : boolean
     infoIconText?: string
     secureTextEntry?: boolean
-    
+    enableErrorText?: boolean,
+    errorText?: string,
 }
 
 
@@ -32,31 +33,38 @@ const SkyboundLabelledTextBox: React.FC<SkyboundLabelledTextBoxProps> = ({placeh
     onChange,
     enableinfoIcon = false,
     infoIconText,
-    secureTextEntry = false, }) => {
+    secureTextEntry = false, 
+    enableErrorText = false,
+    errorText, }) => {
 
-    if(enableinfoIcon)
-    {
-        return (
-             <View style={styles.container}>
-                <View style={styles.infoButtonContainer}>
-                <SkyboundText variant={labelVariant} size={labelSize} accessabilityLabel={label}>{label}</SkyboundText>
-                <InfoButton infoText={infoIconText}></InfoButton>
-                </View>
+    
+    return (
+        <View style={styles.container}>
+            {/*If the info button is enabled, render text box with info button, otherwise dont */}
+            {enableinfoIcon && (
+                <>
+                    <View style={styles.infoButtonContainer}>
+                    <SkyboundText variant={labelVariant} size={labelSize} accessabilityLabel={label}>{label}</SkyboundText>
+                    <InfoButton infoText={infoIconText}></InfoButton>
+                    </View>
+                    </>
+                 ) || (
+                    <>
+                        <SkyboundText variant={labelVariant} size={labelSize} accessabilityLabel={label}>{label}</SkyboundText>
+                    </>
+                 )}
                 <SkyboundTextBox placeholderText={placeholderText} width={width} height={height} icon={icon} onChangeText={onChange}
                 secureTextEntry={secureTextEntry} />
+                {/*Conditionally load error text  */}
+                {enableErrorText &&(
+                    <>
+                        <SkyboundText variant='error' accessabilityLabel={errorText}>{errorText}</SkyboundText>
+                    </>
+                )}
             </View>
         )
-    }
-    else
-    {
-
-        return(
-            <View style={styles.container}>
-                <SkyboundText variant={labelVariant} size={labelSize} accessabilityLabel={label}>{label}</SkyboundText>
-                <SkyboundTextBox placeholderText={placeholderText} width={width} height={height} icon={icon} onChangeText={onChange} />
-            </View>
-        )
-    }
+    
+    
 
    
 }

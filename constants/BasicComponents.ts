@@ -194,6 +194,11 @@ export default StyleSheet.create({
     fontFamily: 'Regular',
     color: '#585858',
   },
+
+  skyboundTextError: {
+    color: 'red',
+    fontFamily: 'Regular',
+  },
  
 
   skyboundBlueTextLight: {
