@@ -75,12 +75,12 @@ export default function SignupScreen() {
   {
   setIsLoading(true);
 
-  // reset "visible" error flags (if you still need these)
+  // reset "visible" error flags 
   setNameError(false);
   setEmailError(false);
   setPasswordError(false);
 
-  // LOCAL booleans — compute immediately and synchronously
+  // LOCAL booleans
   let localHasError = false;
   const localEmptyFields =
     fullName.trim() === "" ||
@@ -91,7 +91,7 @@ export default function SignupScreen() {
   if (localEmptyFields) {
     console.log("one or more fields is empty");
     localHasError = true;
-    // you can still set the state flag if you need it for other UI
+   
     setLoginError(true);
   }
 
@@ -107,7 +107,7 @@ export default function SignupScreen() {
     console.log("passwords do not match");
     localHasError = true;
     setPasswordError(true);
-    // you may remove setPasswordsNotMatchError state and rely on local values instead
+  
   }
 
   const localPasswordTooShort = password.length <= 6;
@@ -222,6 +222,7 @@ function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: bool
         //this key was generated from a google clould project
         iosClientId: '367556706415-3ni93vpkp7c6hfsl72po1gf6lfle01up.apps.googleusercontent.com',
         webClientId: '367556706415-eqnunq32cebub258ogudj9s0h23b8d6v.apps.googleusercontent.com',
+        androidClientId: '367556706415-i5pntol41teebgo0cd82ogh991i5jklv.apps.googleusercontent.com'
     } );
 
   //watch for changes in response
