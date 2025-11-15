@@ -73,90 +73,86 @@ export default function SignupScreen() {
 
   const registerUserWithEmail = async (name : string, email : string, password : string, password2) =>
   {
-     setIsLoading(true);
+  setIsLoading(true);
 
-  // reset flags
+  // reset "visible" error flags (if you still need these)
   setNameError(false);
   setEmailError(false);
   setPasswordError(false);
 
+  // LOCAL booleans — compute immediately and synchronously
   let localHasError = false;
+  const localEmptyFields =
+    fullName.trim() === "" ||
+    email.trim() === "" ||
+    password === "" ||
+    password2 === "";
 
-  // empty fields
-  if (fullName === '' || email === '' || password === '' || password2 === '') {
+  if (localEmptyFields) {
     console.log("one or more fields is empty");
     localHasError = true;
+    // you can still set the state flag if you need it for other UI
     setLoginError(true);
   }
 
-  // bad email
-  if (!isVaildEmail(email)) {
+  const localEmailInvalid = !isVaildEmail(email);
+  if (localEmailInvalid) {
     console.log("email is invalid");
+    localHasError = true;
     setEmailError(true);
-    localHasError = true;
   }
 
-  // password mismatch
-  if (password !== password2) {
+  const localPasswordsNotMatch = password !== password2;
+  if (localPasswordsNotMatch) {
     console.log("passwords do not match");
-    setPasswordError(true);
-    setPasswordsNotMatchError(true);
     localHasError = true;
+    setPasswordError(true);
+    // you may remove setPasswordsNotMatchError state and rely on local values instead
   }
 
-  // password too short
-  if (password.length <= 6) {
+  const localPasswordTooShort = password.length <= 6;
+  if (localPasswordTooShort) {
     console.log("Password insufficient");
-    setPasswordError(true);
-    setPasswordInsufficentLengthError(true);
     localHasError = true;
+    setPasswordError(true);
+    // setPasswordInsufficentLengthError(true);
   }
 
-  // 🚨 USE YOUR LOCAL VARIABLE, NOT loginError
   if (localHasError) {
-    // gather UI errors
-    getNameBoxErrors();
-    getEmailBoxErrors();
-    getPasswordBoxErrors();
+    // pass the local booleans into the helpers so they don't read stale state
+    getNameBoxErrors(fullName);
+    getEmailBoxErrors(email, localEmailInvalid);
+    getPasswordBoxErrors(localPasswordsNotMatch, localPasswordTooShort);
 
     setIsLoading(false);
-    return;   // properly returns every time
+    return;
   }
 
-    //send data to auth
-    try {
+  // --- continue with try/catch for actual registration ---
+  try {
+    console.log("attempting login");
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
 
-      console.log("attempting login")
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-    
-
-      //using setUserData to store new user info into db
-      const success = await setUserData(user.uid, fullName, email);
-      //add to stripe
-      if (!success) {
-        Alert.alert('Error', 'Failed to save user data.');
-        return;
-      }
-
-      
-
-      navigation.navigate('Dashboard');
-      //renable the register button
+    const success = await setUserData(user.uid, fullName, email);
+    if (!success) {
+      Alert.alert("Error", "Failed to save user data.");
       setIsLoading(false);
-    }catch(error : any)
-    { 
-      setSignUpError(error.message);
-      Toast.show({
-        type: 'error',
-        text1: 'Error:',
-        text2: signUpError
-      })
-      //renable the register button
-      setIsLoading(false);
+      return;
     }
+
+    navigation.navigate("Dashboard");
+    setIsLoading(false);
+  } catch (error: any) {
+    setSignUpError(error.message);
+    Toast.show({
+      type: "error",
+      text1: "Error:",
+      text2: error.message,
+    });
+    setIsLoading(false);
   }
+};
 
   function isVaildEmail(email) {
     //regular expression to ensure email is in proper format
@@ -178,47 +174,44 @@ export default function SignupScreen() {
 
   //error message helper functions
 
- function getNameBoxErrors() {
-    
+function getNameBoxErrors(fullName: string) {
+  let text = "";
+  if (!fullName.trim()) text = "Name Cannot Be Empty.";
+  setNameBoxErrorText(text);
+  setNameError(Boolean(text));
+}
+
+ function getEmailBoxErrors(email: string, emailInvalid: boolean) {
   let text = "";
 
-  if (fullName === "") {
-    setNameError(true);
-    text += "Name Cannot Be Empty.";
+  if (!email.trim()) {
+    text += "Email Cannot Be Empty.";
+    setEmailBoxErrorText(text);
+    return;
   }
 
-  setNameBoxErrorText(text);
- }
-
- function getEmailBoxErrors() {
-    
-  let text = "";
-
-  if (email === "") {
-    text += "Email Cannot Be Empty.";
-  } else if (emailError) {
+  if (emailInvalid) {
     text += "Email is invalid.";
   }
 
   setEmailBoxErrorText(text);
+}
 
-    
- }
-
- function getPasswordBoxErrors() {
-  
+function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: boolean) {
   let text = "";
 
-  if (passwordsNotMatchError) {
+  if (passwordsNotMatch) {
     text += "Passwords do not match. ";
   }
-
-  if (passwordInsufficentLengthError) {
+  if (passwordTooShort) {
     text += "Password must be 7+ characters.";
   }
 
   setPasswordBoxErrorText(text);
- }
+
+  // If you still use passwordError boolean in UI, also set it:
+  setPasswordError(Boolean(text));
+}
 
   // ======= HANDLING SIGN IN WITH GOOGLE =======
 
