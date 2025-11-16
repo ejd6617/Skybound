@@ -22,6 +22,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
           Email: email,
           UserID: userID,
           DateCreated: serverTimestamp(),
+          LastLogIn: serverTimestamp(),
         },
         { merge: true }
       );
@@ -38,6 +39,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
     Email: string;
     UserID: string;
     DateCreated: any;
+    LastLogIn: any;
   } | null> => {
     try {
       if (!userID) throw new Error("Invalid userID provided");
@@ -53,6 +55,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
         Email: docSnap.data().Email,
         UserID: docSnap.data().UserID,
         DateCreated: docSnap.data().DateCreated,
+        LastLogIn: docSnap.data().LastLogIn,
       };
     } catch (error) {
       console.error("Error fetching user: ", error);
