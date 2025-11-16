@@ -14,7 +14,9 @@ if (process.env.USE_NGROK === 'true') {
 // Use a fallback value for API_URL if USE_NGROK is true and the variable isn't set, or if USE_NGROK is false
 export default ({ config }) => ({
   ...config,
+  owner: "ejd5757",
   extra: {
+    ...config.extra,        // keep everything from app.json
     API_URL: process.env.NGROK_URL || 'http://129.80.33.141:4000',
   },
 });

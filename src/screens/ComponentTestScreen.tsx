@@ -3,6 +3,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 //i dont know why these are underlined red. The program builds just fine.
+import InfoButton from '@/components/ui/InfoButton';
 import InteractiveMap from '@/components/ui/InteractiveMap';
 import SkyboundText from '@/components/ui/SkyboundText';
 import basicStyles from '@constants/BasicComponents';
@@ -31,6 +32,8 @@ export default function ComponentTestScreen() {
       <InteractiveMap mapHeight={300} mapWidth={500} onChange={setAirports}></InteractiveMap>
       
       <SkyboundText variant='primary' accessabilityLabel='ao;sdij'>{'airports: ' + airportCodes}</SkyboundText>
+
+      <InfoButton infoText='Test Text'></InfoButton>
 
 
      

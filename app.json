@@ -3,6 +3,7 @@
     "name": "Skybound",
     "slug": "skybound",
     "scheme": "skybound",
+    "owner": "ejd5757",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/skybound_icon.png",
@@ -20,7 +21,7 @@
         "foregroundImage": "./assets/images/skybound_icon.png",
         "backgroundColor": "#0071E2"
       },
-      "package": "com.yourname.skybound"
+      "package": "com.skyboundTeam.skybound"
     },
     "web": {
       "favicon": "./assets/images/skybound_icon.png"
@@ -31,8 +32,9 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "00000000-0000-0000-0000-000000000000"
-      }
+        "projectId": "e4dd052e-c304-4009-8dad-6e28dc4ba49b"
+      },
+      "API_URL": "http://129.80.33.141:4000"
     }
   }
 }
