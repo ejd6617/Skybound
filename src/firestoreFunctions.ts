@@ -13,8 +13,8 @@ const setUserData = async (userID: string, name: string, email: string): Promise
       if (!email || typeof email !== "string") {
         throw new Error("Invalid email provided");
       }
-  
-      const docRef = doc(db, "User", "UserData", userID);
+
+      const docRef = doc(db, "Users", userID);
       await setDoc(
         docRef,
         {
@@ -25,7 +25,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
         },
         { merge: true }
       );
-  
+
       return true;
     } catch (error) {
       console.error("Error creating user: ", error);
@@ -42,7 +42,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
     try {
       if (!userID) throw new Error("Invalid userID provided");
   
-      const docRef = doc(db, "Customer", "CustomerData", userID);
+      const docRef = doc(db, "Users", userID);
       const docSnap = await getDoc(docRef);
   
       if (!docSnap.exists()) return null;
@@ -70,9 +70,9 @@ const setUserData = async (userID: string, name: string, email: string): Promise
         throw new Error("Invalid data object provided");
       }
   
-      const docRef = doc(db, "User", "UserData", userID);
+      const docRef = doc(db, "Users", userID);
       await updateDoc(docRef, data);
-  
+
       return true;
     } catch (error) {
       console.error("Error updating user: ", error);
@@ -84,7 +84,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
     try {
       if (!userID) throw new Error("Invalid userID provided");
   
-      const docRef = doc(db, "Customer", "CustomerData", userID);
+      const docRef = doc(db, "Users", userID);
       await deleteDoc(docRef);
   
       return true;

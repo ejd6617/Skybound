@@ -109,7 +109,7 @@ export default function SignupScreen() {
       //using setUserData to store new user info into db
       const success = await setUserData(user.uid, fullName, email);
       if (!success) {
-        Alert.alert('Error', 'Failed to save user data.');
+        Alert.alert('Error', 'Failed to save user data. Please Try again.');
         return;
       }
 
