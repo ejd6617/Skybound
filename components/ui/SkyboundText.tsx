@@ -13,7 +13,7 @@ interface SkyboundTextProps {
 }
 
 export type TextVariant = 'primary' | 'secondary' | 'primaryButton'
-| 'deleteButton' | 'blue' | 'primaryBold'  | 'forceWhite' // enum of the various styles
+| 'deleteButton' | 'blue' | 'primaryBold'  | 'forceWhite'  | 'error' // enum of the various styles
 
 const SkyboundText: React.FC<SkyboundTextProps> = ({
     children,
@@ -84,6 +84,10 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
     else if(variant === 'forceWhite')
     {
         variantStyle = basicStyles.skyboundTextPrimaryDarkBold;
+    }
+    else if(variant === 'error')
+    {
+        variantStyle = basicStyles.skyboundTextError
     }
 
     return (

@@ -1,3 +1,5 @@
+import InteractiveMap, { LatLng } from '@/components/ui/InteractiveMap';
+import SkyboundItemHolder from '@/components/ui/SkyboundItemHolder';
 import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
 import AccountIcon from '@assets/images/AccountIcon.svg';
 import BellIcon from '@assets/images/BellIcon.svg';
@@ -17,9 +19,14 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
+import * as Location from 'expo-location';
 import React, { useEffect, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
+import AirportIcon from '../../assets/images/AirportIcon.svg';
+import ArrivalIcon from '../../assets/images/ArrivalIcon.svg';
+import CalandarIcon from '../../assets/images/CalandarIcon.svg';
+import DepartureIcon from '../../assets/images/DepartureIcon.svg';
 import { skyboundRequest } from '../api/SkyboundUtils';
 
 
@@ -52,7 +59,7 @@ export default function FlightSearchScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [tripType, setTripType] = useState<TripType>('one-way');
   const [flexibleDates, setFlexibleDates] = useState(false);
-  const [flexibleAirports, setFlexibleAirports] = useState(false);
+ 
 
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -60,6 +67,45 @@ export default function FlightSearchScreen() {
   const [toAirport, setToAirport] = useState<Airport | undefined>();
   const [departureDate, setDepartureDate] = useState<Date | null>(null);
   const [returnDate, setReturnDate] = useState<Date | null>(null);
+
+  //tracking if the user has flexible airport search enabled
+  const [flexibleAirportsEnabled, setFlexibleAirportsEnabled] = useState(false);
+  //tracking if the flexible airport modal is shown 
+  const [flexibleAiportsVisible, setFlexibleAirportsVisible] = useState(false);
+
+  //contains the flexible airport objects
+  const [flexibleAirports, setFlexibleAirports] = useState<any[]>([]);
+  //contains the flexible airport codes
+  const [flexibleAirportCodes, setFlexibleAirportCodes] = useState<string[]>([]);
+
+  //updates airport codes when airport objects are collected
+  useEffect(() => {
+    setFlexibleAirportCodes(flexibleAirports.map(a => a.code));
+    console.log(flexibleAirportCodes);
+  }, [flexibleAirports])
+
+  //stores user's current location
+   const [userLocation, setUserLocation] = useState<LatLng | undefined>(undefined);
+
+  //function for getting the user's location
+  const getUserLocation = async () => {
+    // ask for permission
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Location permission is required.');
+      return;
+    }
+
+    // get current location
+    const location = await Location.getCurrentPositionAsync({});
+    const coords = {
+      latitude: location.coords.latitude,
+      longitude: location.coords.longitude,
+    };
+    setUserLocation(coords);
+  };
+
+
 
   const createEmptyAirport = (): Airport => ({
     iata: "",
@@ -323,11 +369,40 @@ export default function FlightSearchScreen() {
           rightHandSecondIconOnPressEvent={() => console.log('Account Button Pressed')}
         />
 
+        <Modal
+        animationType="slide"
+        transparent={true}
+        visible={flexibleAiportsVisible} // use your state
+        onRequestClose={() => setFlexibleAirportsVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0,0,0,0.5)'
+        }}>
+          <SkyboundItemHolder>
+            <SkyboundText accessabilityLabel='Select Location' variant='primary'>Select Location</SkyboundText>
+
+            <InteractiveMap
+            mapHeight={500}
+            mapWidth={450}
+            onChange={setFlexibleAirports}
+            location={userLocation}>
+
+            </InteractiveMap>
+            <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight}width={300} height={50} onPress={() => {setFlexibleAirportsVisible(false);}}>Close</SkyboundButton>
+            <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight} width={300} height={50} onPress={ async () =>  await getUserLocation()}>Use My location</SkyboundButton>
+          </SkyboundItemHolder> 
+        </View>
+      </Modal>
         <ScrollView 
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
+         
+        
           <View style={[styles.container, { width: CARD_W }]}>
             <TripTypeSelector
               selectedType={tripType}
@@ -340,16 +415,28 @@ export default function FlightSearchScreen() {
             {tripType !== 'multi-city' ? (
               <>
                 <View style={{...styles.columnContainer}}>
-                  <AirportAutocomplete
-                    label="From"
-                    value={from}
-                    onSelect={(airport) => {
-                      setFrom(`${airport.city} (${airport.iata})`);
-                      setFromAirport(airport);
-                    }}
-                    placeholder="Departure airport"
-                    error={errors.from}
+                  {!flexibleAirportsEnabled && (
+                  <>
+                    <AirportAutocomplete
+                      label="From"
+                      value={from}
+                      onSelect={(airport) => {
+                        setFrom(`${airport.city} (${airport.iata})`);
+                        setFromAirport(airport);
+                      }}
+                      placeholder="Departure airport"
+                      error={errors.from}
+                      icon={<DepartureIcon/>}
                   />
+                  </>
+
+                  ) || (
+                  <>
+
+                  <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='secondary'>{"Flexible Airports: " + flexibleAirportCodes}</SkyboundText>
+
+                  </>
+                  )}
 
                   <View style={{ height: 0 }} />
 
@@ -362,7 +449,10 @@ export default function FlightSearchScreen() {
                     }}
                     placeholder="Arrival airport"
                     error={errors.to}
+                    icon={<ArrivalIcon/>}
                   />
+
+                  <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='primary'>{flexibleAiportsVisible}</SkyboundText>
 
                   <View style={{ height: 8 }} />
 
@@ -428,13 +518,26 @@ export default function FlightSearchScreen() {
                 label="Flexible Dates"
                 isActive={flexibleDates}
                 onToggle={() => setFlexibleDates(!flexibleDates)}
-                iconType="calendar"
+                icon={CalandarIcon}
               />
               <FlexibleChip
                 label="Flexible Airports"
-                isActive={flexibleAirports}
-                onToggle={() => setFlexibleAirports(!flexibleAirports)}
-                iconType="airport"
+                isActive={flexibleAirportsEnabled}
+                onToggle={() => {
+                  if(!flexibleAirportsEnabled)
+                  {
+                    setFlexibleAirportsEnabled(true);
+                    setFlexibleAirportsVisible(true);
+                  }
+                  else
+                  {
+                    setFlexibleAirportsEnabled(false);
+                    setFlexibleAirports([])
+                    setFlexibleAirportCodes([])
+                  }
+                  
+                }}
+                icon={AirportIcon}
               />
             </View>
 

@@ -13,6 +13,8 @@ const setUserData = async (userID: string, name: string, email: string): Promise
       if (!email || typeof email !== "string") {
         throw new Error("Invalid email provided");
       }
+  
+      const docRef = doc(db, "Users", userID);
 
       const docRef = doc(db, "Users", userID);
       await setDoc(
@@ -45,6 +47,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
       if (!userID) throw new Error("Invalid userID provided");
   
       const docRef = doc(db, "Users", userID);
+      const docRef = doc(db, "Users", userID);
       const docSnap = await getDoc(docRef);
   
       if (!docSnap.exists()) return null;
@@ -72,6 +75,8 @@ const setUserData = async (userID: string, name: string, email: string): Promise
       if (!data || typeof data !== "object") {
         throw new Error("Invalid data object provided");
       }
+
+      const docRef = doc(db, "Users", userID);
   
       const docRef = doc(db, "Users", userID);
       await updateDoc(docRef, data);
@@ -88,6 +93,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
       if (!userID) throw new Error("Invalid userID provided");
   
       const docRef = doc(db, "Users", userID);
+      const docRef = doc(db, "Users", userID);
       await deleteDoc(docRef);
   
       return true;
@@ -98,3 +104,4 @@ const setUserData = async (userID: string, name: string, email: string): Promise
   };
 
 export { deleteUserData, getUserData, setUserData, updateUserData };
+

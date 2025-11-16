@@ -32,7 +32,6 @@ import { updateUserData } from '@src/firestoreFunctions';
 import { serverTimestamp } from "firebase/firestore";
 
 //toast imports
-import Toast from 'react-native-toast-message';
 
 
 export default function LoginScreen() {
@@ -41,6 +40,8 @@ export default function LoginScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const c = useColors(); // current theme (light/dark)
+  const [loginError, setLoginError] = useState(false);
+  const [loginErrorMessage, setLoginErrorMessage] = useState('');
 
   // width for SkyboundButton
   const { width: SCREEN_W } = Dimensions.get("window");
@@ -62,6 +63,9 @@ export default function LoginScreen() {
   //handling login with email
   const handleLogin = async (email : string, password : string) => {
     setIsLoading(true);
+    setLoginError(false);
+    setLoginErrorMessage("");
+
     try 
     {
      
@@ -78,11 +82,8 @@ export default function LoginScreen() {
     }
     catch(error :any)
     {
-      Toast.show({
-        type: 'error',
-        text1: 'Error:',
-        text2: error.message,
-      });
+      setLoginError(true);
+      setLoginErrorMessage("Email and password combination is not found in our system");
       setIsLoading(false);
       return;
     }
@@ -151,10 +152,9 @@ export default function LoginScreen() {
               placeholderText="Enter your email"
               width={BTN_W}
               height={45}
-              value={email}
               onChange={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
+              enableErrorText={loginError}
+              errorText={loginErrorMessage}
             />
 
             <View style={{ width: '100%', alignItems: 'center', marginTop: 10 }}>
@@ -164,11 +164,10 @@ export default function LoginScreen() {
                 placeholderText="Enter your password"
                 width={BTN_W}
                 height={45}
-                value={password}
                 onChange={setPassword}
-                secureTextEntry
-                textColor={c.text}
-                placeholderColor={c.subText}
+                secureTextEntry={true}
+                enableErrorText={loginError}
+                errorText={loginErrorMessage}
               />
             </View>
 

@@ -47,6 +47,15 @@ export default function SignupScreen() {
   const [password2, setPassword2] = useState('');
   const [signUpError, setSignUpError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState(false);
+  const [nameError, setNameError] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const [passwrodError, setPasswordError ] = useState(false);
+  const [passwordsNotMatchError, setPasswordsNotMatchError] = useState(false);
+  const [passwordInsufficentLengthError, setPasswordInsufficentLengthError] = useState(false);
+  const [nameBoxErrorText, setNameBoxErrorText] = useState('');
+  const [emailBoxErrorText, setEmailBoxErrorText] = useState('');
+  const [passwordBoxErrorText, setPasswordBoxErrorText] = useState('');
 
  
   //navigation and color theme
@@ -64,43 +73,84 @@ export default function SignupScreen() {
 
   const registerUserWithEmail = async (name : string, email : string, password : string, password2) =>
   {
-    //disable the register button
-    setIsLoading(true);
-    //check if email is in proper format
-    if(!isVaildEmail(email))
-    {
-      Toast.show({
-      type:'error',
-      text1: 'Error: Email incorrect',
-      text2: 'help' });
-      //renable the register button
-      setIsLoading(false);
-      return;
-    }
-    //check if passwords match
-    if(password !== password2)
-    {
-      Toast.show({
-        type: 'error',
-        text1: 'Error:',
-        text2: 'Passwords do not match'
-      });
-      setIsLoading(false);
-      return;
-    }
-    
-    //if the passwords are not long enough
-    if(password.length <=6)
-    {
-      Toast.show({
-        type: 'error',
-        text1: 'Error:',
-        text2: 'Passwords must be 7+ characters long'
-      });
+  setIsLoading(true);
+
+  // reset "visible" error flags 
+  setNameError(false);
+  setEmailError(false);
+  setPasswordError(false);
+
+  // LOCAL booleans
+  let localHasError = false;
+  const localEmptyFields =
+    fullName.trim() === "" ||
+    email.trim() === "" ||
+    password === "" ||
+    password2 === "";
+
+  if (localEmptyFields) {
+    console.log("one or more fields is empty");
+    localHasError = true;
+   
+    setLoginError(true);
+  }
+
+  const localEmailInvalid = !isVaildEmail(email);
+  if (localEmailInvalid) {
+    console.log("email is invalid");
+    localHasError = true;
+    setEmailError(true);
+  }
+
+  const localPasswordsNotMatch = password !== password2;
+  if (localPasswordsNotMatch) {
+    console.log("passwords do not match");
+    localHasError = true;
+    setPasswordError(true);
+  
+  }
+
+  const localPasswordTooShort = password.length <= 6;
+  if (localPasswordTooShort) {
+    console.log("Password insufficient");
+    localHasError = true;
+    setPasswordError(true);
+    // setPasswordInsufficentLengthError(true);
+  }
+
+  if (localHasError) {
+    // pass the local booleans into the helpers so they don't read stale state
+    getNameBoxErrors(fullName);
+    getEmailBoxErrors(email, localEmailInvalid);
+    getPasswordBoxErrors(localPasswordsNotMatch, localPasswordTooShort);
+
+    setIsLoading(false);
+    return;
+  }
+
+  // --- continue with try/catch for actual registration ---
+  try {
+    console.log("attempting login");
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+
+    const success = await setUserData(user.uid, fullName, email);
+    if (!success) {
+      Alert.alert("Error", "Failed to save user data.");
       setIsLoading(false);
       return;
     }
 
+    navigation.navigate("Dashboard");
+    setIsLoading(false);
+  } catch (error: any) {
+    setSignUpError(error.message);
+    Toast.show({
+      type: "error",
+      text1: "Error:",
+      text2: error.message,
+    });
+    setIsLoading(false);
     //send data to auth
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -128,6 +178,7 @@ export default function SignupScreen() {
       setIsLoading(false);
     }
   }
+};
 
   function isVaildEmail(email) {
     //regular expression to ensure email is in proper format
@@ -147,6 +198,46 @@ export default function SignupScreen() {
     console.log("User with email" + email + " Registered!")
   }
 
+  //error message helper functions
+
+function getNameBoxErrors(fullName: string) {
+  let text = "";
+  if (!fullName.trim()) text = "Name Cannot Be Empty.";
+  setNameBoxErrorText(text);
+  setNameError(Boolean(text));
+}
+
+ function getEmailBoxErrors(email: string, emailInvalid: boolean) {
+  let text = "";
+
+  if (!email.trim()) {
+    text += "Email Cannot Be Empty.";
+    setEmailBoxErrorText(text);
+    return;
+  }
+
+  if (emailInvalid) {
+    text += "Email is invalid.";
+  }
+
+  setEmailBoxErrorText(text);
+}
+
+function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: boolean) {
+  let text = "";
+
+  if (passwordsNotMatch) {
+    text += "Passwords do not match. ";
+  }
+  if (passwordTooShort) {
+    text += "Password must be 7+ characters.";
+  }
+
+  setPasswordBoxErrorText(text);
+
+  // If you still use passwordError boolean in UI, also set it:
+  setPasswordError(Boolean(text));
+}
 
   // ======= HANDLING SIGN IN WITH GOOGLE =======
 
@@ -157,6 +248,7 @@ export default function SignupScreen() {
         //this key was generated from a google clould project
         iosClientId: '367556706415-3ni93vpkp7c6hfsl72po1gf6lfle01up.apps.googleusercontent.com',
         webClientId: '367556706415-eqnunq32cebub258ogudj9s0h23b8d6v.apps.googleusercontent.com',
+        androidClientId: '367556706415-i5pntol41teebgo0cd82ogh991i5jklv.apps.googleusercontent.com'
     } );
 
   //watch for changes in response
@@ -212,12 +304,6 @@ export default function SignupScreen() {
             style={{ width: 250, height: 70, resizeMode: 'contain', marginTop: 25, marginBottom: 10 }}
           />
 
-          <Toast/>
-
-          {/*check for sign up errors*/
-            signUpError ? <SkyboundText accessabilityLabel={'Error Registering account: ' + signUpError}
-                          variant='primary'>{signUpError}</SkyboundText> : null}
-
           {/* Subtitle */}
           <SkyboundText variant="primary" accessabilityLabel="Skybound: Your Journey Starts Here" style={{ marginBottom: 33 }}>
             Your Journey Starts Here
@@ -241,9 +327,9 @@ export default function SignupScreen() {
               placeholderText="Enter your name"
               width={BTN_W}
               height={45}
-              value={fullName}
-              autoCapitalize="words"
               onChange={setFullName}
+              enableErrorText={nameError}
+              errorText={nameBoxErrorText}
             />
 
             {/* Email */}
@@ -253,10 +339,9 @@ export default function SignupScreen() {
                 placeholderText="Enter your email"
                 width={BTN_W}
                 height={45}
-                value={email}
                 onChange={setEmail}
-                autoCapitalize="none"
-                keyboardType="email-address"
+                enableErrorText={emailError}
+                errorText={emailBoxErrorText}
               />
             </View>
 
@@ -265,16 +350,14 @@ export default function SignupScreen() {
               <SkyboundLabelledTextBox
                 label="Password"
                 placeholderText="Create a password"
-                width={BTN_W}
+                 width={BTN_W}
                 height={45}
-                value={password}
                 onChange={setPassword}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="password"
-                textColor={c.text}
-                placeholderColor={c.subText}
+                secureTextEntry={true}
+                enableinfoIcon={true}
+                infoIconText='Password must be 7+ characters'
+                enableErrorText={passwrodError}
+                errorText={passwordBoxErrorText}
               />
             </View>
 
@@ -285,14 +368,10 @@ export default function SignupScreen() {
                 placeholderText="Re-enter password"
                 width={BTN_W}
                 height={45}
-                value={password2}
                 onChange={setPassword2}
-                secureTextEntry
-                autoCapitalize="none"
-                autoCorrect={false}
-                textContentType="password"
-                textColor={c.text}
-                placeholderColor={c.subText}
+                secureTextEntry={true}
+                enableErrorText={passwrodError}
+                errorText={passwordBoxErrorText}
               />
             </View>
 

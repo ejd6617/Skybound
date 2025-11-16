@@ -51,6 +51,7 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
         secureTextEntry={secureTextEntry}
         autoCapitalize={autoCapitalize}
         keyboardType={keyboardType}
+        maxLength={256}
       />
       {icon && (
         <View style={[styles.icon, { right: 8 }]}>
