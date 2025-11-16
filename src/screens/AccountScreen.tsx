@@ -189,7 +189,7 @@ export default function AccountScreen() {
 
               <Pressable
                 accessibilityRole="button"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('ManageSubscription')}
                 style={({ pressed }) => [
                   styles.manageButton,
                   { backgroundColor: colors.link },
@@ -204,7 +204,7 @@ export default function AccountScreen() {
               <View style={styles.secondaryButtons}>
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => {}}
+                  onPress={() => navigation.navigate('BillingHistory')}
                   style={({ pressed }) => [
                     styles.secondaryButton,
                     { backgroundColor: isDark ? '#262626' : '#F3F4F6' },
@@ -217,7 +217,7 @@ export default function AccountScreen() {
                 </Pressable>
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => {}}
+                  onPress={() => navigation.navigate('PaymentDetails')}
                   style={({ pressed }) => [
                     styles.secondaryButton,
                     { backgroundColor: isDark ? '#262626' : '#F3F4F6' },
@@ -241,7 +241,7 @@ export default function AccountScreen() {
                 icon={<Ionicons name="id-card-outline" size={20} color={colors.link} />}
                 title="Traveler Details"
                 subtitle="Add and manage traveler profiles"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('TravelerDetails')}
               />
               <SettingsItem
                 icon={<Ionicons name="card-outline" size={20} color={colors.link} />}
@@ -253,32 +253,32 @@ export default function AccountScreen() {
                 icon={<Ionicons name="briefcase-outline" size={20} color={colors.link} />}
                 title="Your Trips"
                 subtitle="Past & upcoming trips"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('Trips')}
               />
               <SettingsItem
                 icon={<Ionicons name="airplane-outline" size={20} color={colors.link} />}
                 title="Airport Preferences"
                 subtitle="Preferred airports"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('AirportPreference')}
               />
               <SettingsItem
                 icon={<Ionicons name="globe-outline" size={20} color={colors.link} />}
                 title="Language"
                 subtitle="English"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('Language')}
               />
               <SettingsItem
                 icon={<Ionicons name="cash-outline" size={20} color={colors.link} />}
                 title="Currency"
                 subtitle="USD ($)"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('Currency')}
               />
               {/* Get Help WITHOUT divider underneath */}
               <SettingsItem
                 icon={<Ionicons name="help-circle-outline" size={20} color={colors.link} />}
                 title="Get Help"
                 subtitle="Support & FAQ"
-                onPress={() => {}}
+                onPress={() => navigation.navigate('GetHelp')}
                 hideDivider
               />
             </View>
