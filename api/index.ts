@@ -32,7 +32,7 @@ app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
     abbreviatedLog("Output", data, 50);
     res.json(data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', JSON.stringify(error, null, 2));
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -45,7 +45,7 @@ app.post('/api/searchFlightsRoundTrip', async (req: Request, res: Response) => {
     abbreviatedLog("Output", data);
     res.json(data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', JSON.stringify(error, null, 2));
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -58,7 +58,7 @@ app.post('/api/searchFlightsMultiCity', async (req: Request, res: Response) => {
     abbreviatedLog("Output", data);
     res.json(data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', JSON.stringify(error, null, 2));
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

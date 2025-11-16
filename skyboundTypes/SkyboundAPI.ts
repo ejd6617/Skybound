@@ -29,7 +29,7 @@ export interface MultiCityQueryParams extends Params {
   legs: QueryLeg[],
 }
 
-type TravelClass = "ECONOMY" | "PREMIUM_ECONOMY" | "BUSINESS" | "FIRST",
+export type TravelClass = "ECONOMY" | "PREMIUM_ECONOMY" | "BUSINESS" | "FIRST";
 
 // Represents the flight to/from destination, but not both
 export interface FlightLeg {
