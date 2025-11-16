@@ -10,14 +10,14 @@ import type { RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  Easing,
-  Image,
-  Modal,
-  Pressable,
-  StyleSheet,
-  View
+    Animated,
+    Dimensions,
+    Easing,
+    Image,
+    Modal,
+    Pressable,
+    StyleSheet,
+    View
 } from "react-native";
 
 const bgWithAlpha = (hex: string, a: number) => {
@@ -92,7 +92,7 @@ function toUIFlights(data: Flight[]): UIFlight[] {
       airlineCode: flight.airline.iata,
       airlineColor,
       price: flight.price,
-      cabinClass: flight.class,
+      cabinClass: flight.travelClass,
       departureTime: formatTime(firstOutbound.departureTime),
       arrivalTime: formatTime(lastOutbound.arrivalTime),
       departureCode: firstOutbound.from.iata,

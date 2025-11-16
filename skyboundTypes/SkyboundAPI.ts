@@ -29,6 +29,8 @@ export interface MultiCityQueryParams extends Params {
   legs: QueryLeg[],
 }
 
+type TravelClass = "ECONOMY" | "PREMIUM_ECONOMY" | "BUSINESS" | "FIRST",
+
 // Represents the flight to/from destination, but not both
 export interface FlightLeg {
   from: Airport, // Origin airport
@@ -37,6 +39,7 @@ export interface FlightLeg {
   departureTime: Date,
   arrivalTime: Date,
   duration: number, // In minutes
+  travelClass: TravelClass,
 }
 
 export interface Airline {
@@ -55,10 +58,9 @@ export interface Airport {
 export interface Flight {
   price: number,
   airline: Airline,
-  freeBaggage: boolean, // Does the flight include free baggage?
-  class: "ECONOMY" | "PREMIUM_ECONOMY" | "BUSINESS" | "FIRST",
   outbound: FlightLeg[],
   return?: FlightLeg[], // Optional, may not be set for one way flights
+  freeBaggage: boolean,
 }
 
 export default interface SkyboundAPI {

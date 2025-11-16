@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "dev:api": "nodemon server/index.js",
-    "start:api": "node server/index.js"
+    "start:api": "node server/index.js",
+    "test": "jest test"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

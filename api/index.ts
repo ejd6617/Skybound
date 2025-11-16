@@ -29,7 +29,7 @@ app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
     const query: OneWayQueryParams = req.body;
     abbreviatedLog("Input", query, Infinity);
     const data = await api.searchFlightsOneWay(query);
-    abbreviatedLog("Output", data);
+    abbreviatedLog("Output", data, 50);
     res.json(data);
   } catch (error) {
     console.error('Error:', error);
