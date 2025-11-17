@@ -81,7 +81,8 @@ export default StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
     justifyContent: 'center',
-    alignItems: 'center' 
+    alignItems: 'center',
+    backgroundColor: '#0071E2',
     // cursor: pointer not applicable in RN
     // border: none – not required in RN if no border
     // transition not supported – use Reanimated or Pressable feedback

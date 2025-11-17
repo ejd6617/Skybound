@@ -44,7 +44,10 @@ export function getURL() {
 
 // Make a request to the internal API
 export async function skyboundRequest(endpoint: string, params: object) {
-  const response = await fetch(`${getURL()}/${endpoint}/`, {
+  const fullURL = `${getURL()}/${endpoint}/`;
+  console.log(`Sending query to endpoint ${fullURL}`);
+
+  const response = await fetch(fullURL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
@@ -54,7 +57,5 @@ export async function skyboundRequest(endpoint: string, params: object) {
     throw new Error(`HTTP error ${response.status}`);
   }
 
-  const json: any = await response.json();
-  console.log(JSON.stringify(json, null, 2));
-  return json;
+  return await response.json();
 }

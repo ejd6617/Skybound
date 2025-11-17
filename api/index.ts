@@ -1,28 +1,51 @@
 import AmadeusAPI from '@/AmadeusAPI';
-import SkyboundAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
+import abbreviatedLog from '@/logging';
+import exposeServer from '@/ngrok';
+import SkyboundAPI, { FlightDealsParams, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import express, { Request, Response } from 'express';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const api: SkyboundAPI = new AmadeusAPI();
 
-app.use(express.json()); // add this before any routes
+app.use(express.json());
 
-app.use('/api/logos', express.static('./logos')); // Logos are publicly accessible
+// Logos are publicly accessible
+app.use('/api/logos', express.static('./logos'));
+
+// Expose the local dev server with NGROK (if USE_NGROK=true)
+(async () => {
+  if (process.env.USE_NGROK === 'true') {
+    await exposeServer("127.0.0.1", PORT);
+  }
+})();
 
 app.get('/hello', (_: Request, res: Response) => {
-  res.send('Hello world!');
+  res.json({hello: 'Hello world!'});
+});
+
+app.post('/api/flightDeals', async (req: Request, res: Response) => {
+  try {
+    const query: FlightDealsParams = req.body;
+    abbreviatedLog("Input", query, Infinity);
+    const data = await api.getFlightDeals(query);
+    abbreviatedLog("Output", data, 50);
+    res.json(data);
+  } catch (error) {
+    console.error('Error:', JSON.stringify(error, null, 2));
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
   try {
     const query: OneWayQueryParams = req.body;
-    console.log(query);
+    abbreviatedLog("Input", query, Infinity);
     const data = await api.searchFlightsOneWay(query);
-    console.log(data);
+    abbreviatedLog("Output", data, 50);
     res.json(data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', JSON.stringify(error, null, 2));
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -30,12 +53,12 @@ app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
 app.post('/api/searchFlightsRoundTrip', async (req: Request, res: Response) => {
   try {
     const query: RoundTripQueryParams = req.body;
-    console.log(query);
+    abbreviatedLog("Input", query, Infinity);
     const data = await api.searchFlightsRoundTrip(query);
-    console.log(data);
+    abbreviatedLog("Output", data);
     res.json(data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', JSON.stringify(error, null, 2));
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
@@ -43,10 +66,12 @@ app.post('/api/searchFlightsRoundTrip', async (req: Request, res: Response) => {
 app.post('/api/searchFlightsMultiCity', async (req: Request, res: Response) => {
   try {
     const query: MultiCityQueryParams = req.body;
+    abbreviatedLog("Input", query, Infinity);
     const data = await api.searchFlightsMultiCity(query);
+    abbreviatedLog("Output", data);
     res.json(data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error:', JSON.stringify(error, null, 2));
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });

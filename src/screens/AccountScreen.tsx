@@ -22,6 +22,11 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import LoadingScreen from './LoadingScreen';
+import { db } from "../firebase";
+
+//Stripe imports
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { collection, doc, addDoc, onSnapshot } from "firebase/firestore";
 
 export default function AccountScreen() {
   const colors = useColors();
@@ -31,6 +36,34 @@ export default function AccountScreen() {
   const user = auth.currentUser;
   const [isLoading, setIsLoading] = useState(false);
 
+  // const functionsInstance = getFunctions();
+  // const createPortalLink = httpsCallable(functionsInstance, 'ext-firestore-stripe-subscriptions-createPortalLink');
+  
+  // const startSubscription = async () => {
+  //   const checkoutSessionsRef = collection(db, 'Users', user.uid, 'checkout_sessions');
+
+  //   const docRef = await addDoc(checkoutSessionsRef, {
+  //     price: 'price_1GqIC8HYgolSBA35zoTTN2Zl',
+  //     success_url: window.location.origin,
+  //     cancel_url: window.location.origin,
+  //   });
+
+  //   onSnapshot(docRef, (snap) => {
+  //     const data = snap.data();
+  //     if (!data) return;
+  //     const { error, url } = data;
+
+  //     if (error) {
+  //       alert(`An error occurred: ${error.message}`);
+  //     }
+
+  //     if (url) {
+  //       window.location.assign(url);
+  //     }
+  //   });
+  // };
+
+  // const manageSubscription = async () => {};
 
   const pressableStyle = ({ pressed }: { pressed: boolean }) => [
     { opacity: pressed ? 0.7 : 1 },

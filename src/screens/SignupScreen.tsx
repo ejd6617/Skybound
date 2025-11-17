@@ -151,6 +151,32 @@ export default function SignupScreen() {
       text2: error.message,
     });
     setIsLoading(false);
+    //send data to auth
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      //using setUserData to store new user info into db
+      const success = await setUserData(user.uid, fullName, email);
+      if (!success) {
+        Alert.alert('Error', 'Failed to save user data. Please Try again.');
+        return;
+      }
+
+      navigation.navigate('Dashboard');
+      //renable the register button
+      setIsLoading(false);
+    }catch(error : any)
+    { 
+      setSignUpError(error.message);
+      Toast.show({
+        type: 'error',
+        text1: 'Error:',
+        text2: signUpError
+      })
+      //renable the register button
+      setIsLoading(false);
+    }
   }
 };
 

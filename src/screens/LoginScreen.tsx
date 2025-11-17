@@ -28,6 +28,8 @@ import SkyboundText from '@components/ui/SkyboundText';
 //Firebase imports
 import { auth } from '@src/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import { updateUserData } from '@src/firestoreFunctions';
+import { serverTimestamp } from "firebase/firestore";
 
 //toast imports
 
@@ -75,6 +77,8 @@ export default function LoginScreen() {
       
       navigation.navigate('Dashboard');
       setIsLoading(false);
+
+      updateUserData(userCredential.user.uid, {LastLogIn: serverTimestamp()});
     }
     catch(error :any)
     {

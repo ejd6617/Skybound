@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "dev:api": "nodemon server/index.js",
-    "start:api": "node server/index.js"
+    "start:api": "node server/index.js",
+    "test": "jest test"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -49,8 +50,10 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.10",
     "babel-preset-expo": "~54.0.0",
+    "jest": "^30.2.0",
     "nodemon": "^3.1.10",
     "typescript": "~5.9.2"
   }
