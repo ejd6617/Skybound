@@ -1,3 +1,6 @@
+import type { RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
 import {
   Alert,
@@ -10,9 +13,6 @@ import {
   View,
 } from 'react-native';
 import CalendarPicker from 'react-native-calendar-picker';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RouteProp } from '@react-navigation/native';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
 import SkyboundScreen from '@components/ui/SkyboundScreen';
@@ -20,9 +20,11 @@ import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import type { GenderOption, TravelerProfile } from '@src/types/travelers';
+import SkyboundItemHolder from '../../../components/ui/SkyboundItemHolder';
+
 
 //Firebase functionality imports
-import { setTravelerDetails, updateTravelerDetails, deleteTravelerDetails } from '@src/firestoreFunctions';
+import { deleteTravelerDetails, setTravelerDetails, updateTravelerDetails } from '@src/firestoreFunctions';
 import { getAuth } from 'firebase/auth';
 
 const genderOptions: GenderOption[] = ['Female', 'Male', 'Non-binary', 'Prefer not to say'];
@@ -187,6 +189,7 @@ const EditTraveler: React.FC = () => {
         subtitle="Make sure everything matches the traveler’s passport."
         showLogo
       >
+        <SkyboundItemHolder>
         <SkyboundCard muted elevate={false}>
           <SkyboundText variant="primaryBold" size={16} accessabilityLabel="Warning title">
             Double-check traveler details
@@ -325,6 +328,7 @@ const EditTraveler: React.FC = () => {
             </SkyboundText>
           </Pressable>
         )}
+        </SkyboundItemHolder>
       </SkyboundScreen>
 
       <Modal visible={Boolean(calendarField)} transparent animationType="fade">

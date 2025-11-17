@@ -6,7 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import LoadingScreen from '@src/screens/LoadingScreen';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -27,12 +27,11 @@ import SkyboundText from '@components/ui/SkyboundText';
 
 //Firebase imports
 import { auth } from '@src/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import { updateUserData } from '@src/firestoreFunctions';
 import { serverTimestamp } from "firebase/firestore";
 
-//toast imports
-
+import * as Google from "expo-auth-session/providers/google";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -49,6 +48,35 @@ export default function LoginScreen() {
   const H_PADDING = 18;
   const BTN_W = CARD_W - H_PADDING * 2;
   const itemHolderWidth = SCREEN_W * .9;
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+          //this key was generated from a google clould project
+          iosClientId: '367556706415-3ni93vpkp7c6hfsl72po1gf6lfle01up.apps.googleusercontent.com',
+          webClientId: '367556706415-eqnunq32cebub258ogudj9s0h23b8d6v.apps.googleusercontent.com',
+          androidClientId: '367556706415-i5pntol41teebgo0cd82ogh991i5jklv.apps.googleusercontent.com'
+      } );
+
+  
+    useEffect(() => {
+      //if response was successful
+      if(response?.type === 'success')
+      {
+        const { idToken } = response.params;
+  
+        //convert the Google crediantial to a Firebase credential
+        const credential = GoogleAuthProvider.credential(idToken)
+  
+        //Sign in with Firebase using crediential 
+        signInWithCredential(auth, credential)
+        .then(userCredential => {
+            console.log('Google sign in successful: ', userCredential.user.email);
+            navigation.navigate('Dashboard');
+        })
+        .catch(error => {
+            console.error("Failed sign in with Google: ", error.message);
+        });
+      }
+    }, [response]) //runs automatically when response changes
 
   //resetting email and password when user renavigates to the login screen
 
@@ -217,6 +245,9 @@ export default function LoginScreen() {
 
             {/* Google button */}
             <TouchableOpacity
+              onPress={ async () =>{ setIsLoading(true);
+                  await promptAsync();
+                  setIsLoading(false);}}
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
@@ -227,7 +258,11 @@ export default function LoginScreen() {
                 borderColor: c.outline,    
                 paddingVertical: 12,
                 paddingHorizontal: 50,
-              }}
+              
+              }
+            
+              
+            }
             >
               <Image
                 source={require('@assets/images/google.png')}

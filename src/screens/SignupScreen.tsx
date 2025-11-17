@@ -134,6 +134,13 @@ export default function SignupScreen() {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
+  await updateProfile(user, {
+    displayName: fullName,   
+  });
+
+  // Optional: reload to ensure name is updated
+  await user.reload();
+
     const success = await setUserData(user.uid, fullName, email);
     if (!success) {
       Alert.alert("Error", "Failed to save user data.");
