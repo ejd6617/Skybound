@@ -1,7 +1,7 @@
 import AmadeusAPI from '@/AmadeusAPI';
 import abbreviatedLog from '@/logging';
 import exposeServer from '@/ngrok';
-import SkyboundAPI, { MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
+import SkyboundAPI, { FlightDealsParams, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import express, { Request, Response } from 'express';
 
 const app = express();
@@ -22,6 +22,19 @@ app.use('/api/logos', express.static('./logos'));
 
 app.get('/hello', (_: Request, res: Response) => {
   res.json({hello: 'Hello world!'});
+});
+
+app.post('/api/flightDeals', async (req: Request, res: Response) => {
+  try {
+    const query: FlightDealsParams = req.body;
+    abbreviatedLog("Input", query, Infinity);
+    const data = await api.getFlightDeals(query);
+    abbreviatedLog("Output", data, 50);
+    res.json(data);
+  } catch (error) {
+    console.error('Error:', JSON.stringify(error, null, 2));
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {

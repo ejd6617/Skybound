@@ -1,5 +1,10 @@
 export interface Params {};
 
+export interface FlightDealsParams extends Params {
+  originAirportIATA: string,
+}
+
+
 export interface OneWayQueryParams extends Params {
   originAirportIATA: string, // 3 Letter IATA code
   destinationAirportIATA: string, // 3 Letter IATA code
@@ -66,5 +71,6 @@ export default interface SkyboundAPI {
   searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]>;
   searchFlightsOneWay(params: OneWayQueryParams): Promise<Flight[]>;
   searchFlightsMultiCity(params: MultiCityQueryParams): Promise<Flight[]>;
+  getFlightDeals(params: FlightDealsParams): Promise<Flight[]>;
 }
 

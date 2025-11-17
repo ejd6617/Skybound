@@ -1,4 +1,4 @@
-import { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
+import { Flight, FlightDealsParams, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
 import * as dotenv from 'dotenv';
 const ENV_FILE = '.env.ngrok.local';
 
@@ -53,6 +53,21 @@ describe("GET /hello", () => {
   });
 });
 
+
+describe("POST /api/flightDeals", () => {
+  it("should return ", async () => {
+    const params: FlightDealsParams = {
+      originAirportIATA: 'BUF',
+    };
+
+    const { status, json } = await apiPost("/api/flightDeals", params);
+    expect(status).toBe(200);
+    for (const flight of json) {
+      assertIsFlight(flight);
+    }
+  }, AMADEUS_TIMEOUT);
+});
+
 describe("POST /api/searchFlightsOneWay", () => {
   it("should return ", async () => {
     const params: OneWayQueryParams = {
@@ -94,7 +109,7 @@ describe.only("POST /api/searchFlightsOneWay (with flexible airports)", () => {
     const params: OneWayQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
-      flexibleAirports: ["LGB", "BUR", "SNA", "ONT", "SMO"],
+      flexibleAirports: ["OAK", "SFO", "NGZ"],
       flexibleDates: true,
       date: new Date('2026-05-10'),
     };

@@ -6,12 +6,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
 import DisplayMap from "@/components/ui/DisplayMap";
+import { OneWayQueryParams } from "@/skyboundTypes/SkyboundAPI";
 import SkyboundButton from "@components/ui/SkyboundButton";
 import SkyboundFlashDeal from "@components/ui/SkyboundFlashDeal";
 import SkyboundItemHolder from "@components/ui/SkyboundItemHolder";
 import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { reviveDates, skyboundRequest } from "@src/api/SkyboundUtils";
 import { RootStackParamList } from "@src/nav/RootNavigator";
 
 export default function DashboardScreen() {
@@ -24,22 +26,17 @@ export default function DashboardScreen() {
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 70 }).current;
 
 
-  // TODO: More useful query here
   const fetchData = (async () => {
-    // const endpoint: string = "searchFlightsRoundTrip";
-    // const params: RoundTripQueryParams = {
-    //   originAirportIATA: 'LAX',
-    //   destinationAirportIATA: 'JFK',
-    //   flexibleAirports: false,
-    //   flexibleDates: false,
-    //   startDate: new Date('2026-01-10'),
-    //   endDate: new Date('2026-01-17'),
-    // };
-    // const responseData = await skyboundRequest(endpoint, params);
-    // const revivedData = reviveDates(responseData);
-    // setData(revivedData);
-    
-    setData([]);
+    const params: OneWayQueryParams = {
+      originAirportIATA: 'JFK',
+      destinationAirportIATA: 'LAX',
+      flexibleAirports: ['BUF', 'PIT', 'CLE'],
+      flexibleDates: false,
+      date: new Date('2026-02-10'),
+    };
+    const responseData = await skyboundRequest("searchFlightsOneWay", params);
+    const revivedData = reviveDates(responseData);
+    setData(revivedData);
   });
 
   useEffect(() => {

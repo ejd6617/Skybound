@@ -1,12 +1,12 @@
 import InteractiveMap, { LatLng } from '@/components/ui/InteractiveMap';
 import SkyboundItemHolder from '@/components/ui/SkyboundItemHolder';
 import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
-import AirportIcon from '@assets/AirportIcon.svg';
-import ArrivalIcon from '@assets/ArrivalIcon.svg';
-import CalandarIcon from '@assets/CalandarIcon.svg';
-import DepartureIcon from '@assets/DepartureIcon.svg';
 import AccountIcon from '@assets/images/AccountIcon.svg';
+import AirportIcon from '@assets/images/AirportIcon.svg';
+import ArrivalIcon from '@assets/images/ArrivalIcon.svg';
 import BellIcon from '@assets/images/BellIcon.svg';
+import CalandarIcon from '@assets/images/CalandarIcon.svg';
+import DepartureIcon from '@assets/images/DepartureIcon.svg';
 import HamburgerIcon from '@assets/images/HamburgerIcon.svg';
 import AirportAutocomplete from "@components/ui/AirportAutocomplete";
 import DateSelector from "@components/ui/DateSelector";
@@ -210,7 +210,7 @@ export default function FlightSearchScreen() {
       multiCityLegs.forEach((leg, index) => {
         const legError: { from?: string; to?: string; date?: string } = {};
         
-        if (!leg.from) {
+        if (!flexibleAirportsEnabled && !leg.from) {
           legError.from = 'Departure airport is required';
           isValid = false;
         }
@@ -220,7 +220,7 @@ export default function FlightSearchScreen() {
           isValid = false;
         }
         
-        if (leg.from && leg.to && leg.from === leg.to) {
+        if (!flexibleAirportsEnabled && leg.from && leg.to && leg.from === leg.to) {
           legError.to = 'Departure and arrival cannot be the same';
           isValid = false;
         }
@@ -242,7 +242,7 @@ export default function FlightSearchScreen() {
       
       newErrors.legs = legErrors;
     } else {
-      if (!from) {
+      if (!flexibleAirportsEnabled && !from) {
         newErrors.from = 'Departure airport is required';
         isValid = false;
       }
@@ -252,7 +252,7 @@ export default function FlightSearchScreen() {
         isValid = false;
       }
       
-      if (from && to && from === to) {
+      if (!flexibleAirportsEnabled && from && to && from === to) {
         newErrors.to = 'Departure and arrival cannot be the same';
         isValid = false;
       }
@@ -297,7 +297,7 @@ export default function FlightSearchScreen() {
               destinationAirportIATA: toAirport?.iata,
               date: departureDate,
               flexibleDates,
-              flexibleAirports,
+              flexibleAirports: flexibleAirports.map(airport => airport.code),
             }
             return await skyboundRequest(endpoint, jsonBody);
           }
@@ -310,7 +310,7 @@ export default function FlightSearchScreen() {
               startDate: departureDate,
               endDate: returnDate,
               flexibleDates,
-              flexibleAirports,
+              flexibleAirports: flexibleAirports.map(airport => airport.code),
             }
             return await skyboundRequest(endpoint, jsonBody);
           }
