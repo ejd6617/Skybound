@@ -3,7 +3,7 @@ export interface Params {};
 export interface OneWayQueryParams extends Params {
   originAirportIATA: string, // 3 Letter IATA code
   destinationAirportIATA: string, // 3 Letter IATA code
-  flexibleAirports: boolean, // Whether or not to search multiple nearby airports
+  flexibleAirports: string[], // List of IATA codes for nearby airports to search from
   flexibleDates: boolean, // Whether or not to search +/- 3 days from specified
   date: Date, // Date of departure
 }
@@ -11,7 +11,7 @@ export interface OneWayQueryParams extends Params {
 export interface RoundTripQueryParams extends Params {
   originAirportIATA: string,
   destinationAirportIATA: string,
-  flexibleAirports: boolean,
+  flexibleAirports: string[],
   flexibleDates: boolean,
   startDate: Date,
   endDate: Date,
@@ -24,7 +24,6 @@ export interface QueryLeg {
 }
 
 export interface MultiCityQueryParams extends Params {
-  flexibleAirports: boolean,
   flexibleDates: boolean,
   legs: QueryLeg[],
 }

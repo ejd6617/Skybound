@@ -12,8 +12,6 @@ import SkyboundItemHolder from "@components/ui/SkyboundItemHolder";
 import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
-import { reviveDates, skyboundRequest } from "@src/api/SkyboundUtils";
 import { RootStackParamList } from "@src/nav/RootNavigator";
 
 export default function DashboardScreen() {
@@ -28,19 +26,20 @@ export default function DashboardScreen() {
 
   // TODO: More useful query here
   const fetchData = (async () => {
-    const endpoint: string = "searchFlightsRoundTrip";
-    const params: RoundTripQueryParams = {
-      originAirportIATA: 'LAX',
-      destinationAirportIATA: 'JFK',
-      flexibleAirports: false,
-      flexibleDates: false,
-      startDate: new Date('2026-01-10'),
-      endDate: new Date('2026-01-17'),
-    };
-    const responseData = await skyboundRequest(endpoint, params);
-    const revivedData = reviveDates(responseData);
-    setData(revivedData);
+    // const endpoint: string = "searchFlightsRoundTrip";
+    // const params: RoundTripQueryParams = {
+    //   originAirportIATA: 'LAX',
+    //   destinationAirportIATA: 'JFK',
+    //   flexibleAirports: false,
+    //   flexibleDates: false,
+    //   startDate: new Date('2026-01-10'),
+    //   endDate: new Date('2026-01-17'),
+    // };
+    // const responseData = await skyboundRequest(endpoint, params);
+    // const revivedData = reviveDates(responseData);
+    // setData(revivedData);
     
+    setData([]);
   });
 
   useEffect(() => {

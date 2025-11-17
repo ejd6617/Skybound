@@ -1,6 +1,10 @@
 import InteractiveMap, { LatLng } from '@/components/ui/InteractiveMap';
 import SkyboundItemHolder from '@/components/ui/SkyboundItemHolder';
 import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
+import AirportIcon from '@assets/AirportIcon.svg';
+import ArrivalIcon from '@assets/ArrivalIcon.svg';
+import CalandarIcon from '@assets/CalandarIcon.svg';
+import DepartureIcon from '@assets/DepartureIcon.svg';
 import AccountIcon from '@assets/images/AccountIcon.svg';
 import BellIcon from '@assets/images/BellIcon.svg';
 import HamburgerIcon from '@assets/images/HamburgerIcon.svg';
@@ -16,6 +20,7 @@ import basicStyles from '@constants/BasicComponents';
 import { useColors } from '@constants/theme';
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { skyboundRequest } from '@src/api/SkyboundUtils';
 import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
@@ -23,11 +28,6 @@ import * as Location from 'expo-location';
 import React, { useEffect, useState } from "react";
 import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
-import AirportIcon from '../../assets/images/AirportIcon.svg';
-import ArrivalIcon from '../../assets/images/ArrivalIcon.svg';
-import CalandarIcon from '../../assets/images/CalandarIcon.svg';
-import DepartureIcon from '../../assets/images/DepartureIcon.svg';
-import { skyboundRequest } from '../api/SkyboundUtils';
 
 
 interface ValidationErrors {
@@ -120,7 +120,8 @@ export default function FlightSearchScreen() {
     date: null,
     departureTime: null,
     arrivalTime: null,
-    duration: 0
+    duration: 0,
+    travelClass: null
   });
 
   const [multiCityLegs, setMultiCityLegs] = useState<FlightLeg[]>([
@@ -318,7 +319,6 @@ export default function FlightSearchScreen() {
             const endpoint = "searchFlightsMultiCity"
             const jsonBody: MultiCityQueryParams = {
               flexibleDates,
-              flexibleAirports,
               legs: multiCityLegs.map((leg): QueryLeg => ({
                 originAirportIATA: leg.from?.iata,
                 destinationAirportIATA: leg.to?.iata,

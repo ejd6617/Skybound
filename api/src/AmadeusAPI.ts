@@ -1,8 +1,10 @@
 import SkyboundAPI, { Airline, Airport, Flight, FlightLeg, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams, TravelClass } from "@skyboundTypes/SkyboundAPI";
 import * as dotenv from 'dotenv';
+import pLimit from 'p-limit';
 const Amadeus = require('amadeus');
 
 const ENV_FILE = '/.env.amadeus.local';
+const limit = pLimit(2); // Limit the number of parallel requests allowed when running a multi flight query
 
 // Represents a generic response from the Amadeus API
 export interface AmadeusResponse {
@@ -95,66 +97,101 @@ export default class AmadeusAPI implements SkyboundAPI {
 
   // Round trip flight search endpoint
   async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]> {
-    const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
-      ...this.baseFlightOfferParams,
-      originDestinations: [
-        {
-          id: "1",
-          originLocationCode: params.originAirportIATA,
-          destinationLocationCode: params.destinationAirportIATA,
-          departureDateTimeRange: {
-            date: this.toLocalISOString(new Date(params.startDate)),
-            ...(params.flexibleDates ? { dateWindow: "P3D" } : {}), // Optional 3 day window
+    // Make a singular query to amadeus
+    const amadeusSearchFlights = async (params: RoundTripQueryParams): Promise<Flight[]> => {
+      const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
+        ...this.baseFlightOfferParams,
+        originDestinations: [
+          {
+            id: "1",
+            originLocationCode: params.originAirportIATA,
+            destinationLocationCode: params.destinationAirportIATA,
+            departureDateTimeRange: {
+              date: this.toLocalISOString(new Date(params.startDate)),
+              ...(params.flexibleDates ? { dateWindow: "P3D" } : {}), // Optional 3 day window
+            },
           },
-        },
-        {
-          id: "2",
-          originLocationCode: params.destinationAirportIATA,
-          destinationLocationCode: params.originAirportIATA,
-          departureDateTimeRange: {
-            date: this.toLocalISOString(new Date(params.endDate)),
-            ...(params.flexibleDates ? { dateWindow: "P3D" } : {}), // Optional 3 day window
-          },
-        },
-      ],
-    });
-    
-    if (response == undefined) {
-      throw new Error("Error in Amadeus backend: expected response from API, got undefined");
+          {
+            id: "2",
+            originLocationCode: params.destinationAirportIATA,
+            destinationLocationCode: params.originAirportIATA,
+            departureDateTimeRange: {
+              date: this.toLocalISOString(new Date(params.endDate)),
+              ...(params.flexibleDates ? { dateWindow: "P3D" } : {}), // Optional 3 day window
+            },
+          }
+        ],
+      });
+      
+      if (response == undefined) {
+        throw new Error("Error in Amadeus backend: expected response from API, got undefined");
+      }
+      
+      if (response.statusCode != 200) {
+        const errorString: string = (response.result.errors !== undefined && Array.isArray(response.result.errors))
+        ? "\n"+response.result.errors.map((error: any) => {JSON.stringify(error)}).join("\n")
+        : "";
+        throw new Error(`Error in Amadeus backend: expected status code 200, got ${response.statusCode}${errorString}`);
+      }
+      
+      return this.parseFlights(response);
     }
-    
-    return this.parseFlights(response);
+
+    return (params.flexibleAirports !== undefined && params.flexibleAirports.length != 0)
+    // If we have flexible airports, iterate over each airport, search for flights, and collect the results
+    ? (await Promise.all(
+      params.flexibleAirports.map(iata => limit(() => {
+        params.originAirportIATA = iata;
+        return amadeusSearchFlights(params);
+      }
+    )))).flat()
+    // If not using flexible airports, directly pass params
+    : (await amadeusSearchFlights(params));
   }
 
   // One way flight search endpoint
   async searchFlightsOneWay(params: OneWayQueryParams): Promise<Flight[]> {
-    const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
-      ...this.baseFlightOfferParams,
-      originDestinations: [
-        {
-          id: "1",
-          originLocationCode: params.originAirportIATA,
-          destinationLocationCode: params.destinationAirportIATA,
-          departureDateTimeRange: {
-            date: this.toLocalISOString(new Date(params.date)),
-            ...(params.flexibleDates ? { dateWindow: "P3D" } : {}), // Optional 3 day window
-          },
-        }
-      ],
-    });
-    
-    if (response == undefined) {
-      throw new Error("Error in Amadeus backend: expected response from API, got undefined");
+    // Make a singular query to amadeus
+    const amadeusSearchFlights = async (params: OneWayQueryParams): Promise<Flight[]> => {
+      const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
+        ...this.baseFlightOfferParams,
+        originDestinations: [
+          {
+            id: "1",
+            originLocationCode: params.originAirportIATA,
+            destinationLocationCode: params.destinationAirportIATA,
+            departureDateTimeRange: {
+              date: this.toLocalISOString(new Date(params.date)),
+              ...(params.flexibleDates ? { dateWindow: "P3D" } : {}), // Optional 3 day window
+            },
+          }
+        ],
+      });
+      
+      if (response == undefined) {
+        throw new Error("Error in Amadeus backend: expected response from API, got undefined");
+      }
+      
+      if (response.statusCode != 200) {
+        const errorString: string = (response.result.errors !== undefined && Array.isArray(response.result.errors))
+        ? "\n"+response.result.errors.map((error: any) => {JSON.stringify(error)}).join("\n")
+        : "";
+        throw new Error(`Error in Amadeus backend: expected status code 200, got ${response.statusCode}${errorString}`);
+      }
+      
+      return this.parseFlights(response);
     }
-    
-    if (response.statusCode != 200) {
-      const errorString: string = (response.result.errors !== undefined && Array.isArray(response.result.errors))
-      ? "\n"+response.result.errors.map((error: any) => {JSON.stringify(error)}).join("\n")
-      : "";
-      throw new Error(`Error in Amadeus backend: expected status code 200, got ${response.statusCode}${errorString}`);
-    }
-    
-    return this.parseFlights(response);
+
+    return (params.flexibleAirports !== undefined && params.flexibleAirports.length != 0)
+    // If we have flexible airports, iterate over each airport, search for flights, and collect the results
+    ? (await Promise.all(
+      params.flexibleAirports.map(iata => limit(() => {
+        params.originAirportIATA = iata;
+        return amadeusSearchFlights(params);
+      }
+    )))).flat()
+    // If not using flexible airports, directly pass params
+    : (await amadeusSearchFlights(params));
   }
 
   // Multi city flight search endpoint
@@ -185,6 +222,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     
     return this.parseFlights(response);
   }
+  
   
   // ISO 8601 string -> number of minutes
   private parseISODuration(duration: string): number {

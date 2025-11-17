@@ -1,6 +1,5 @@
 import { Flight, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
 import * as dotenv from 'dotenv';
-
 const ENV_FILE = '.env.ngrok.local';
 
 if (process.env.USE_NGROK === 'true') {
@@ -59,7 +58,7 @@ describe("POST /api/searchFlightsOneWay", () => {
     const params: OneWayQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
-      flexibleAirports: false,
+      flexibleAirports: [],
       flexibleDates: false,
       date: new Date('2026-05-10'),
     };
@@ -77,7 +76,25 @@ describe("POST /api/searchFlightsOneWay (with flexible dates)", () => {
     const params: OneWayQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
-      flexibleAirports: false,
+      flexibleAirports: [],
+      flexibleDates: true,
+      date: new Date('2026-05-10'),
+    };
+
+    const { status, json } = await apiPost("/api/searchFlightsOneWay", params);
+    expect(status).toBe(200);
+    for (const flight of json) {
+      assertIsFlight(flight);
+    }
+  }, AMADEUS_TIMEOUT);
+});
+
+describe.only("POST /api/searchFlightsOneWay (with flexible airports)", () => {
+  it("should return ", async () => {
+    const params: OneWayQueryParams = {
+      originAirportIATA: 'LAX',
+      destinationAirportIATA: 'JFK',
+      flexibleAirports: ["LGB", "BUR", "SNA", "ONT", "SMO"],
       flexibleDates: true,
       date: new Date('2026-05-10'),
     };
@@ -95,7 +112,7 @@ describe("POST /api/searchFlightsRoundTrip", () => {
     const params: RoundTripQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
-      flexibleAirports: false,
+      flexibleAirports: [],
       flexibleDates: false,
       startDate: new Date('2026-05-10'),
       endDate: new Date('2026-05-15')
@@ -114,7 +131,7 @@ describe("POST /api/searchFlightsRoundTrip (with flexible dates)", () => {
     const params: RoundTripQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
-      flexibleAirports: false,
+      flexibleAirports: [],
       flexibleDates: true,
       startDate: new Date('2026-05-10'),
       endDate: new Date('2026-05-15')
@@ -143,7 +160,7 @@ describe("POST /api/searchFlightsMultiCity", () => {
           date: new Date('2026-01-10'),
         }
       ],
-      flexibleAirports: false,
+      flexibleAirports: [],
       flexibleDates: false,
     };
 
@@ -170,7 +187,6 @@ describe("POST /api/searchFlightsMultiCity (with flexible dates)", () => {
           date: new Date('2026-01-10'),
         }
       ],
-      flexibleAirports: false,
       flexibleDates: true,
     };
 
