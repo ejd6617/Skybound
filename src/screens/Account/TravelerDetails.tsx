@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
@@ -9,37 +9,64 @@ import SkyboundScreen from '@components/ui/SkyboundScreen';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
-import type { TravelerProfile } from '@src/types/travelers';
+import type { GenderOption, TravelerProfile } from '@src/types/travelers';
 
-const initialTravelers: TravelerProfile[] = [
-  {
-    id: 'owner',
-    firstName: 'Ariana',
-    middleName: 'M',
-    lastName: 'Rivera',
-    birthdate: 'Jan 12, 1992',
-    gender: 'Female',
-    nationality: 'United States',
-    passportNumber: 'X1234567',
-    passportExpiry: 'Oct 12, 2032',
-  },
-  {
-    id: 'guest-1',
-    firstName: 'Liam',
-    middleName: '',
-    lastName: 'Chen',
-    birthdate: 'May 05, 1990',
-    gender: 'Male',
-    nationality: 'Canada',
-    passportNumber: 'C7890441',
-    passportExpiry: 'May 05, 2030',
-  },
-];
+import { getTravelerDetails } from '@src/firestoreFunctions';
+import { getAuth } from 'firebase/auth';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { db } from "@src/firebase";
 
 const TravelerDetails: React.FC = () => {
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [travelers] = useState<TravelerProfile[]>(initialTravelers);
+  const [travelers, setTravelers] = useState<TravelerProfile[]>([]);
+
+  const auth = getAuth();
+  const user = auth.currentUser?.uid;
+
+  //fetches traveler details from firebase
+  const fetchTravelers = async () => {
+    try {
+      const travelersRef = collection(db, 'Users', user, 'TravelerDetails');
+      const travelersSnap = await getDocs(travelersRef);
+
+      const fetchedTravelers: TravelerProfile[] = [];
+
+      for (const doc of travelersSnap.docs) {
+        const travelerID = doc.id;
+        const travelerDetails = await getTravelerDetails(user, travelerID);
+        if (travelerDetails) {
+          fetchedTravelers.push({
+            id: travelerID,
+            firstName: travelerDetails.FirstName,
+            middleName: travelerDetails.MiddleName || "",
+            lastName: travelerDetails.LastName,
+            birthdate: travelerDetails.Birthday,
+            gender: travelerDetails.Gender as GenderOption,
+            nationality: travelerDetails.Nationality,
+            passportNumber: travelerDetails.PassportNumber,
+            passportExpiry: travelerDetails.PassportExpiration,
+          });
+        }
+      }
+
+      setTravelers(fetchedTravelers);
+    } catch (error) {
+      console.error("Error fetching travelers: ", error);
+    }
+  };
+
+ // Fetch traveler details when the screen loads
+  useEffect(() => {
+    fetchTravelers();
+  }, []);
+
+  // Re-fetch travelers whenever the travelers are updated
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchTravelers(); 
+    }, [])
+  );
 
   const handleAddTraveler = () => {
     navigation.navigate('EditTraveler');

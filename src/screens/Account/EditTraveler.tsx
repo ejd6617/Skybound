@@ -21,6 +21,10 @@ import { useColors } from '@constants/theme';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import type { GenderOption, TravelerProfile } from '@src/types/travelers';
 
+//Firebase functionality imports
+import { setTravelerDetails, updateTravelerDetails, deleteTravelerDetails } from '@src/firestoreFunctions';
+import { getAuth } from 'firebase/auth';
+
 const genderOptions: GenderOption[] = ['Female', 'Male', 'Non-binary', 'Prefer not to say'];
 
 type CalendarField = 'birthdate' | 'passportExpiry';
@@ -55,6 +59,7 @@ const EditTraveler: React.FC = () => {
   );
   const [calendarField, setCalendarField] = useState<CalendarField | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
 
   const handleInputChange = (field: keyof TravelerProfile, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -78,10 +83,65 @@ const EditTraveler: React.FC = () => {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmSave = () => {
+  const handleConfirmSave = async () => {
     setShowConfirmModal(false);
-    Alert.alert('Traveler saved', `${form.firstName} is ready for fast checkout.`);
-    navigation.goBack();
+
+    const travelerData = {
+      FirstName: form.firstName,
+      MiddleName: form.middleName || "",
+      LastName: form.lastName,
+      Birthday: form.birthdate,
+      Gender: form.gender,
+      Nationality: form.nationality,
+      PassportNumber: form.passportNumber,
+      PassportExpiration: form.passportExpiry,
+    };
+  
+    const auth = getAuth();
+    const user = auth.currentUser?.uid;
+
+    try {
+      if (existingTraveler) {
+        // Updates traveler if they already exist
+        const success = await updateTravelerDetails(user, existingTraveler.id, travelerData);
+  
+        if (!success) throw new Error("Failed to update traveler");
+  
+        Alert.alert("Traveler updated", `${form.firstName}'s info has been updated.`);
+        console.log("Traveler", `${form.firstName}'s info has been updated.`)
+      } else {
+        // Add new traveler if they don't yet exist
+        const result = await setTravelerDetails(user, travelerData);
+  
+        if (!result) throw new Error("Failed to create traveler");
+  
+        Alert.alert("Traveler added", `${form.firstName} is ready for fast checkout.`);
+        console.log("Traveler", `${form.firstName} is ready for fast checkout.`)
+      }
+  
+      navigation.goBack();
+      navigation.navigate('TravelerDetails');
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Something went wrong while saving the traveler.");
+    }
+  };
+
+  const handleDeleteTraveler = async () => {
+    setShowDeleteConfirmModal(false);
+    const auth = getAuth();
+    const user = auth.currentUser?.uid;
+
+    if (user && existingTraveler) {
+      const success = await deleteTravelerDetails(user, existingTraveler.id);
+      if (success) {
+        Alert.alert("Traveler Deleted", `${form.firstName} has been deleted.`);
+        navigation.goBack();
+        navigation.navigate('TravelerDetails');
+      } else {
+        Alert.alert("Error", "Failed to delete traveler.");
+      }
+    }
   };
 
   const calendarTitle = useMemo(() => {
@@ -253,6 +313,18 @@ const EditTraveler: React.FC = () => {
             Save Traveler
           </SkyboundText>
         </Pressable>
+
+        {existingTraveler && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setShowDeleteConfirmModal(true)}
+            style={({ pressed }) => [styles.deleteButton, pressed && { opacity: 0.9 }]}
+          >
+            <SkyboundText variant="primaryButton" size={16} accessabilityLabel="Delete traveler">
+              Delete Traveler
+            </SkyboundText>
+          </Pressable>
+        )}
       </SkyboundScreen>
 
       <Modal visible={Boolean(calendarField)} transparent animationType="fade">
@@ -329,6 +401,51 @@ const EditTraveler: React.FC = () => {
           </View>
         </View>
       </Modal>
+
+      <Modal visible={showDeleteConfirmModal} transparent animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.confirmCard, { backgroundColor: colors.card }]}>
+            <SkyboundText 
+              variant="primaryBold" 
+              size={18} 
+              accessabilityLabel="Delete confirmation title">
+              Are you sure you want to delete this traveler?
+            </SkyboundText>
+            <View style={styles.summaryList}>
+              <SkyboundText 
+                variant="primary" 
+                size={14}
+                accessabilityLabel="Traveler name">
+                {form.firstName} {form.lastName}
+              </SkyboundText>
+            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleDeleteTraveler}
+              style={({ pressed }) => [styles.deleteButton, pressed && { opacity: 0.9 }]}
+            >
+              <SkyboundText 
+                variant="primaryButton" 
+                size={16} 
+                accessabilityLabel="Confirm and delete">
+                Confirm Delete
+              </SkyboundText>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setShowDeleteConfirmModal(false)}
+              style={({ pressed }) => [styles.modalSecondaryButton, pressed && { opacity: 0.8 }]}
+            >
+              <SkyboundText 
+                variant="primary" 
+                size={15} 
+                accessabilityLabel="Cancel deletion">
+                Cancel
+              </SkyboundText>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </KeyboardAvoidingView>
   );
 };
@@ -371,6 +488,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     backgroundColor: '#2F97FF',
+  },
+  deleteButton: {
+    marginTop: 16,
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    backgroundColor: '#FF4F4F',
   },
   modalBackdrop: {
     flex: 1,
