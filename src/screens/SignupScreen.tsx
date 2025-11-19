@@ -13,7 +13,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-
+import ShowPasswordIcon from '../../assets/images/ShowPasswordIcon.svg';
 
 
 //firebase and googe imports for registration
@@ -56,6 +56,8 @@ export default function SignupScreen() {
   const [nameBoxErrorText, setNameBoxErrorText] = useState('');
   const [emailBoxErrorText, setEmailBoxErrorText] = useState('');
   const [passwordBoxErrorText, setPasswordBoxErrorText] = useState('');
+  const [hidePassword1, setHidePassword1] = useState(true);
+  const [hidePassword2, setHidePassword2] = useState(true);
 
  
   //navigation and color theme
@@ -282,7 +284,24 @@ function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: bool
   }, [response]) //runs automatically when response changes
 
 
+  //helper functions to toggle showing the passwords
 
+  function toggleHidePassword1()
+  {
+    if(hidePassword1)
+        setHidePassword1(false);
+    else
+        setHidePassword1(true);
+  }
+
+  
+  function toggleHidePassword2()
+  {
+    if(hidePassword2)
+        setHidePassword2(false);
+    else
+        setHidePassword2(true);
+  }
 
   if (isLoading) {
       return <LoadingScreen />;
@@ -360,11 +379,15 @@ function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: bool
                  width={BTN_W}
                 height={45}
                 onChange={setPassword}
-                secureTextEntry={true}
+                secureTextEntry={hidePassword1}
                 enableinfoIcon={true}
                 infoIconText='Password must be 7+ characters'
                 enableErrorText={passwrodError}
                 errorText={passwordBoxErrorText}
+                icon={<ShowPasswordIcon height={24} width={24}/>}
+                touchableIcon={true}
+                touchableIconFunction={toggleHidePassword1}
+                
               />
             </View>
 
@@ -376,9 +399,12 @@ function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: bool
                 width={BTN_W}
                 height={45}
                 onChange={setPassword2}
-                secureTextEntry={true}
+                secureTextEntry={hidePassword2}
                 enableErrorText={passwrodError}
                 errorText={passwordBoxErrorText}
+                icon={<ShowPasswordIcon height={24} width={24}/>}
+                touchableIcon={true}
+                touchableIconFunction={toggleHidePassword2}
               />
             </View>
 
