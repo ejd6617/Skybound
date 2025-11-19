@@ -1,32 +1,51 @@
 import { Flight, FlightDealsParams, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
 import * as dotenv from 'dotenv';
-const ENV_FILE = '.env.ngrok.local';
-
-if (process.env.USE_NGROK === 'true') {
-  // Only attempt to load the .env.ngrok.local file if USE_NGROK is true
-  const result = dotenv.config({ path: ENV_FILE });
-
-  if (result.error) {
-    console.warn(`env file (${ENV_FILE}) not found, using default values.`);
-  }
-}
-
-const API_URL:string = process.env.NGROK_URL || 'http://129.80.33.141:4000';
-console.log(`Using API URL ${API_URL}`);
+const NGROK_ENV_FILE = '.env.ngrok.local';
+const TEST_ENV_FILE = '.env.test.local';
 
 // Give quite a bit of tolerance waiting for amadeus to respond
 const AMADEUS_TIMEOUT = 20_000;
 
+if (process.env.USE_NGROK === 'true') {
+  // Only attempt to load the .env.ngrok.local file if USE_NGROK is true
+  const result = dotenv.config({ path: NGROK_ENV_FILE });
+
+  if (result.error) {
+    console.warn(`env file (${NGROK_ENV_FILE}) not found, using default values.`);
+  }
+}
+
+const API_URL: string = process.env.NGROK_URL || 'http://129.80.33.141:4000';
+console.log(`Using API URL ${API_URL}`);
+
+// Always load TEST_ENV_FILE
+dotenv.config({ path: TEST_ENV_FILE });
+
+// Expect that TEST_ENV_FILE is populated with TEST_BYPASS_TOKEN, else throw error
+const TEST_BYPASS_TOKEN = process.env.TEST_BYPASS_TOKEN;
+if (!TEST_BYPASS_TOKEN) {
+  throw new Error(`TEST_BYPASS_TOKEN is not set in ${TEST_ENV_FILE}`);
+}
+
+// Utility function for HTTP GET requests to API
 async function apiGet(endpoint: string) {
-  const res = await fetch(`${API_URL}${endpoint}`);
+  const res = await fetch(`${API_URL}${endpoint}`, {
+    headers: {
+      'Authorization': `Bearer ${TEST_BYPASS_TOKEN}`,
+    },
+  });
   const json = await res.json();
   return { status: res.status, json };
 }
 
+// Utility function for HTTP POST requests to API
 async function apiPost(endpoint: string, params: object) {
   const res = await fetch(`${API_URL}${endpoint}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': `Bearer ${TEST_BYPASS_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify(params),
   });
 
@@ -55,7 +74,7 @@ describe("GET /hello", () => {
 
 
 describe("POST /api/flightDeals", () => {
-  it("should return ", async () => {
+  it("should return cheap flights based on an origin airport (IATA code)", async () => {
     const params: FlightDealsParams = {
       originAirportIATA: 'BUF',
     };
@@ -69,7 +88,7 @@ describe("POST /api/flightDeals", () => {
 });
 
 describe("POST /api/searchFlightsOneWay", () => {
-  it("should return ", async () => {
+  it("should return a list of flights (when searching with no flexible airports/dates)", async () => {
     const params: OneWayQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
@@ -84,10 +103,8 @@ describe("POST /api/searchFlightsOneWay", () => {
       assertIsFlight(flight);
     }
   }, AMADEUS_TIMEOUT);
-});
 
-describe("POST /api/searchFlightsOneWay (with flexible dates)", () => {
-  it("should return ", async () => {
+  it("should return a list of flights (when searching with flexible dates)", async () => {
     const params: OneWayQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
@@ -102,10 +119,8 @@ describe("POST /api/searchFlightsOneWay (with flexible dates)", () => {
       assertIsFlight(flight);
     }
   }, AMADEUS_TIMEOUT);
-});
 
-describe.only("POST /api/searchFlightsOneWay (with flexible airports)", () => {
-  it("should return ", async () => {
+  it("should return a list of flights (when searching with flexible airports)", async () => {
     const params: OneWayQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
@@ -123,7 +138,7 @@ describe.only("POST /api/searchFlightsOneWay (with flexible airports)", () => {
 });
 
 describe("POST /api/searchFlightsRoundTrip", () => {
-  it("should return ", async () => {
+  it("should return a list of flights (when searching with no flexible airports/dates)", async () => {
     const params: RoundTripQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
@@ -139,10 +154,8 @@ describe("POST /api/searchFlightsRoundTrip", () => {
       assertIsFlight(flight);
     }
   }, AMADEUS_TIMEOUT);
-});
 
-describe("POST /api/searchFlightsRoundTrip (with flexible dates)", () => {
-  it("should return ", async () => {
+  it("should return a list of flights (when searching with flexible dates)", async () => {
     const params: RoundTripQueryParams = {
       originAirportIATA: 'LAX',
       destinationAirportIATA: 'JFK',
@@ -158,10 +171,27 @@ describe("POST /api/searchFlightsRoundTrip (with flexible dates)", () => {
       assertIsFlight(flight);
     }
   }, AMADEUS_TIMEOUT);
+
+  it("should return a list of flights (when searching with flexible airports)", async () => {
+    const params: RoundTripQueryParams = {
+      originAirportIATA: 'LAX',
+      destinationAirportIATA: 'JFK',
+      flexibleAirports: ["OAK", "SFO", "NGZ"],
+      flexibleDates: true,
+      startDate: new Date('2026-05-10'),
+      endDate: new Date('2026-05-15')
+    };
+
+    const { status, json } = await apiPost("/api/searchFlightsRoundTrip", params);
+    expect(status).toBe(200);
+    for (const flight of json) {
+      assertIsFlight(flight);
+    }
+  }, AMADEUS_TIMEOUT);
 });
 
 describe("POST /api/searchFlightsMultiCity", () => {
-  it("should return ", async () => {
+  it("should return a list of flights (when searching without flexible dates)", async () => {
     const params: MultiCityQueryParams = {
       legs: [
         {
@@ -175,7 +205,6 @@ describe("POST /api/searchFlightsMultiCity", () => {
           date: new Date('2026-01-10'),
         }
       ],
-      flexibleAirports: [],
       flexibleDates: false,
     };
 
@@ -185,10 +214,8 @@ describe("POST /api/searchFlightsMultiCity", () => {
       assertIsFlight(flight);
     }
   }, AMADEUS_TIMEOUT);
-});
 
-describe("POST /api/searchFlightsMultiCity (with flexible dates)", () => {
-  it("should return ", async () => {
+  it("should return a list of flights (when searching with flexible dates)", async () => {
     const params: MultiCityQueryParams = {
       legs: [
         {

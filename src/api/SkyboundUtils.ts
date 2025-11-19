@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { getAuth } from "firebase/auth";
 
 // This module contains utility functions for interacting with our internal API
 
@@ -44,12 +45,21 @@ export function getURL() {
 
 // Make a request to the internal API
 export async function skyboundRequest(endpoint: string, params: object) {
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  if (!user) throw new Error("Internal API request failed: not logged in");
+  const idToken = await user.getIdToken();
+
   const fullURL = `${getURL()}/${endpoint}/`;
   console.log(`Sending query to endpoint ${fullURL}`);
 
   const response = await fetch(fullURL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': `Bearer ${idToken}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(params),
   });
 

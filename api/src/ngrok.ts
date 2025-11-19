@@ -25,7 +25,6 @@ export default async function exposeServer(ipv4: string, port: number) {
 
     await fs.writeFile(ENV_FILE, `NGROK_AUTHTOKEN=${TOKEN}\nNGROK_URL=${listener.url()}\n`);
   } catch (err) {
-    console.error('Error:', err);
-    process.exit(1);
+    throw new Error(`Error exposing server via ngrok: ${err}`)
   }
 }

@@ -1,13 +1,16 @@
 import AmadeusAPI from '@/AmadeusAPI';
+import { authenticate, AuthenticatedRequest } from "@/auth";
 import abbreviatedLog from '@/logging';
 import exposeServer from '@/ngrok';
 import SkyboundAPI, { FlightDealsParams, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
+import admin from "firebase-admin";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const api: SkyboundAPI = new AmadeusAPI();
 
+admin.initializeApp();
 app.use(express.json());
 
 // Logos are publicly accessible
@@ -20,11 +23,11 @@ app.use('/api/logos', express.static('./logos'));
   }
 })();
 
-app.get('/hello', (_: Request, res: Response) => {
+app.get('/hello', authenticate, (_: AuthenticatedRequest, res: Response) => {
   res.json({hello: 'Hello world!'});
 });
 
-app.post('/api/flightDeals', async (req: Request, res: Response) => {
+app.post('/api/flightDeals', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query: FlightDealsParams = req.body;
     abbreviatedLog("Input", query, Infinity);
@@ -37,7 +40,7 @@ app.post('/api/flightDeals', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
+app.post('/api/searchFlightsOneWay', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query: OneWayQueryParams = req.body;
     abbreviatedLog("Input", query, Infinity);
@@ -50,7 +53,7 @@ app.post('/api/searchFlightsOneWay', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/searchFlightsRoundTrip', async (req: Request, res: Response) => {
+app.post('/api/searchFlightsRoundTrip', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query: RoundTripQueryParams = req.body;
     abbreviatedLog("Input", query, Infinity);
@@ -63,7 +66,7 @@ app.post('/api/searchFlightsRoundTrip', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/searchFlightsMultiCity', async (req: Request, res: Response) => {
+app.post('/api/searchFlightsMultiCity', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query: MultiCityQueryParams = req.body;
     abbreviatedLog("Input", query, Infinity);
