@@ -43,7 +43,7 @@ export function getURL() {
   return `${API_URL}/api`;
 }
 
-// Make a request to the internal API
+// Make a post request to the internal API
 export async function skyboundRequest(endpoint: string, params: object) {
   const auth = getAuth();
   const user = auth.currentUser;
@@ -63,9 +63,15 @@ export async function skyboundRequest(endpoint: string, params: object) {
     body: JSON.stringify(params),
   });
 
+  const json = await response.json();
+
   if (!response.ok) {
-    throw new Error(`HTTP error ${response.status}`);
+    const errorMessage = (json.error !== undefined)
+      ? json.error
+      : json.message || 'Unknown error';
+
+    throw new Error(`HTTP error ${response.status}: ${errorMessage}`);
   }
 
-  return await response.json();
+  return json;
 }

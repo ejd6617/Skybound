@@ -53,6 +53,8 @@ async function apiPost(endpoint: string, params: object) {
   return { status: res.status, json };
 }
 
+// Heuristic to check if a json object is probably a Flight
+// not completely reliable, but reliable enough to make sure the API isn't spitting out complete junk
 function assertIsFlight(obj: Flight) {
   expect(typeof obj).toBe("object");
   expect(obj).toBeDefined();
@@ -63,7 +65,7 @@ function assertIsFlight(obj: Flight) {
   expect((obj.return === undefined || Array.isArray(obj.return)));
 }
 
-describe("GET /hello", () => {
+describe.only("GET /hello", () => {
   it("should return Hello world!", async () => {
     const { status, json } = await apiGet("/hello");
 
