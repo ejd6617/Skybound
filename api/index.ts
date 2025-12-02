@@ -1,5 +1,5 @@
 import AmadeusAPI from '@/AmadeusAPI';
-import { authenticate, AuthenticatedRequest } from "@/auth";
+import { authenticate, AuthenticatedRequest, getAdminCredential } from "@/auth";
 import abbreviatedLog from '@/logging';
 import exposeServer from '@/ngrok';
 import SkyboundAPI, { FlightDealsParams, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
@@ -10,7 +10,7 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const api: SkyboundAPI = new AmadeusAPI();
 
-admin.initializeApp();
+admin.initializeApp(getAdminCredential());
 app.use(express.json());
 
 // Logos are publicly accessible

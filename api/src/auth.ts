@@ -1,10 +1,32 @@
 import * as dotenv from 'dotenv';
 import { NextFunction, Request, Response } from "express";
-import admin from "firebase-admin";
+import admin, { AppOptions, ServiceAccount } from "firebase-admin";
 
 // Extend Express Request type to include our authenticated user
 export interface AuthenticatedRequest extends Request {
   user?: admin.auth.DecodedIdToken;
+}
+
+export function getAdminCredential(): AppOptions {
+  // Get the admin credential from .env.firebase-backend.local
+  const ENV_FILE = '/.env.firebase-backend.local';
+  dotenv.config({ path: ENV_FILE });
+  const FIREBASE_CONFIG_BASE64 = process.env.FIREBASE_CONFIG_BASE64;
+  if (!FIREBASE_CONFIG_BASE64) {
+    throw new Error(`FIREBASE_CONFIG_BASE64 is not set in ${ENV_FILE}`);
+  }
+
+  // Parse the base64 to JSON, deserialize the JSON as a ServiceAccount
+  const serviceAccount = JSON.parse(
+    Buffer.from(FIREBASE_CONFIG_BASE64, 'base64').toString('utf8')
+  ) as ServiceAccount;
+
+  const credential = admin.credential.cert(serviceAccount);
+
+  // Return AppOptions object containing the credential to be passed to admin.initializeApp()
+  return {
+    credential: credential
+  } as AppOptions;
 }
 
 export async function authenticate(req: AuthenticatedRequest, res: Response, next: NextFunction) {
@@ -24,8 +46,9 @@ export async function authenticate(req: AuthenticatedRequest, res: Response, nex
   }
   const idToken = authHeader.split(" ")[1];
   
-  // Immediately approve auth if it is the bypass
+  // Immediately approve auth if it is the bypass token
   if (idToken === TEST_BYPASS_TOKEN) {
+    console.log("The test suite has successfully authenticated with the internal API")
     return next();
   }
   
@@ -33,6 +56,7 @@ export async function authenticate(req: AuthenticatedRequest, res: Response, nex
   try {
     const decoded = await admin.auth().verifyIdToken(idToken);
     req.user = decoded;
+    console.log(`User ${decoded.email} has successfully authenticated with the internal API`)
     return next();
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired token" });

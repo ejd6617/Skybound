@@ -6,12 +6,13 @@ services:
     volumes:
       - ./api:/app
       - ./skyboundTypes:/skyboundTypes
-      - ./.env.amadeus.local:/.env.amadeus.local
-      - ./.env.ngrok.local:/.env.ngrok.local
-      - ./.env.test.local:/.env.test.local
+      - ./.env.amadeus.local:/.env.amadeus.local # Amadeus API credentials
+      - ./.env.ngrok.local:/.env.ngrok.local # NGrok forwarding credentials
+      - ./.env.test.local:/.env.test.local # Token to bypass firebase auth for testing
+      - ./.env.firebase-backend.local:/.env.firebase-backend.local # Base64-encoded admin service account credentials for authenticating user session tokens on the backend
     ports:
       - 4000:4000 # API
     environment:
       - PORT=4000
-      # - USE_NGROK=true
+      - USE_NGROK=true
     command: ["npm", "start"]
