@@ -1,4 +1,3 @@
-import SkyboundNavBar from '@components/ui/SkyboundNavBar';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,12 +8,11 @@ import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    View
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PaymentScreen() {
   const colors = useColors();
@@ -257,13 +255,12 @@ export default function PaymentScreen() {
   };
 
   return (
-    <SafeAreaView
+    <View
       style={{
         flex: 1,
         backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
         marginTop: -25,
       }}
-      edges={['top']}
     >
       <LinearGradient
         colors={colors.gradient}
@@ -271,20 +268,6 @@ export default function PaymentScreen() {
         end={colors.gradientEnd}
         style={{ flex: 1 }}
       >
-        <SkyboundNavBar
-          title="Payment"
-          leftHandIcon={<Ionicons name="chevron-back" size={30} color={colors.link} />}
-          leftHandIconOnPressEvent={() => navigation.goBack()}
-          rightHandFirstIcon={
-            <Ionicons name="notifications-outline" size={28} color={colors.link} />
-          }
-          rightHandFirstIconOnPressEvent={() => {}}
-          rightHandSecondIcon={
-            <Ionicons name="person-circle-outline" size={30} color={colors.link} />
-          }
-          rightHandSecondIconOnPressEvent={() => {}}
-        />
-
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           contentInsetAdjustmentBehavior="automatic"
@@ -619,7 +602,7 @@ export default function PaymentScreen() {
           </SkyboundText>
         </View>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 }
 

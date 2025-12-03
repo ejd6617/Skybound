@@ -1,5 +1,5 @@
+import DisplayMap from "@/components/ui/DisplayMap";
 import { Flight, FlightLeg } from "@/skyboundTypes/SkyboundAPI";
-import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,17 +10,15 @@ import type { RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useMemo, useRef, useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    Easing,
-    Image,
-    Modal,
-    Pressable,
-    StyleSheet,
-    View
+  Animated,
+  Dimensions,
+  Easing,
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  View
 } from "react-native";
-import DisplayMap from "@/components/ui/DisplayMap";
-import SimplifiedFlightDetails from "@/components/ui/SimplifiedFlightDetails";
 
 const bgWithAlpha = (hex: string, a: number) => {
   const raw = hex.replace('#', '');
@@ -420,141 +418,117 @@ export default function FlightResultsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={{ backgroundColor: colors.card, marginTop: 25 }}>
-          <SkyboundNavBar
-            title={generateTitle()}
-            leftHandIcon={<Ionicons name="arrow-back" size={22} color={colors.link} />}
-            leftHandIconOnPressEvent={() => navigation.goBack()}
-            rightHandFirstIcon={<Ionicons name="filter" size={22} color={colors.link} />}
-            rightHandFirstIconOnPressEvent={() => navigation.navigate('FilterScreen')}
-            rightHandSecondIcon={<Ionicons name="swap-vertical" size={22} color={colors.link} />}
-            rightHandSecondIconOnPressEvent={() => openSortSheet()}
-          />
-          <View style={{ paddingBottom: 5 }}>
-            <SkyboundText
-              variant="secondary"
-              size={16}
-              accessabilityLabel={generateDateRange()}
-              style={{ textAlign: 'center' }}
->
-              {generateDateRange()}
-            </SkyboundText>
-          </View>
-        </View>
-
-        {/* Map Placeholder */}
-        <View style={[styles.mapContainer, { backgroundColor: colors.surfaceMuted }]}>
-          <DisplayMap
-          mapHeight={300}
-          mapWidth={300}
-          sourceAirportCode={focusedFlight?.source ?? ''}
-          destAirportCode={focusedFlight?.dest ?? ''}
-          >
-            
-          </DisplayMap>
-          <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 15, marginBottom: -10 }}>
-            Google Maps integration would display route here
-          </SkyboundText>
-        </View>
-
-        <View style={styles.resultsWrapper}>
-          <View style={styles.resultsFadeOverlay} pointerEvents="none">
-            <LinearGradient
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              colors={[bgWithAlpha(colors.background, 0.98), bgWithAlpha(colors.background, 0)]}
-              style={StyleSheet.absoluteFill}
-            />
-          </View>
-
-         <Animated.FlatList
-            style={{ opacity: listFade }}
-            data={visibleFlights}
-            keyExtractor={(flight) => flight.id.toString()}
-            renderItem={({ item }) => <FlightCard flight={item} />}
-            contentContainerStyle={styles.scrollContent}
-            ListHeaderComponent={
-            <SkyboundText
-              variant="secondary"
-              size={14}
-              accessabilityLabel="Found Flights:"
-              style={{ marginTop: 30, marginBottom: 30 }}
-            >
-            {flights.length} flights found
-            </SkyboundText>
-          }
-          ListFooterComponent={
-          <Pressable
-            style={[
-              styles.loadMoreButton,
-              !canLoadMore && { opacity: 0.5 },
-            ]}
-            disabled={!canLoadMore}
-            onPress={() =>
-              setVisibleCount((prev) => Math.min(prev + 4, flights.length))
-            }
-          >
-            <SkyboundText
-              variant="primaryBold"
-              accessabilityLabel={
-                canLoadMore ? 'Load More Flights' : 'No More Flights'
-              }
-              size={16}
-              style={{ color: '#FFFFFF' }}
-            >
-              {canLoadMore ? 'Load More Flights' : 'No More Flights'}
-            </SkyboundText>
-          </Pressable>
-        }
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
-      />
-        </View>
-
-        {/* Filter Modal */}
-        <Modal visible={sortModalVisible} transparent animationType="none">
-          <Animated.View style={[styles.animatedOverlay, { opacity: overlayOp }]}>
-            <Pressable style={{ flex:1 }} onPress={closeSortSheet} />
-          </Animated.View>
-
-          <Animated.View
-            style={[
-              styles.animatedSheetWrap,
-              { transform: [{ translateY: sheetY }] }
-            ]}
-          >
-            <View style={[styles.sheet, { backgroundColor: colors.card }]}>
-              <SkyboundText variant="primaryBold" size={18} accessabilityLabel="Sort By: " style={{ marginBottom: 16 }}>Sort By</SkyboundText>
-
-              <Pressable
-                style={styles.sortOption}
-                onPress={() => { setSortBy('recommended'); setSortDirection('asc'); sortFlights('recommended','asc'); }}
-              >
-                <SkyboundText accessabilityLabel='Reccomended' variant='primary'size={16}>Recommended</SkyboundText>
-              </Pressable>
-
-              {(['price','duration','stops'] as const).map(crit => (
-                <Pressable
-                  key={crit}
-                  style={styles.sortOption}
-                  onPress={() => { 
-                    const dir = (sortBy === crit) ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
-                    sortFlights(crit, dir);
-                  }}
-                >
-                  <SkyboundText accessabilityLabel={crit} variant="primary" size={16} style={{ textTransform:'capitalize' }}>{crit}</SkyboundText>
-                  <Ionicons name={arrowFor(crit)} size={20} color={colors.icon} />
-                </Pressable>
-              ))}
-
-              <Pressable style={[styles.closeButton, { backgroundColor: colors.link }]} onPress={closeSortSheet}>
-                <SkyboundText variant='primary' accessabilityLabel='Close'size={16} style={{ color:'#FFF' }}>Close</SkyboundText>
-              </Pressable>
-            </View>
-          </Animated.View>
-        </Modal>
+      {/* Map Placeholder */}
+      <View style={[styles.mapContainer, { backgroundColor: colors.surfaceMuted }]}>
+        <DisplayMap
+        mapHeight={300}
+        mapWidth={300}
+        sourceAirportCode={focusedFlight?.source ?? ''}
+        destAirportCode={focusedFlight?.dest ?? ''}
+        >
+          
+        </DisplayMap>
+        <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 15, marginBottom: -10 }}>
+          Google Maps integration would display route here
+        </SkyboundText>
       </View>
+
+      <View style={styles.resultsWrapper}>
+        <View style={styles.resultsFadeOverlay} pointerEvents="none">
+          <LinearGradient
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            colors={[bgWithAlpha(colors.background, 0.98), bgWithAlpha(colors.background, 0)]}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
+
+       <Animated.FlatList
+          style={{ opacity: listFade }}
+          data={visibleFlights}
+          keyExtractor={(flight) => flight.id.toString()}
+          renderItem={({ item }) => <FlightCard flight={item} />}
+          contentContainerStyle={styles.scrollContent}
+          ListHeaderComponent={
+          <SkyboundText
+            variant="secondary"
+            size={14}
+            accessabilityLabel="Found Flights:"
+            style={{ marginTop: 30, marginBottom: 30 }}
+          >
+          {flights.length} flights found
+          </SkyboundText>
+        }
+        ListFooterComponent={
+        <Pressable
+          style={[
+            styles.loadMoreButton,
+            !canLoadMore && { opacity: 0.5 },
+          ]}
+          disabled={!canLoadMore}
+          onPress={() =>
+            setVisibleCount((prev) => Math.min(prev + 4, flights.length))
+          }
+        >
+          <SkyboundText
+            variant="primaryBold"
+            accessabilityLabel={
+              canLoadMore ? 'Load More Flights' : 'No More Flights'
+            }
+            size={16}
+            style={{ color: '#FFFFFF' }}
+          >
+            {canLoadMore ? 'Load More Flights' : 'No More Flights'}
+          </SkyboundText>
+        </Pressable>
+      }
+      onViewableItemsChanged={onViewableItemsChanged}
+      viewabilityConfig={viewabilityConfig}
+    />
+      </View>
+
+      {/* Filter Modal */}
+      <Modal visible={sortModalVisible} transparent animationType="none">
+        <Animated.View style={[styles.animatedOverlay, { opacity: overlayOp }]}>
+          <Pressable style={{ flex:1 }} onPress={closeSortSheet} />
+        </Animated.View>
+
+        <Animated.View
+          style={[
+            styles.animatedSheetWrap,
+            { transform: [{ translateY: sheetY }] }
+          ]}
+        >
+          <View style={[styles.sheet, { backgroundColor: colors.card }]}>
+            <SkyboundText variant="primaryBold" size={18} accessabilityLabel="Sort By: " style={{ marginBottom: 16 }}>Sort By</SkyboundText>
+
+            <Pressable
+              style={styles.sortOption}
+              onPress={() => { setSortBy('recommended'); setSortDirection('asc'); sortFlights('recommended','asc'); }}
+            >
+              <SkyboundText accessabilityLabel='Reccomended' variant='primary'size={16}>Recommended</SkyboundText>
+            </Pressable>
+
+            {(['price','duration','stops'] as const).map(crit => (
+              <Pressable
+                key={crit}
+                style={styles.sortOption}
+                onPress={() => { 
+                  const dir = (sortBy === crit) ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
+                  sortFlights(crit, dir);
+                }}
+              >
+                <SkyboundText accessabilityLabel={crit} variant="primary" size={16} style={{ textTransform:'capitalize' }}>{crit}</SkyboundText>
+                <Ionicons name={arrowFor(crit)} size={20} color={colors.icon} />
+              </Pressable>
+            ))}
+
+            <Pressable style={[styles.closeButton, { backgroundColor: colors.link }]} onPress={closeSortSheet}>
+              <SkyboundText variant='primary' accessabilityLabel='Close'size={16} style={{ color:'#FFF' }}>Close</SkyboundText>
+            </Pressable>
+          </View>
+        </Animated.View>
+      </Modal>
     </View>
   );
 }

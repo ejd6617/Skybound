@@ -1,4 +1,3 @@
-import SkyboundNavBar from '@components/ui/SkyboundNavBar';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,17 +15,14 @@ import {
 } from 'react-native';
 
 //Components and navigator imports
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 //firebase imports
 import { signOut } from 'firebase/auth';
 import { auth } from '../firebase';
 import LoadingScreen from './LoadingScreen';
-import { db } from "../firebase";
 
 //Stripe imports
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { collection, doc, addDoc, onSnapshot } from "firebase/firestore";
 
 export default function AccountScreen() {
   const colors = useColors();
@@ -111,12 +107,11 @@ export default function AccountScreen() {
       }
 
   return (
-    <SafeAreaView
+    <View
       style={{
         flex: 1,
-        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF', marginTop: -25,
+        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
       }}
-      edges={['top']}
     >
       <LinearGradient
         colors={colors.gradient}
@@ -124,16 +119,6 @@ export default function AccountScreen() {
         end={colors.gradientEnd}
         style={{ flex: 1 }}
       >
-        <SkyboundNavBar
-          title="Account"
-          leftHandIcon={<Ionicons name="menu" size={30} color={colors.link} />}
-          leftHandIconOnPressEvent={() => navigation.navigate('Dashboard')}
-          rightHandFirstIcon={<Ionicons name="notifications-outline" size={28} color={colors.link} />}
-          rightHandFirstIconOnPressEvent={() => {}}
-          rightHandSecondIcon={<Ionicons name="person-circle-outline" size={30} color={colors.link} />}
-          rightHandSecondIconOnPressEvent={() => {}}
-        />
-
         <View
           style={{ flex: 1, backgroundColor: 'transparent', marginTop: 10 }}
         >
@@ -365,7 +350,7 @@ export default function AccountScreen() {
           </ScrollView>
         </View>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 }
 
