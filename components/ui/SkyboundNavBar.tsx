@@ -1,19 +1,23 @@
 import { Ionicons } from "@expo/vector-icons";
+import { DrawerNavigationProp } from '@react-navigation/drawer';
+import { useNavigation } from "@react-navigation/native";
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import React from 'react';
 import { Dimensions, Image, StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import SkyboundText from './SkyboundText';
 
+type DrawerNavProps = DrawerNavigationProp<any>;
+
 const SkyboundNavBar: React.FC<NativeStackHeaderProps> = (props) => {
-    const { navigation } = props;
+    const navigation = useNavigation<DrawerNavProps>();
     const {width, height} = Dimensions.get('window')
     const colorScheme = useColorScheme();
 
     return(
         <SafeAreaView style={{backgroundColor: colorScheme === 'light' ? 'white' : '#1E1E1E'}} edges={['top', 'left', 'right']}>
             <View style={[styles.navBarHolder, {width: width}]}>
-                <TouchableOpacity onPress={() => {}}>
+                <TouchableOpacity onPress={() => navigation.openDrawer()}>
                     {<Ionicons name="menu" size={22} color="#0071E2" />}
                 </TouchableOpacity>
                 
