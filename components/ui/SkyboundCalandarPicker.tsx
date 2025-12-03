@@ -11,6 +11,17 @@ interface SkyboundCalandarPickerProps {
     onDateChange : (data : Date) => void;
 }
 
+//
+function disablePastDates(date: Date)
+{
+    let currentDate = new Date();
+
+    if(date < currentDate)
+        return true
+
+    return false
+
+}
 
 const SkyboundCalandarPicker: React.FC<SkyboundCalandarPickerProps> = ({
     onDateChange,
@@ -23,7 +34,8 @@ const SkyboundCalandarPicker: React.FC<SkyboundCalandarPickerProps> = ({
             textStyle={colorScheme === 'light' ? basicStyles.skyboundTextPrimaryLight : basicStyles.skyboundTextPrimaryDark}
             selectedDayColor={'#0071E2'}
             selectedDayTextColor={'white'}
-            width={width * .9}>
+            width={width * .9}
+            disabledDates={disablePastDates}>
             </CalendarPicker>
         </SkyboundItemHolder>
     )

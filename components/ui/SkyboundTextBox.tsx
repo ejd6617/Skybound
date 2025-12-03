@@ -1,7 +1,7 @@
 import BasicStyles from '@/constants/BasicComponents';
 import React, { useState } from 'react';
 import type { KeyboardTypeOptions, TextInputProps } from 'react-native';
-import { StyleSheet, TextInput, useColorScheme, View } from 'react-native';
+import { StyleSheet, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 
 //this custom text box component creates a text box with an optional icon placed on the right hand side.
 
@@ -15,6 +15,9 @@ interface SkyboundTextBoxProps {
   secureTextEntry?: boolean;
   autoCapitalize?: TextInputProps['autoCapitalize'];
   keyboardType?: KeyboardTypeOptions;
+  touchableIcon?: boolean
+  touchableIconFunction?: () => void;
+
 }
 
 const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
@@ -27,6 +30,8 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
   secureTextEntry,
   autoCapitalize,
   keyboardType,
+  touchableIcon,
+  touchableIconFunction,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const colorScheme = useColorScheme(); 
@@ -53,10 +58,17 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
         keyboardType={keyboardType}
         maxLength={256}
       />
-      {icon && (
+      {/*Conditional loading based on if the button should be tappable */}
+      {icon && touchableIcon &&  (
+        <TouchableOpacity onPress={touchableIconFunction}>
+          <View style={[styles.icon, { right: 8 }]}>
+            {icon}
+          </View>
+        </TouchableOpacity>
+      ) || (
         <View style={[styles.icon, { right: 8 }]}>
-    {icon}
-  </View>
+          {icon}
+        </View>
       )}
     </View>
   );
@@ -75,7 +87,7 @@ const styles = StyleSheet.create({
   icon: {
     position: 'absolute',
     top: '50%',
-    marginTop: -12, // half of icon height to vertically center
+    marginTop: -30, // half of icon height to vertically center
   },
 });
 

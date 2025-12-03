@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import ShowPasswordIcon from '../../assets/images/ShowPasswordIcon.svg';
 
 
 
@@ -27,8 +28,8 @@ import SkyboundText from '@components/ui/SkyboundText';
 
 //Firebase imports
 import { auth } from '@src/firebase';
-import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import { updateUserData } from '@src/firestoreFunctions';
+import { GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from 'firebase/auth';
 import { serverTimestamp } from "firebase/firestore";
 
 import * as Google from "expo-auth-session/providers/google";
@@ -41,6 +42,7 @@ export default function LoginScreen() {
   const c = useColors(); // current theme (light/dark)
   const [loginError, setLoginError] = useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
+  const [hidePassword, setHidePassword] = useState(false)
 
   // width for SkyboundButton
   const { width: SCREEN_W } = Dimensions.get("window");
@@ -118,6 +120,15 @@ export default function LoginScreen() {
 
   }
 
+  //helpler function for password hiding
+  function toggleShowPassword()
+  {
+    if(hidePassword)
+      setHidePassword(false);
+    else
+      setHidePassword(true);
+  }
+
   //displays loading screen
   if (isLoading) {
     return <LoadingScreen />;
@@ -193,9 +204,13 @@ export default function LoginScreen() {
                 width={BTN_W}
                 height={45}
                 onChange={setPassword}
-                secureTextEntry={true}
+                secureTextEntry={hidePassword}
                 enableErrorText={loginError}
                 errorText={loginErrorMessage}
+                touchableIcon={true}
+                touchableIconFunction={toggleShowPassword}
+                icon={<ShowPasswordIcon/>}
+
               />
             </View>
 

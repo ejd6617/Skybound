@@ -1,11 +1,14 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
 import SkyboundScreen from '@components/ui/SkyboundScreen';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
+
+import airportInfo from '../../../assets/airports.json';
+
 
 interface AirportChip {
   code: string;
@@ -32,7 +35,19 @@ const AirportPreference: React.FC = () => {
     if (Alert.prompt) {
       Alert.prompt('Add airport', 'Enter IATA code (e.g., BOS)', (text) => {
         if (!text) return;
-        setter((prev) => [...prev, { code: text.toUpperCase(), city: 'Custom city' }]);
+
+        const result = airportInfo.find(item => item.iata === text);
+
+        if(result)
+        {
+           setter((prev) => [...prev, { code: text.toUpperCase(), city: result.city }]);
+        }
+        else
+        {
+            Alert.alert("ERROR: Airport code does not match an existing airport in our database.");
+        }
+
+       
       });
     } else {
       Alert.alert('Airport picker coming soon', 'We’ll let you search all airports in a future update.');
