@@ -1,4 +1,3 @@
-import SkyboundNavBar from '@components/ui/SkyboundNavBar';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,13 +7,13 @@ import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
 import {
-    Image,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    View,
+  Image,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -150,13 +149,12 @@ export default function PaymentMethodScreen() {
   };
 
   return (
-    <SafeAreaView
+    <View
       style={{
         flex: 1,
         backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
         marginTop: -25,
       }}
-      edges={['top']}
     >
       <LinearGradient
         colors={colors.gradient}
@@ -164,16 +162,6 @@ export default function PaymentMethodScreen() {
         end={colors.gradientEnd}
         style={{ flex: 1 }}
       >
-        <SkyboundNavBar
-          title="Payment Methods"
-          leftHandIcon={<Ionicons name="chevron-back" size={30} color={colors.link} />}
-          leftHandIconOnPressEvent={() => navigation.goBack()}
-          rightHandFirstIcon={<Ionicons name="notifications-outline" size={28} color={colors.link} />}
-          rightHandFirstIconOnPressEvent={() => {}}
-          rightHandSecondIcon={<Ionicons name="person-circle-outline" size={30} color={colors.link} />}
-          rightHandSecondIconOnPressEvent={() => {}}
-        />
-
         <View style={{ flex: 1, backgroundColor: 'transparent', marginTop: 10 }}>
           <ScrollView
             contentContainerStyle={[styles.scrollContent, { paddingBottom: 0 }]}
@@ -769,7 +757,7 @@ export default function PaymentMethodScreen() {
           </View>
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

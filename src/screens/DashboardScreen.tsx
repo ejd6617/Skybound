@@ -1,16 +1,14 @@
 // screens/DashboardScreen.tsx
-import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Image, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, Pressable, RefreshControl, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
 import DisplayMap from "@/components/ui/DisplayMap";
 import { OneWayQueryParams } from "@/skyboundTypes/SkyboundAPI";
 import SkyboundButton from "@components/ui/SkyboundButton";
 import SkyboundFlashDeal from "@components/ui/SkyboundFlashDeal";
 import SkyboundItemHolder from "@components/ui/SkyboundItemHolder";
-import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { reviveDates, skyboundRequest } from "@src/api/SkyboundUtils";
@@ -172,7 +170,7 @@ export default function DashboardScreen() {
             <Pressable style={styles.readyBtn}><SkyboundText accessabilityLabel=' View All Deals' variant="primaryButton" size={14} style={{ color: "#fff" }}>View All Deals</SkyboundText></Pressable>
           </SkyboundItemHolder>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </LinearGradient>
   );
 }

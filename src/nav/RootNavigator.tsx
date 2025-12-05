@@ -37,6 +37,7 @@ import PaymentScreen from "@src/screens/PaymentScreen";
 import SignupScreen from "@src/screens/SignupScreen";
 
 // Login listener
+import SkyboundNavBar from "@/components/ui/SkyboundNavBar";
 import { Flight } from "@/skyboundTypes/SkyboundAPI";
 import type { TravelerProfile } from '@src/types/travelers';
 import type { TripCardData } from '@src/types/trips';
@@ -106,11 +107,14 @@ export default function RootNavigator(): React.JSX.Element
     <NavContainer>
       {/* @ts-ignore - suppress spurious type error on Stack.Navigator props */}
       <Stack.Navigator 
-        screenOptions={{ headerShown: false }}
+        screenOptions={{
+          headerShown : true,
+          header: (props) => (<SkyboundNavBar {...props}/>),
+        }}
         initialRouteName={initialRoute}
       >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Signup" component={SignupScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} options={{headerShown: false}} />
+        <Stack.Screen name="Signup" component={SignupScreen} options={{headerShown: false}} />
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
         <Stack.Screen name ="ComponentTest" component={ComponentTestScreen}/>
         <Stack.Screen name="FlightSearch"  component={FlightSearchScreen}/>

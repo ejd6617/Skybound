@@ -58,7 +58,7 @@ export default function SignupScreen() {
   const [passwordBoxErrorText, setPasswordBoxErrorText] = useState('');
   const [hidePassword1, setHidePassword1] = useState(true);
   const [hidePassword2, setHidePassword2] = useState(true);
-
+ 
  
   //navigation and color theme
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -103,7 +103,7 @@ export default function SignupScreen() {
     localHasError = true;
     setEmailError(true);
   }
-
+  //passwords do not match 
   const localPasswordsNotMatch = password !== password2;
   if (localPasswordsNotMatch) {
     console.log("passwords do not match");
@@ -111,20 +111,33 @@ export default function SignupScreen() {
     setPasswordError(true);
   
   }
-
+  //password is too short
   const localPasswordTooShort = password.length <= 6;
   if (localPasswordTooShort) {
-    console.log("Password insufficient");
+    console.log("Password is too short");
     localHasError = true;
     setPasswordError(true);
     // setPasswordInsufficentLengthError(true);
   }
 
+  //password has insufficent security 
+  
+  const securityRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*[!@#$%^&*()_\-+={}[\]|\\:;"'<>,.?/]).+$/;
+  
+  const localPasswordHasInsufficentSecurity = !securityRegex.test(password);
+  
+  if(localPasswordHasInsufficentSecurity)
+  {
+    console.log("Password has insufficent security");
+    localHasError = true;
+    setPasswordError(true);
+  }
+
   if (localHasError) {
-    // pass the local booleans into the helpers so they don't read stale state
+    // pass the local booleans into the helpers 
     getNameBoxErrors(fullName);
     getEmailBoxErrors(email, localEmailInvalid);
-    getPasswordBoxErrors(localPasswordsNotMatch, localPasswordTooShort);
+    getPasswordBoxErrors(localPasswordsNotMatch, localPasswordTooShort, localPasswordHasInsufficentSecurity);
 
     setIsLoading(false);
     return;
@@ -135,8 +148,7 @@ export default function SignupScreen() {
     console.log("attempting login");
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-
-  await updateProfile(user, {
+      await updateProfile(user, {
     displayName: fullName,   
   });
 
@@ -232,7 +244,7 @@ function getNameBoxErrors(fullName: string) {
   setEmailBoxErrorText(text);
 }
 
-function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: boolean) {
+function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: boolean, passwordInsufficentSecurity: Boolean) {
   let text = "";
 
   if (passwordsNotMatch) {
@@ -241,10 +253,15 @@ function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: bool
   if (passwordTooShort) {
     text += "Password must be 7+ characters.";
   }
+  if (passwordInsufficentSecurity)
+  {
+    text += 'Password must contain an uppercase letter, a lowercase letter, and a special character. '
+  }
+  
 
   setPasswordBoxErrorText(text);
 
-  // If you still use passwordError boolean in UI, also set it:
+ 
   setPasswordError(Boolean(text));
 }
 
@@ -286,7 +303,7 @@ function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: bool
 
   //helper functions to toggle showing the passwords
 
-  function toggleHidePassword1()
+function toggleHidePassword1()
   {
     if(hidePassword1)
         setHidePassword1(false);
