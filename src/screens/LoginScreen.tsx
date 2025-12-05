@@ -42,7 +42,7 @@ export default function LoginScreen() {
   const c = useColors(); // current theme (light/dark)
   const [loginError, setLoginError] = useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
-  const [hidePassword, setHidePassword] = useState(false)
+  const [hidePassword, setHidePassword] = useState(true)
 
   // width for SkyboundButton
   const { width: SCREEN_W } = Dimensions.get("window");

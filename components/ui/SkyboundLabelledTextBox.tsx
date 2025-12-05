@@ -22,6 +22,8 @@ interface SkyboundLabelledTextBoxProps {
     errorText?: string,
     touchableIcon?: boolean,
     touchableIconFunction?: () => void;
+    text?: string,
+    maxLength?: number
 }
 
 
@@ -39,7 +41,9 @@ const SkyboundLabelledTextBox: React.FC<SkyboundLabelledTextBoxProps> = ({placeh
     enableErrorText = false,
     errorText,
     touchableIcon,
-    touchableIconFunction, }) => {
+    touchableIconFunction,
+    text,
+    maxLength, }) => {
 
     
     return (
@@ -64,7 +68,9 @@ const SkyboundLabelledTextBox: React.FC<SkyboundLabelledTextBoxProps> = ({placeh
                     onChangeText={onChange}
                     secureTextEntry={secureTextEntry}
                     touchableIcon={touchableIcon}
-                    touchableIconFunction={touchableIconFunction} />
+                    touchableIconFunction={touchableIconFunction}
+                    text={text}
+                    maxLength={maxLength} />
                 {/*Conditionally load error text  */}
                 {enableErrorText &&(
                     <>

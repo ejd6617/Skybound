@@ -10,13 +10,14 @@ interface SkyboundTextBoxProps {
   width?: number;
   height: number;
   icon?: any;
-  value?: string;
   onChangeText?: (text: string) => void;
   secureTextEntry?: boolean;
   autoCapitalize?: TextInputProps['autoCapitalize'];
   keyboardType?: KeyboardTypeOptions;
   touchableIcon?: boolean
   touchableIconFunction?: () => void;
+  text?: string;
+  maxLength?: number;
 
 }
 
@@ -25,13 +26,14 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
   width,
   height,
   icon,
-  value,
   onChangeText,
   secureTextEntry,
   autoCapitalize,
   keyboardType,
   touchableIcon,
   touchableIconFunction,
+  text, 
+  maxLength,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const colorScheme = useColorScheme(); 
@@ -51,12 +53,13 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
         placeholderTextColor={colorScheme === 'light'? '#585858' : '#9CA3AF'}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        value={value}
+        value={text}
         onChangeText={onChangeText}
         secureTextEntry={secureTextEntry}
         autoCapitalize={autoCapitalize}
         keyboardType={keyboardType}
-        maxLength={100}
+        maxLength={maxLength ? maxLength : 100}
+        
       />
       {/*Conditional loading based on if the button should be tappable */}
       {icon && touchableIcon &&  (
