@@ -42,6 +42,7 @@ import type { TravelerProfile } from '@src/types/travelers';
 import type { TripCardData } from '@src/types/trips';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
+import NotificationsScreen from "../screens/NotificationsScreen";
 
 export type RootStackParamList = {
   Login: undefined;
@@ -84,6 +85,7 @@ export type RootStackParamList = {
   FAQ: undefined;
   Contact: undefined;
   Chat: undefined;
+  Notifications: undefined;
 };
 
 const Stack = createNativeStackNavigator();
@@ -134,6 +136,7 @@ export default function RootNavigator(): React.JSX.Element
         <Stack.Screen name="FAQ" component={FAQscreen} />
         <Stack.Screen name="Contact" component={ContactScreen} />
         <Stack.Screen name="Chat" component={ChatScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen}/>
       </Stack.Navigator>
     </NavContainer>
   );

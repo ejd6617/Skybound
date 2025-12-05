@@ -4,6 +4,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
 import {
   Alert,
+  Dimensions,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -24,6 +25,7 @@ import SkyboundItemHolder from '../../../components/ui/SkyboundItemHolder';
 
 
 //Firebase functionality imports
+import SkyboundLabelledTextBox from '@/components/ui/SkyboundLabelledTextBox';
 import { deleteTravelerDetails, setTravelerDetails, updateTravelerDetails } from '@src/firestoreFunctions';
 import { getAuth } from 'firebase/auth';
 
@@ -45,6 +47,12 @@ const EditTraveler: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<EditTravelerRoute>();
   const existingTraveler = route.params?.traveler;
+
+  const { width: SCREEN_W } = Dimensions.get("window");
+  const CARD_W = Math.min(420, Math.round(SCREEN_W * 0.86));
+  const H_PADDING = 18;
+  const BTN_W = CARD_W - H_PADDING * 2;
+  const itemHolderWidth = SCREEN_W * .9;
 
   const [form, setForm] = useState<TravelerProfile>(
     existingTraveler ?? {
@@ -201,40 +209,45 @@ const EditTraveler: React.FC = () => {
 
         <View>
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="First name label">
-              First Name *
-            </SkyboundText>
-            <TextInput
-              value={form.firstName}
-              onChangeText={(text) => handleInputChange('firstName', text)}
-              placeholder="First name"
-              placeholderTextColor={colors.subText}
-              style={[styles.input, { borderColor: colors.outline, color: colors.text }]}
-            />
+            <SkyboundLabelledTextBox
+            placeholderText='First Name'
+            width={BTN_W}
+            label='First Name'
+            height={45}
+             onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 firstName: text,
+             }))
+           }/>
+            
+            
           </View>
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="Middle name label">
-              Middle Name
-            </SkyboundText>
-            <TextInput
-              value={form.middleName}
-              onChangeText={(text) => handleInputChange('middleName', text)}
-              placeholder="Middle name"
-              placeholderTextColor={colors.subText}
-              style={[styles.input, { borderColor: colors.outline, color: colors.text }]}
-            />
+            <SkyboundLabelledTextBox
+            placeholderText='Middle Name'
+            width={BTN_W}
+            label='Middle Name'
+            height={45}
+            onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 middleName: text,
+             }))
+           }/>
           </View>
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="Last name label">
-              Last Name *
-            </SkyboundText>
-            <TextInput
-              value={form.lastName}
-              onChangeText={(text) => handleInputChange('lastName', text)}
-              placeholder="Last name"
-              placeholderTextColor={colors.subText}
-              style={[styles.input, { borderColor: colors.outline, color: colors.text }]}
-            />
+           <SkyboundLabelledTextBox
+            placeholderText='Last Name'
+            width={BTN_W}
+            label='Last Name'
+            height={45}
+            onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 lastName: text,
+             }))
+           }/>
           </View>
 
           <View style={styles.formField}>
@@ -284,8 +297,34 @@ const EditTraveler: React.FC = () => {
             </View>
           </View>
 
-          {renderTextInput('Nationality', 'nationality', 'Country of citizenship')}
-          {renderTextInput('Passport Number', 'passportNumber', 'Enter passport number')}
+          <View style={styles.formField}>
+           <SkyboundLabelledTextBox
+            placeholderText='Nationality'
+            width={BTN_W}
+            label='Nationality'
+            height={45}
+            onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 nationality: text,
+             }))
+           }/>
+          </View>
+
+          <View style={styles.formField}>
+           <SkyboundLabelledTextBox
+            placeholderText='Passport Number'
+            width={BTN_W}
+            label='Enter Passpot number'
+            height={45}
+            onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 passportNumber: text,
+             }))
+           }/>
+          </View>
+
 
           <View style={styles.formField}>
             <SkyboundText variant="secondary" size={13} accessabilityLabel="Passport expiration label">

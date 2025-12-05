@@ -209,7 +209,7 @@ export default function LoginScreen() {
                 errorText={loginErrorMessage}
                 touchableIcon={true}
                 touchableIconFunction={toggleShowPassword}
-                icon={<ShowPasswordIcon/>}
+                icon={<ShowPasswordIcon height={24} width={24}/>}
 
               />
             </View>

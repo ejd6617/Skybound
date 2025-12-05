@@ -56,7 +56,7 @@ const SkyboundTextBox: React.FC<SkyboundTextBoxProps> = ({
         secureTextEntry={secureTextEntry}
         autoCapitalize={autoCapitalize}
         keyboardType={keyboardType}
-        maxLength={256}
+        maxLength={100}
       />
       {/*Conditional loading based on if the button should be tappable */}
       {icon && touchableIcon &&  (
