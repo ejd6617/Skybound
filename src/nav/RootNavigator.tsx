@@ -41,6 +41,7 @@ import SignupScreen from "@src/screens/SignupScreen";
 
 // Login listener
 import SkyboundNavBar from "@/components/ui/SkyboundNavBar";
+import { useColors } from "@/constants/theme";
 import { Flight } from "@/skyboundTypes/SkyboundAPI";
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import type { TravelerProfile } from '@src/types/travelers';
@@ -111,6 +112,7 @@ const FlightStack = createNativeStackNavigator<FlightStackParamList>();
 const AccountStack = createNativeStackNavigator<AccountStackParamList>();
 const NotificationStack = createNativeStackNavigator<NotificationStackParamList>();
 const NavContainer = NavigationContainer as unknown as React.ComponentType<React.PropsWithChildren<{}>>;
+
 
 function GenerateSkyboundHeaderOptions(customHeaderProps = {}) {
   return {
@@ -225,8 +227,21 @@ function GenerateAccountStack() {
 
 // Drawer contains "Flights" and "My Account" flows
 function GenerateDrawerRoot() {
+  const colors = useColors();
+  const isDark = colors.background !== "#FFFFFF";
   return (
-    <Drawer.Navigator screenOptions={{ headerShown: false }}>
+    <Drawer.Navigator screenOptions={{ headerShown: false,
+      drawerStyle: {
+        backgroundColor: colors.card
+      },
+
+      drawerLabelStyle: {
+        fontFamily: 'Regular',
+        fontSize: 15,
+        color: '#0071E2',
+        marginLeft: -4,
+      },
+    }}>
       <Drawer.Screen
         name="Flights"
         component={GenerateFlightStack}
