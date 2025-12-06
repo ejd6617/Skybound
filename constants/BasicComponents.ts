@@ -96,6 +96,20 @@ export default StyleSheet.create({
     fontSize: 16, 
   },
 
+   skyboundButtonPrimaryDark: {
+    color: 'black',
+    backgroundColor: '#0071E2',
+    fontFamily: 'Regular',
+    fontSize: 16, 
+  },
+
+  skyboundButtonPrimaryError: {
+    color: 'white',
+    backgroundColor: '#ED4337',
+    fontFamily: 'Regular',
+    fontSize: 16, 
+  },
+
   skyboundButtonSecondaryLight: {
     backgroundColor: 'white',
     borderColor: '#1E1E1E',

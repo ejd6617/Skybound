@@ -1,81 +1,123 @@
-import React, { ReactNode } from 'react';
-import { Dimensions, StyleSheet, TouchableOpacity, View, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from "@expo/vector-icons";
+import { DrawerNavigationProp } from '@react-navigation/drawer';
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackHeaderProps } from "@react-navigation/native-stack";
+import React from 'react';
+import { Dimensions, Image, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
+import { SafeAreaView } from "react-native-safe-area-context";
 import SkyboundText from './SkyboundText';
 
-
-
-
-interface SkybounNavBarProps{
-    title: React.ReactNode;  //the title text the NavBar dispalys
-    leftHandIcon: ReactNode; //the icon that will be displayed on the left hand side
-    leftHandIconOnPressEvent: () => void; //the event that will happen when the left hand icon is pressed
-    rightHandFirstIcon: ReactNode; //the icon that will be displayed first on the right hand side
-    rightHandFirstIconOnPressEvent: () => void; //the event that will happen when the first right hand icon is pressed
-    rightHandSecondIcon: ReactNode; //the icon that will be displayed second on the right hand side
-    rightHandSecondIconOnPressEvent: () => void; //the event that will happen when the second right hand icon is pressed
+interface SkyboundNavBarProps extends NativeStackHeaderProps {
+    titleText?: string;
+    showLogo?: boolean;
+    useBackNavigation?: boolean;
+    showNotifications?: boolean;
+    showUserProfile?: boolean;
+    showFilter?: boolean;
+    showShare?: boolean;
 }
 
+type DrawerNavProps = DrawerNavigationProp<any>;
 
-const SkyboundNavBar: React.FC<SkybounNavBarProps> =({
-    title,
-    leftHandIcon,
-    leftHandIconOnPressEvent,
-    rightHandFirstIcon,
-    rightHandFirstIconOnPressEvent,
-    rightHandSecondIcon,
-    rightHandSecondIconOnPressEvent,
-}) => {
-
+// Accept all props so we can use utility functions like getHeaderTitle
+const SkyboundNavBar: React.FC<SkyboundNavBarProps> = ({
+    titleText = "Default Title (Make sure to update)",
+    showLogo = false,
+    useBackNavigation = false,
+    showNotifications = true,
+    showUserProfile = true,
+    showFilter = false,
+    showShare = false,
+}) => { 
+    const navigation = useNavigation<DrawerNavProps>();
     const {width, height} = Dimensions.get('window')
     const colorScheme = useColorScheme();
-
+    
+    const skyboundBlue = "#0071E2";
+    const iconSize = 24;
+    
     return(
-        <SafeAreaView style={{backgroundColor: colorScheme === 'light' ? 'white' : '#1E1E1E'}}>
-        <View style={[styles.navBarHolder, {width: width}]}>
-            <TouchableOpacity onPress={leftHandIconOnPressEvent}>
-                    {leftHandIcon}
-            </TouchableOpacity>
-            
-            <View style={styles.title}>
-                <SkyboundText variant='blue' accessabilityLabel={'Navigation Bar Title: ' + title}>{title}</SkyboundText>
-            </View>
-
-            <View style = {styles.rightHandIconsHolder}>
-                    <TouchableOpacity onPress={rightHandFirstIconOnPressEvent}>
-                        {rightHandFirstIcon}
+        <SafeAreaView style={{backgroundColor: colorScheme === 'light' ? 'white' : '#1E1E1E'}} edges={['top', 'left', 'right']}>
+            <View style={[styles.navBarHolder, {width: width}]}>
+                { useBackNavigation
+                    ? <TouchableOpacity onPress={() => navigation.goBack()}>
+                        {<Ionicons name="arrow-back" size={iconSize} color={skyboundBlue} />}
                     </TouchableOpacity>
-
-                    <TouchableOpacity onPress={rightHandSecondIconOnPressEvent}>
-                        {rightHandSecondIcon}
+                    : <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                        {<Ionicons name="menu" size={iconSize} color={skyboundBlue} />}
                     </TouchableOpacity>
-            </View>
+                }
 
-         </View>
+                { showLogo
+                    ? <View style={styles.title}>
+                        <SkyboundText variant='blue' accessabilityLabel={'Skybound Logo'}>
+                            <Image
+                                source={require("@assets/images/skybound-logo-dark.png")}
+                                style={{ width: 200, height: 30, resizeMode: "contain" }}
+                            />
+                        </SkyboundText>
+                    </View>
+                    : <View style={styles.title}>
+                        <SkyboundText variant='blue' accessabilityLabel={'Title: ' + titleText}>
+                           {titleText}
+                        </SkyboundText>
+                    </View>
+                }
+
+                <View style = {styles.rightHandIconsHolder}>
+                    { showNotifications
+                        && <TouchableOpacity onPress={() => {
+                                navigation.navigate("Notifications")
+                            }}>
+                            <Ionicons name="notifications-outline" size={iconSize} color={skyboundBlue} />
+                        </TouchableOpacity>
+                    }
+
+                    { showUserProfile
+                        && <TouchableOpacity onPress={() => {
+                                navigation.navigate("Accounts")
+                            }}>
+                            <Ionicons name="person-circle-outline" size={iconSize} color={skyboundBlue} />
+                        </TouchableOpacity>
+                    }
+                    
+                    { showFilter
+                        && <TouchableOpacity onPress={() => {
+                                navigation.navigate("FilterScreen")
+                            }}>
+                            <Ionicons name="filter" size={iconSize} color={skyboundBlue} />
+                        </TouchableOpacity>
+                    }
+                    
+                    { showShare
+                        && <TouchableOpacity onPress={() => {
+                                console.log("Share pressed");
+                            }}>
+                            <Ionicons name="share-outline" size={iconSize} color={skyboundBlue} />
+                        </TouchableOpacity>
+                    }
+                </View>
+             </View>
          </SafeAreaView>
     )
 
 }
 
+// ... styles remain the same
 
 const styles = StyleSheet.create({
-
     navBarHolder: {
-        height: 30,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 10,
-     
+        padding: 10,
         position: 'relative',
-
     },
 
     rightHandIconsHolder: {
         flexDirection: 'row',
         alignItems: 'center',
         gap: 5,
-
     },
 
      title: {
@@ -84,7 +126,6 @@ const styles = StyleSheet.create({
         right: 0,
         alignItems: 'center', 
         justifyContent: 'center',
-        height: '100%', 
   },
         
 })

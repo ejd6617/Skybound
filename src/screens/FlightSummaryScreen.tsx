@@ -1,4 +1,3 @@
-import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -39,16 +38,6 @@ export default function FlightSummaryScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
-        <SkyboundNavBar
-          title="Flight Summary"
-          leftHandIcon={<Ionicons name="arrow-back" size={22} color={colors.text} />}
-          leftHandIconOnPressEvent={() => navigation.goBack()}
-          rightHandFirstIcon={<Ionicons name="share-outline" size={22} color={colors.text} />}
-          rightHandFirstIconOnPressEvent={() => console.log('Share pressed')}
-        />
-      </View>
-
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
         {/* Main Flight Card */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>

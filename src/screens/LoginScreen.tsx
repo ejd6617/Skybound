@@ -42,7 +42,7 @@ export default function LoginScreen() {
   const c = useColors(); // current theme (light/dark)
   const [loginError, setLoginError] = useState(false);
   const [loginErrorMessage, setLoginErrorMessage] = useState('');
-  const [hidePassword, setHidePassword] = useState(false)
+  const [hidePassword, setHidePassword] = useState(true)
 
   // width for SkyboundButton
   const { width: SCREEN_W } = Dimensions.get("window");
@@ -72,7 +72,7 @@ export default function LoginScreen() {
         signInWithCredential(auth, credential)
         .then(userCredential => {
             console.log('Google sign in successful: ', userCredential.user.email);
-            navigation.navigate('Dashboard');
+            navigation.navigate('App');
         })
         .catch(error => {
             console.error("Failed sign in with Google: ", error.message);
@@ -102,10 +102,10 @@ export default function LoginScreen() {
       console.log("Attempting Sign in...");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('sign in successful!');
-      navigation.navigate('Dashboard');
+      navigation.navigate('App');
       setIsLoading(false);
       
-      navigation.navigate('Dashboard');
+      navigation.navigate('App');
       setIsLoading(false);
 
       updateUserData(userCredential.user.uid, {LastLogIn: serverTimestamp()});
@@ -209,7 +209,7 @@ export default function LoginScreen() {
                 errorText={loginErrorMessage}
                 touchableIcon={true}
                 touchableIconFunction={toggleShowPassword}
-                icon={<ShowPasswordIcon/>}
+                icon={<ShowPasswordIcon height={24} width={24}/>}
 
               />
             </View>

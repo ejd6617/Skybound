@@ -19,4 +19,7 @@ export default ({ config }) => ({
     ...config.extra,        // keep everything from app.json
     API_URL: process.env.NGROK_URL || 'http://129.80.33.141:4000',
   },
+  plugins: [
+    "expo-web-browser",
+  ]
 });

@@ -1,4 +1,3 @@
-import SkyboundNavBar from '@components/ui/SkyboundNavBar';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -6,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -16,24 +15,46 @@ import {
 } from 'react-native';
 
 //Components and navigator imports
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 //firebase imports
 import { signOut } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, db } from '../firebase';
+
+import { doc, onSnapshot } from 'firebase/firestore';
 import LoadingScreen from './LoadingScreen';
-import { db } from "../firebase";
 
 //Stripe imports
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { collection, doc, addDoc, onSnapshot } from "firebase/firestore";
 
-export default function AccountScreen() {
+export default  function AccountScreen() {
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isDark = colors.background !== '#FFFFFF';
   const insets = useSafeAreaInsets();
   const user = auth.currentUser;
+
+  //load the user data through auth
+  const [userData, setUserData] = useState<any>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const ref = doc(db, "Users", user.uid);
+
+    const unsubscribe = onSnapshot(ref, (snapshot) => {
+      const data = snapshot.data();
+      console.log(
+        "🔥 ACCOUNT SCREEN USERDATA (LIVE):",
+        JSON.stringify(data, null, 2)
+      );
+      setUserData(data || null);
+      setLoadingUser(false);
+    });
+
+    return unsubscribe;
+  }, [user]);
+
   const [isLoading, setIsLoading] = useState(false);
 
   // const functionsInstance = getFunctions();
@@ -106,17 +127,22 @@ export default function AccountScreen() {
     </Pressable>
   );
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: !isLoading, 
+    });
+  }, [navigation, isLoading]);
+
   if (isLoading) {
-        return <LoadingScreen />;
-      }
+    return <LoadingScreen />;
+  }
 
   return (
-    <SafeAreaView
+    <View
       style={{
         flex: 1,
-        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF', marginTop: -25,
+        backgroundColor: isDark ? '#1E1E1E' : '#FFFFFF',
       }}
-      edges={['top']}
     >
       <LinearGradient
         colors={colors.gradient}
@@ -124,16 +150,6 @@ export default function AccountScreen() {
         end={colors.gradientEnd}
         style={{ flex: 1 }}
       >
-        <SkyboundNavBar
-          title="Account"
-          leftHandIcon={<Ionicons name="menu" size={30} color={colors.link} />}
-          leftHandIconOnPressEvent={() => navigation.navigate('Dashboard')}
-          rightHandFirstIcon={<Ionicons name="notifications-outline" size={28} color={colors.link} />}
-          rightHandFirstIconOnPressEvent={() => {}}
-          rightHandSecondIcon={<Ionicons name="person-circle-outline" size={30} color={colors.link} />}
-          rightHandSecondIconOnPressEvent={() => {}}
-        />
-
         <View
           style={{ flex: 1, backgroundColor: 'transparent', marginTop: 10 }}
         >
@@ -178,92 +194,178 @@ export default function AccountScreen() {
               </View>
             </View>
 
-            {/* Subscription Card */}
-            <View style={[styles.card, { backgroundColor: colors.card }]}>
-              <View style={styles.subscriptionHeader}>
-                <SkyboundText variant="primaryBold" size={18} accessabilityLabel="Subscription">
-                  Subscription
-                </SkyboundText>
-                {/* Active badge in green, could change later */}
-                <View style={[styles.activeBadge, { backgroundColor: '#DCFCE7' }]}>
-                  <SkyboundText variant="primary" size={12} accessabilityLabel="Active" style={{ color: '#15803D' }}>
-                    Active
-                  </SkyboundText>
-                </View>
-              </View>
+           <View style={[styles.card, { backgroundColor: colors.card }]}>
 
-              <View style={styles.subscriptionDetails}>
-                <SkyboundText variant="primary" size={16} accessabilityLabel="Skybound Monthly">
-                  Skybound Monthly
-                </SkyboundText>
-                <SkyboundText variant="secondary" size={14} accessabilityLabel="Price" style={{ marginTop: 4 }}>
-                  $2.99/month
-                </SkyboundText>
-              </View>
+                          {/* Header */}
+            <View style={styles.subscriptionHeader}>
+              <SkyboundText
+                variant="primaryBold"
+                accessabilityLabel="Subscription section title"
+                size={18}
+              >
+                Subscription
+              </SkyboundText>
 
-              <View style={styles.billingInfo}>
-                <View style={styles.billingRow}>
-                  <SkyboundText variant="secondary" size={14} accessabilityLabel="Next billing label">
-                    Next billing
-                  </SkyboundText>
-                  <SkyboundText variant="primary" size={14} accessabilityLabel="Next billing date">
-                    Sep 19, 2025
-                  </SkyboundText>
-                </View>
-                <View style={styles.billingRow}>
-                  <SkyboundText variant="secondary" size={14} accessabilityLabel="Last payment label">
-                    Last payment
-                  </SkyboundText>
-                  <SkyboundText variant="primary" size={14} accessabilityLabel="Last payment date">
-                    Oct 19, 2024
-                  </SkyboundText>
-                </View>
-              </View>
-
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => navigation.navigate('ManageSubscription')}
-                style={({ pressed }) => [
-                  styles.manageButton,
-                  { backgroundColor: colors.link },
-                  { opacity: pressed ? 0.8 : 1 },
+              {/* Active / Inactive Badge */}
+              <View
+                style={[
+                  styles.activeBadge,
+                  {
+                    backgroundColor:
+                      userData?.subscriptionTier === "pro" ? "#DCFCE7" : "#FEE2E2",
+                  },
                 ]}
               >
-                <SkyboundText variant="primaryButton" size={16} accessabilityLabel="Manage Subscription">
-                  Manage Subscription
+                <SkyboundText
+                  variant="primaryBold"
+                  accessabilityLabel={
+                    userData?.subscriptionTier === "pro"
+                      ? "Subscription status: Active"
+                      : "Subscription status: Inactive"
+                  }
+                  size={12}
+                  style={{
+                    color:
+                      userData?.subscriptionTier === "pro" ? "#15803D" : "#B91C1C",
+                  }}
+                >
+                  {userData?.subscriptionTier === "pro" ? "Active" : "Inactive"}
                 </SkyboundText>
-              </Pressable>
-
-              <View style={styles.secondaryButtons}>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => navigation.navigate('BillingHistory')}
-                  style={({ pressed }) => [
-                    styles.secondaryButton,
-                    { backgroundColor: isDark ? '#262626' : '#F3F4F6' },
-                    { opacity: pressed ? 0.8 : 1 },
-                  ]}
-                >
-                  <SkyboundText variant="primary" size={12} accessabilityLabel="Billing History" style={{ color: isDark ? colors.text : '#374151' }}>
-                    Billing History
-                  </SkyboundText>
-                </Pressable>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => navigation.navigate('PaymentDetails')}
-                  style={({ pressed }) => [
-                    styles.secondaryButton,
-                    { backgroundColor: isDark ? '#262626' : '#F3F4F6' },
-                    { opacity: pressed ? 0.8 : 1 },
-                  ]}
-                >
-                  <SkyboundText variant="primary" size={12} accessabilityLabel="Payment Details" style={{ color: isDark ? colors.text : '#374151' }}>
-                    Payment Details
-                  </SkyboundText>
-                </Pressable>
               </View>
             </View>
 
+            {/* Chosen Plan */}
+            <View style={styles.subscriptionDetails}>
+              <SkyboundText
+                variant="primary"
+                size={16}
+                accessabilityLabel={`Current subscription plan: ${
+                  userData?.subscriptionTier === "pro" ? "Skybound Pro" : "Free Plan"
+                }`}
+              >
+                {userData?.subscriptionTier === "pro" ? "Skybound Pro" : "Free Plan"}
+              </SkyboundText>
+
+              <SkyboundText
+                variant="primary"
+                size={14}
+                style={{ marginTop: 4 }}
+                accessabilityLabel={`Subscription price: ${
+                  userData?.subscriptionTier === "pro" ? "$2.99 / month" : "$0"
+                }`}
+              >
+                {userData?.subscriptionTier === "pro" ? "$2.99 / month" : "$0"}
+              </SkyboundText>
+            </View>
+
+             {/* Billing Info (Only for paying users) */}
+            {userData?.subscriptionTier !== "free" && (
+              <View style={styles.billingInfo}>
+                <View style={styles.billingRow}>
+                  <SkyboundText
+                    variant="primary"
+                    size={14}
+                    accessabilityLabel="Next billing label"
+                  >
+                    Next billing
+                  </SkyboundText>
+
+                  <SkyboundText
+                    variant="primary"
+                    size={14}
+                    accessabilityLabel={`Next billing date: ${
+                      userData?.nextRenewal || "Unavailable"
+                    }`}
+                  >
+                    {userData?.nextRenewal || "Unavailable"}
+                  </SkyboundText>
+                </View>
+
+                <View style={styles.billingRow}>
+                  <SkyboundText
+                    variant="primary"
+                    size={14}
+                    accessabilityLabel="Last payment label"
+                  >
+                    Last payment
+                  </SkyboundText>
+
+                  <SkyboundText
+                    variant="primary"
+                    size={14}
+                    accessabilityLabel={`Last payment date: ${
+                      userData?.lastPayment || "Unavailable"
+                    }`}
+                  >
+                    {userData?.lastPayment || "Unavailable"}
+                  </SkyboundText>
+                </View>
+              </View>
+            )}
+
+            {/* Manage Subscription */}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Manage Subscription button"
+              onPress={() => navigation.navigate("ManageSubscription")}
+              style={({ pressed }) => [
+                styles.manageButton,
+                { backgroundColor: colors.link },
+                { opacity: pressed ? 0.8 : 1 },
+              ]}
+            >
+              <SkyboundText
+                variant="primary"
+                accessabilityLabel="Manage Subscription"
+                size={16}
+              >
+                Manage Subscription
+              </SkyboundText>
+            </Pressable>
+
+            {/* Secondary buttons */}
+            <View style={styles.secondaryButtons}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Navigate to Billing History"
+                onPress={() => navigation.navigate("BillingHistory")}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: isDark ? "#262626" : "#F3F4F6" },
+                  { opacity: pressed ? 0.8 : 1 },
+                ]}
+              >
+                <SkyboundText
+                  variant="primary"
+                  accessabilityLabel="Billing History"
+                  size={12}
+                  style={{ color: isDark ? colors.text : "#374151" }}
+                >
+                  Billing History
+                </SkyboundText>
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Navigate to Payment Details"
+                onPress={() => navigation.navigate("PaymentDetails")}
+                style={({ pressed }) => [
+                  styles.secondaryButton,
+                  { backgroundColor: isDark ? "#262626" : "#F3F4F6" },
+                  { opacity: pressed ? 0.8 : 1 },
+                ]}
+              >
+                <SkyboundText
+                  variant="primary"
+                  accessabilityLabel="Payment Details"
+                  size={12}
+                  style={{ color: isDark ? colors.text : "#374151" }}
+                >
+                  Payment Details
+                </SkyboundText>
+              </Pressable>
+            </View>
+            </View>
             {/* Settings & Preferences Card */}
             <View style={[styles.card, { backgroundColor: colors.card }]}>
               <SkyboundText variant="primaryBold" size={18} accessabilityLabel="Settings & Preferences" style={{ marginBottom: 12 }}>
@@ -365,7 +467,7 @@ export default function AccountScreen() {
           </ScrollView>
         </View>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 }
 

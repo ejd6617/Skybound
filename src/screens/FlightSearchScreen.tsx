@@ -1,19 +1,15 @@
 import InteractiveMap, { LatLng } from '@/components/ui/InteractiveMap';
 import SkyboundItemHolder from '@/components/ui/SkyboundItemHolder';
 import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
-import AccountIcon from '@assets/images/AccountIcon.svg';
 import AirportIcon from '@assets/images/AirportIcon.svg';
 import ArrivalIcon from '@assets/images/ArrivalIcon.svg';
-import BellIcon from '@assets/images/BellIcon.svg';
 import CalandarIcon from '@assets/images/CalandarIcon.svg';
 import DepartureIcon from '@assets/images/DepartureIcon.svg';
-import HamburgerIcon from '@assets/images/HamburgerIcon.svg';
 import AirportAutocomplete from "@components/ui/AirportAutocomplete";
 import DateSelector from "@components/ui/DateSelector";
 import FlexibleChip from "@components/ui/FlexibleChip";
 import MultiCityLeg from "@components/ui/MultiCityLeg";
 import SkyboundButton from "@components/ui/SkyboundButton";
-import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import TripTypeSelector, { TripType } from "@components/ui/TripTypeSelector";
 import basicStyles from '@constants/BasicComponents';
@@ -25,7 +21,7 @@ import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 
@@ -352,6 +348,12 @@ export default function FlightSearchScreen() {
     }
   };
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: !isLoading, 
+    });
+  }, [navigation, isLoading]);
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -359,16 +361,6 @@ export default function FlightSearchScreen() {
   return (
     <View style={[basicStyles.background, { backgroundColor: colors.background }]}>
       <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: 30 }}>
-        <SkyboundNavBar
-          title="Flight Search"
-          leftHandIcon={<HamburgerIcon width={24} height={24} />}
-          leftHandIconOnPressEvent={() => navigation.navigate("Dashboard")}
-          rightHandFirstIcon={<BellIcon width={24} height={24} />}
-          rightHandFirstIconOnPressEvent={() => console.log('Notification Icon Pressed')}
-          rightHandSecondIcon={<AccountIcon width={24} height={24} />}
-          rightHandSecondIconOnPressEvent={() => console.log('Account Button Pressed')}
-        />
-
         <Modal
         animationType="slide"
         transparent={true}

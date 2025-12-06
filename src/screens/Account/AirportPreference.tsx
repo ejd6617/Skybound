@@ -9,6 +9,10 @@ import { useColors } from '@constants/theme';
 
 import airportInfo from '../../../assets/airports.json';
 
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { useEffect } from "react";
+import { auth, db } from "../../firebase";
+
 
 interface AirportChip {
   code: string;
@@ -17,19 +21,62 @@ interface AirportChip {
 
 const AirportPreference: React.FC = () => {
   const colors = useColors();
-  const [departures, setDepartures] = useState<AirportChip[]>([
-    { code: 'PIT', city: 'Pittsburgh' },
-    { code: 'JFK', city: 'New York' },
-    { code: 'DCA', city: 'Washington D.C.' },
-  ]);
-  const [arrivals, setArrivals] = useState<AirportChip[]>([
-    { code: 'LAX', city: 'Los Angeles' },
-    { code: 'CDG', city: 'Paris' },
-  ]);
+  const [departures, setDepartures] = useState<AirportChip[]>([]);
+  const [arrivals, setArrivals] = useState<AirportChip[]>([]);
 
   const removeChip = (list: AirportChip[], setter: (chips: AirportChip[]) => void, code: string) => {
     setter(list.filter((chip) => chip.code !== code));
   };
+
+  //use effect to load user preferences on screen mount
+  useEffect(() => {
+  async function loadPrefs() {
+    if (!auth.currentUser) return;
+
+    const uid = auth.currentUser.uid;
+    const docRef = doc(db, "Users", uid, "airportPreferences", "prefs");
+
+    const snapshot = await getDoc(docRef);
+
+    if (snapshot.exists()) {
+      const data = snapshot.data();
+
+      setDepartures(data.departures || []);
+      setArrivals(data.arrivals || []);
+    }
+  }
+
+  loadPrefs();
+  }, []);
+
+  //use effect to update the screen whenever departure or arrival airports change
+  useEffect(() => {
+  async function savePrefs() {
+    if (!auth.currentUser) return;
+
+    const uid = auth.currentUser.uid;
+
+    const docRef = doc(db, "Users", uid, "airportPreferences", "prefs");
+    try {
+    await setDoc(docRef, {
+      departures,
+      arrivals,
+      updatedAt: new Date(),
+    });
+    }
+    catch (error)
+    {
+      console.log(error);
+    }
+  }
+
+  // avoid writing on first load
+  if (departures.length > 0 || arrivals.length > 0) {
+    savePrefs();
+  }
+  }, [departures, arrivals]);
+
+
 
   const addChip = (setter: (chips: AirportChip[]) => void) => {
     if (Alert.prompt) {
@@ -40,7 +87,8 @@ const AirportPreference: React.FC = () => {
 
         if(result)
         {
-           setter((prev) => [...prev, { code: text.toUpperCase(), city: result.city }]);
+          setter((prev) => [...prev, { code: result.iata, city: result.city }]);
+
         }
         else
         {

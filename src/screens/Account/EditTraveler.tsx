@@ -4,13 +4,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useMemo, useState } from 'react';
 import {
   Alert,
+  Dimensions,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
   StyleSheet,
-  TextInput,
-  View,
+  View
 } from 'react-native';
 import CalendarPicker from 'react-native-calendar-picker';
 
@@ -19,15 +19,21 @@ import SkyboundScreen from '@components/ui/SkyboundScreen';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
-import type { GenderOption, TravelerProfile } from '@src/types/travelers';
+import type { GenderOption, TravelerProfile, TravelerType, } from '@src/types/travelers';
+import SkyboundDropDown from '../../../components/ui/SkyboundDropDown';
 import SkyboundItemHolder from '../../../components/ui/SkyboundItemHolder';
 
 
 //Firebase functionality imports
+import SkyboundButton from '@/components/ui/SkyboundButton';
+import SkyboundLabelledTextBox from '@/components/ui/SkyboundLabelledTextBox';
+import BasicComponents from '@/constants/BasicComponents';
 import { deleteTravelerDetails, setTravelerDetails, updateTravelerDetails } from '@src/firestoreFunctions';
 import { getAuth } from 'firebase/auth';
 
 const genderOptions: GenderOption[] = ['Female', 'Male', 'Non-binary', 'Prefer not to say'];
+
+const travelerType: TravelerType[] = ['Elderly', 'Adult', "Child"];
 
 type CalendarField = 'birthdate' | 'passportExpiry';
 
@@ -46,6 +52,12 @@ const EditTraveler: React.FC = () => {
   const route = useRoute<EditTravelerRoute>();
   const existingTraveler = route.params?.traveler;
 
+  const { width: SCREEN_W } = Dimensions.get("window");
+  const CARD_W = Math.min(420, Math.round(SCREEN_W * 0.86));
+  const H_PADDING = 18;
+  const BTN_W = CARD_W - H_PADDING ;
+  const itemHolderWidth = SCREEN_W * .9;
+
   const [form, setForm] = useState<TravelerProfile>(
     existingTraveler ?? {
       id: `temp-${Date.now()}`,
@@ -54,6 +66,7 @@ const EditTraveler: React.FC = () => {
       lastName: '',
       birthdate: '',
       gender: 'Prefer not to say',
+      type: 'Adult',
       nationality: '',
       passportNumber: '',
       passportExpiry: '',
@@ -78,8 +91,8 @@ const EditTraveler: React.FC = () => {
   };
 
   const handleSave = () => {
-    if (!form.firstName || !form.lastName || !form.birthdate) {
-      Alert.alert('Missing info', 'First name, last name, and birthdate are required.');
+    if (!form.firstName || !form.lastName || !form.birthdate || !form.type) {
+      Alert.alert('Missing info', 'First name, last name, birthdate, and type are required.');
       return;
     }
     setShowConfirmModal(true);
@@ -94,6 +107,7 @@ const EditTraveler: React.FC = () => {
       LastName: form.lastName,
       Birthday: form.birthdate,
       Gender: form.gender,
+      Type: form,
       Nationality: form.nationality,
       PassportNumber: form.passportNumber,
       PassportExpiration: form.passportExpiry,
@@ -157,32 +171,13 @@ const EditTraveler: React.FC = () => {
     return value ? new Date(value) : undefined;
   }, [calendarField, form]);
 
-  const renderTextInput = (
-    label: string,
-    field: keyof TravelerProfile,
-    placeholder: string,
-    required = false
-  ) => (
-    <View style={styles.formField} key={field as string}>
-      <SkyboundText variant="secondary" size={13} accessabilityLabel={`${label} label`}>
-        {label}
-        {required ? ' *' : ''}
-      </SkyboundText>
-      <TextInput
-        value={(form[field] as string) ?? ''}
-        onChangeText={(text) => handleInputChange(field, text)}
-        placeholder={placeholder}
-        placeholderTextColor={colors.subText}
-        style={[styles.input, { borderColor: colors.outline, color: colors.text }]}
-      />
-    </View>
-  );
+
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={80}
+      
     >
       <SkyboundScreen
         title={existingTraveler ? 'Edit Traveler' : 'Add Traveler'}
@@ -201,44 +196,52 @@ const EditTraveler: React.FC = () => {
 
         <View>
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="First name label">
-              First Name *
-            </SkyboundText>
-            <TextInput
-              value={form.firstName}
-              onChangeText={(text) => handleInputChange('firstName', text)}
-              placeholder="First name"
-              placeholderTextColor={colors.subText}
-              style={[styles.input, { borderColor: colors.outline, color: colors.text }]}
-            />
+            <SkyboundLabelledTextBox
+            placeholderText='First Name'
+            width={BTN_W}
+            label='First Name'
+            height={45}
+            text={form.firstName}
+            onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 firstName: text,
+             }))}
+             />
+            
+            
           </View>
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="Middle name label">
-              Middle Name
-            </SkyboundText>
-            <TextInput
-              value={form.middleName}
-              onChangeText={(text) => handleInputChange('middleName', text)}
-              placeholder="Middle name"
-              placeholderTextColor={colors.subText}
-              style={[styles.input, { borderColor: colors.outline, color: colors.text }]}
-            />
+            <SkyboundLabelledTextBox
+            placeholderText='Middle Name'
+            width={BTN_W}
+            label='Middle Name'
+            height={45}
+            text={form.middleName}
+            onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 middleName: text,
+             }))
+           }/>
           </View>
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="Last name label">
-              Last Name *
-            </SkyboundText>
-            <TextInput
-              value={form.lastName}
-              onChangeText={(text) => handleInputChange('lastName', text)}
-              placeholder="Last name"
-              placeholderTextColor={colors.subText}
-              style={[styles.input, { borderColor: colors.outline, color: colors.text }]}
-            />
+           <SkyboundLabelledTextBox
+            placeholderText='Last Name'
+            width={BTN_W}
+            label='Last Name'
+            height={45}
+            text={form.lastName}
+            onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 lastName: text,
+             }))
+           }/>
           </View>
 
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="Birthdate label">
+            <SkyboundText variant="primary" size={15} accessabilityLabel="Birthdate label">
               Birthdate *
             </SkyboundText>
             <Pressable
@@ -257,8 +260,8 @@ const EditTraveler: React.FC = () => {
           </View>
 
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="Gender label">
-              Gender *
+            <SkyboundText variant="primary" size={15} accessabilityLabel="Gender label">
+              Gender 
             </SkyboundText>
             <View style={styles.genderRow}>
               {genderOptions.map((option) => (
@@ -284,11 +287,65 @@ const EditTraveler: React.FC = () => {
             </View>
           </View>
 
-          {renderTextInput('Nationality', 'nationality', 'Country of citizenship')}
-          {renderTextInput('Passport Number', 'passportNumber', 'Enter passport number')}
+          <View style={styles.formField}>
+            <SkyboundText variant="primary" size={15} accessabilityLabel="Gender label">
+              Traveler Type * 
+            </SkyboundText>
+            <View style={styles.genderRow}>
+              {travelerType.map((option) => (
+                <Pressable
+                  key={option}
+                  accessibilityRole="button"
+                  onPress={() => handleInputChange('type', option)}
+                  style={({ pressed }) => [
+                    styles.genderChip,
+                    form.type === option && { backgroundColor: '#2F97FF' },
+                    pressed && { opacity: 0.85 }
+                  ]}
+                >
+                  <SkyboundText
+                    variant={form.type === option ? 'primaryButton' : 'secondary'}
+                    size={13}
+                    accessabilityLabel={`${option} option`}
+                  >
+                    {option}
+                  </SkyboundText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
 
           <View style={styles.formField}>
-            <SkyboundText variant="secondary" size={13} accessabilityLabel="Passport expiration label">
+            <SkyboundText variant='primary' accessabilityLabel='Select Nationality' size={15}>Nationality</SkyboundText>
+           <SkyboundDropDown
+           placeholder='Select Nationality'
+           onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 nationality: text,
+             }))}
+             value={existingTraveler?.nationality || undefined}/>
+          </View>
+
+          <View style={styles.formField}>
+           <SkyboundLabelledTextBox
+            placeholderText='Passport Number'
+            width={BTN_W}
+            label='Enter Passpot number'
+            height={45}
+            text={form.passportNumber}
+            maxLength={9}
+            onChange={(text) =>
+              setForm((prev) => ({
+                ...prev,
+                 passportNumber: text,
+             }))
+           }/>
+          </View>
+
+
+          <View style={styles.formField}>
+            <SkyboundText variant="primary" size={15} accessabilityLabel="Passport expiration label">
               Passport Expiration Date
             </SkyboundText>
             <Pressable
@@ -307,26 +364,22 @@ const EditTraveler: React.FC = () => {
           </View>
         </View>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={handleSave}
-          style={({ pressed }) => [styles.saveButton, pressed && { opacity: 0.9 }]}
-        >
-          <SkyboundText variant="primaryButton" size={16} accessabilityLabel="Save traveler">
-            Save Traveler
-          </SkyboundText>
-        </Pressable>
+      <SkyboundButton
+      height={50}
+      width={BTN_W / 2}
+      onPress={handleSave}
+      style={BasicComponents.skyboundButtonPrimaryLight}>
+        Save Traveler
+      </SkyboundButton>
 
         {existingTraveler && (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => setShowDeleteConfirmModal(true)}
-            style={({ pressed }) => [styles.deleteButton, pressed && { opacity: 0.9 }]}
-          >
-            <SkyboundText variant="primaryButton" size={16} accessabilityLabel="Delete traveler">
+          <SkyboundButton
+            height={50}
+            width={BTN_W / 2}
+            onPress={() => {setShowDeleteConfirmModal(true)} }
+            style={BasicComponents.skyboundButtonPrimaryError}>
               Delete Traveler
-            </SkyboundText>
-          </Pressable>
+            </SkyboundButton>
         )}
         </SkyboundItemHolder>
       </SkyboundScreen>
@@ -369,6 +422,7 @@ const EditTraveler: React.FC = () => {
                   { label: 'Full name', value: `${form.firstName} ${form.middleName ?? ''} ${form.lastName}`.replace(/\s+/g, ' ').trim() },
                   { label: 'Birthdate', value: form.birthdate },
                   { label: 'Gender', value: form.gender },
+                  { label: 'Type', value: form.type},
                   { label: 'Nationality', value: form.nationality || 'Not provided' },
                   { label: 'Passport', value: form.passportNumber || 'Not provided' },
                   { label: 'Passport Expiration', value: form.passportExpiry || 'Not provided' },

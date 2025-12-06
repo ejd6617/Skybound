@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
   Image,
@@ -9,8 +10,6 @@ import {
   ViewProps,
   ViewStyle,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useColors } from '@constants/theme';
 import SkyboundText from './SkyboundText';
@@ -53,7 +52,7 @@ const SkyboundScreen: React.FC<SkyboundScreenProps> = ({
       };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}> 
+    <View style={[styles.safeArea, { backgroundColor: colors.background }]}> 
       <LinearGradient
         colors={colors.gradient}
         start={colors.gradientStart}
@@ -103,7 +102,7 @@ const SkyboundScreen: React.FC<SkyboundScreenProps> = ({
           </View>
         </ContainerComponent>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
 };
 

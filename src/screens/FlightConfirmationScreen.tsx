@@ -1,4 +1,3 @@
-import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -176,36 +175,6 @@ export default function ConfirmationScreen() {
       end={colors.gradientEnd}
       style={{ flex: 1 }}
     >
-      {/* NavBar on solid card background */}
-      <View style={{ backgroundColor: colors.card, marginTop: 0 }}>
-        <SkyboundNavBar
-          title="Confirmation"
-          leftHandIcon={
-            <Ionicons name="menu" size={22} color={colors.link} />
-          }
-          leftHandIconOnPressEvent={() => console.log("Menu pressed")}
-          rightHandFirstIcon={
-            <Ionicons
-              name="notifications-outline"
-              size={22}
-              color={colors.link}
-            />
-          }
-          rightHandFirstIconOnPressEvent={() =>
-            console.log("Notifications pressed")
-          }
-          rightHandSecondIcon={
-            <Ionicons
-              name="person-circle-outline"
-              size={27}
-              color={colors.link}
-            />
-          }
-          rightHandSecondIconOnPressEvent={() =>
-            navigation.navigate("Account")
-          }
-        />
-      </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Success Header */}
