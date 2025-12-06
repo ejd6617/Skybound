@@ -1,20 +1,20 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
 import SkyboundScreen from '@components/ui/SkyboundScreen';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
-import type { GenderOption, TravelerProfile } from '@src/types/travelers';
+import type { GenderOption, TravelerProfile, TravelerType } from '@src/types/travelers';
 
+import { db } from "@src/firebase";
 import { getTravelerDetails } from '@src/firestoreFunctions';
 import { getAuth } from 'firebase/auth';
-import { collection, getDocs, query, where } from 'firebase/firestore';
-import { db } from "@src/firebase";
+import { collection, getDocs } from 'firebase/firestore';
 
 const TravelerDetails: React.FC = () => {
   const colors = useColors();
@@ -46,6 +46,7 @@ const TravelerDetails: React.FC = () => {
             nationality: travelerDetails.Nationality,
             passportNumber: travelerDetails.PassportNumber,
             passportExpiry: travelerDetails.PassportExpiration,
+            type: travelerDetails.Type as TravelerType
           });
         }
       }

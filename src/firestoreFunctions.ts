@@ -1,5 +1,6 @@
-import { deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc, collection } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import { TravelerType } from "./types/travelers";
 
 //basic CRUD operations for the user data in our Firestore db
 const setUserData = async (userID: string, name: string, email: string): Promise<boolean> => {
@@ -137,6 +138,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
     userID: string,
     travelerID: string
   ): Promise<{
+    Type: TravelerType;
     FirstName: string;
     MiddleName?: string;
     LastName: string;
@@ -167,6 +169,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
         PassportNumber: data.PassportNumber,
         PassportExpiration: data.PassportExpiration,
         DateAdded: data.DateAdded,
+        Type: data.Type,
       };
     } catch (error) {
       console.error("Error fetching traveler: ", error);
@@ -217,5 +220,5 @@ const setUserData = async (userID: string, name: string, email: string): Promise
     }
   };
 
-export { deleteUserData, getUserData, setUserData, updateUserData, setTravelerDetails, getTravelerDetails, updateTravelerDetails, deleteTravelerDetails };
+export { deleteTravelerDetails, deleteUserData, getTravelerDetails, getUserData, setTravelerDetails, setUserData, updateTravelerDetails, updateUserData };
 

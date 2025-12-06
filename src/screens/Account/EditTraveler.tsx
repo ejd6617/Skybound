@@ -19,7 +19,7 @@ import SkyboundScreen from '@components/ui/SkyboundScreen';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
-import type { GenderOption, TravelerProfile } from '@src/types/travelers';
+import type { GenderOption, TravelerProfile, TravelerType, } from '@src/types/travelers';
 import SkyboundDropDown from '../../../components/ui/SkyboundDropDown';
 import SkyboundItemHolder from '../../../components/ui/SkyboundItemHolder';
 
@@ -32,6 +32,8 @@ import { deleteTravelerDetails, setTravelerDetails, updateTravelerDetails } from
 import { getAuth } from 'firebase/auth';
 
 const genderOptions: GenderOption[] = ['Female', 'Male', 'Non-binary', 'Prefer not to say'];
+
+const travelerType: TravelerType[] = ['Elderly', 'Adult', "Child"];
 
 type CalendarField = 'birthdate' | 'passportExpiry';
 
@@ -64,6 +66,7 @@ const EditTraveler: React.FC = () => {
       lastName: '',
       birthdate: '',
       gender: 'Prefer not to say',
+      type: 'Adult',
       nationality: '',
       passportNumber: '',
       passportExpiry: '',
@@ -88,8 +91,8 @@ const EditTraveler: React.FC = () => {
   };
 
   const handleSave = () => {
-    if (!form.firstName || !form.lastName || !form.birthdate) {
-      Alert.alert('Missing info', 'First name, last name, and birthdate are required.');
+    if (!form.firstName || !form.lastName || !form.birthdate || !form.type) {
+      Alert.alert('Missing info', 'First name, last name, birthdate, and type are required.');
       return;
     }
     setShowConfirmModal(true);
@@ -104,6 +107,7 @@ const EditTraveler: React.FC = () => {
       LastName: form.lastName,
       Birthday: form.birthdate,
       Gender: form.gender,
+      Type: form,
       Nationality: form.nationality,
       PassportNumber: form.passportNumber,
       PassportExpiration: form.passportExpiry,
@@ -173,7 +177,7 @@ const EditTraveler: React.FC = () => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={80}
+      
     >
       <SkyboundScreen
         title={existingTraveler ? 'Edit Traveler' : 'Add Traveler'}
@@ -257,7 +261,7 @@ const EditTraveler: React.FC = () => {
 
           <View style={styles.formField}>
             <SkyboundText variant="primary" size={15} accessabilityLabel="Gender label">
-              Gender *
+              Gender 
             </SkyboundText>
             <View style={styles.genderRow}>
               {genderOptions.map((option) => (
@@ -273,6 +277,34 @@ const EditTraveler: React.FC = () => {
                 >
                   <SkyboundText
                     variant={form.gender === option ? 'primaryButton' : 'secondary'}
+                    size={13}
+                    accessabilityLabel={`${option} option`}
+                  >
+                    {option}
+                  </SkyboundText>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.formField}>
+            <SkyboundText variant="primary" size={15} accessabilityLabel="Gender label">
+              Traveler Type * 
+            </SkyboundText>
+            <View style={styles.genderRow}>
+              {travelerType.map((option) => (
+                <Pressable
+                  key={option}
+                  accessibilityRole="button"
+                  onPress={() => handleInputChange('type', option)}
+                  style={({ pressed }) => [
+                    styles.genderChip,
+                    form.type === option && { backgroundColor: '#2F97FF' },
+                    pressed && { opacity: 0.85 }
+                  ]}
+                >
+                  <SkyboundText
+                    variant={form.type === option ? 'primaryButton' : 'secondary'}
                     size={13}
                     accessabilityLabel={`${option} option`}
                   >
@@ -390,6 +422,7 @@ const EditTraveler: React.FC = () => {
                   { label: 'Full name', value: `${form.firstName} ${form.middleName ?? ''} ${form.lastName}`.replace(/\s+/g, ' ').trim() },
                   { label: 'Birthdate', value: form.birthdate },
                   { label: 'Gender', value: form.gender },
+                  { label: 'Type', value: form.type},
                   { label: 'Nationality', value: form.nationality || 'Not provided' },
                   { label: 'Passport', value: form.passportNumber || 'Not provided' },
                   { label: 'Passport Expiration', value: form.passportExpiry || 'Not provided' },
