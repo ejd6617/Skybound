@@ -101,7 +101,7 @@ const FlightStack = createNativeStackNavigator<FlightStackParamList>();
 const AccountStack = createNativeStackNavigator<AccountStackParamList>();
 const NavContainer = NavigationContainer as unknown as React.ComponentType<React.PropsWithChildren<{}>>;
 
-// 1. PRIMARY APP STACK (Handles history and custom header for logged-in users)
+// Stack for flight searching, details, etc.
 function GenerateFlightStack() {
   return (
     <FlightStack.Navigator
@@ -122,6 +122,7 @@ function GenerateFlightStack() {
   );
 }
 
+// Stack for account details
 function GenerateAccountStack() {
   return (
     <AccountStack.Navigator
@@ -170,6 +171,7 @@ function GenerateDrawerRoot() {
   );
 }
 
+// The overall navigation structure of the project
 export default function RootNavigator(): React.JSX.Element
 {
   const [initialRoute, setInitialRoute] = useState<'Login' | 'App' | null>(null);
@@ -190,11 +192,12 @@ export default function RootNavigator(): React.JSX.Element
         screenOptions={{ headerShown: false }}
         initialRouteName={initialRoute!}
       >
+        { /* Screens that are only accessible in the flow when a user has not yet logged in */ }
         <AuthSwitchStack.Screen name="Login" component={LoginScreen} />
         <AuthSwitchStack.Screen name="Signup" component={SignupScreen} />
         <AuthSwitchStack.Screen name="ComponentTest" component={ComponentTestScreen} />
 
-        { /* Auth flow for the actual app (after auth) */}
+        { /* Auth flow for the actual app (after the user has been authenticated) */}
         <AuthSwitchStack.Screen
           name="App"
           component={GenerateDrawerRoot}
