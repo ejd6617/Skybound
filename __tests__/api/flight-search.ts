@@ -89,7 +89,7 @@ describe("POST /api/flightDeals", () => {
   }, AMADEUS_TIMEOUT);
 });
 
-describe("POST /api/searchFlightsOneWay", () => {
+describe.only("POST /api/searchFlightsOneWay", () => {
   it("should return a list of flights (when searching with no flexible airports/dates)", async () => {
     const params: OneWayQueryParams = {
       originAirportIATA: 'LAX',
@@ -97,6 +97,19 @@ describe("POST /api/searchFlightsOneWay", () => {
       flexibleAirports: [],
       flexibleDates: false,
       date: new Date('2026-05-10'),
+      travelers: [
+        {
+          "travelerType": "ADULT",
+          "dateOfBirth": new Date('2002-01-04'),
+          "nationality": "ES"
+        },
+        {
+          "travelerType": "SENIOR",
+          "dateOfBirth": new Date('1960-03-20'),
+          "nationality": "FR"
+        }
+      ],
+      currencyCode: "USD"
     };
 
     const { status, json } = await apiPost("/api/searchFlightsOneWay", params);
@@ -113,6 +126,19 @@ describe("POST /api/searchFlightsOneWay", () => {
       flexibleAirports: [],
       flexibleDates: true,
       date: new Date('2026-05-10'),
+      travelers: [
+        {
+          "travelerType": "ADULT",
+          "dateOfBirth": new Date('2002-01-04'),
+          "nationality": "ES"
+        },
+        {
+          "travelerType": "SENIOR",
+          "dateOfBirth": new Date('1960-03-20'),
+          "nationality": "FR"
+        }
+      ],
+      currencyCode: "USD"
     };
 
     const { status, json } = await apiPost("/api/searchFlightsOneWay", params);
@@ -129,6 +155,19 @@ describe("POST /api/searchFlightsOneWay", () => {
       flexibleAirports: ["OAK", "SFO", "NGZ"],
       flexibleDates: true,
       date: new Date('2026-05-10'),
+      travelers: [
+        {
+          "travelerType": "ADULT",
+          "dateOfBirth": new Date('2002-01-04'),
+          "nationality": "ES"
+        },
+        {
+          "travelerType": "SENIOR",
+          "dateOfBirth": new Date('1960-03-20'),
+          "nationality": "FR"
+        }
+      ],
+      currencyCode: "USD"
     };
 
     const { status, json } = await apiPost("/api/searchFlightsOneWay", params);
