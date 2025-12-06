@@ -20,7 +20,7 @@ const SkyboundNavBar: React.FC<NativeStackHeaderProps> = (props) => {
                 <TouchableOpacity onPress={() => navigation.openDrawer()}>
                     {<Ionicons name="menu" size={22} color="#0071E2" />}
                 </TouchableOpacity>
-                
+
                 <View style={styles.title}>
                     <SkyboundText variant='blue' accessabilityLabel={'Navigation Bar Title (Skybound)'}>
                         <Image
@@ -36,7 +36,7 @@ const SkyboundNavBar: React.FC<NativeStackHeaderProps> = (props) => {
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => {
-                            navigation.navigate("Account")
+                            navigation.navigate("Accounts")
                         }}>
                         <Ionicons name="person-circle-outline" size={24} color="#0071E2" />
                     </TouchableOpacity>

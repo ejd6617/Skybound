@@ -46,20 +46,41 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 
 export type AuthSwitchNavigatorParamList = {
+  App: undefined;
+  ComponentTest: undefined;
   Login: undefined;
   Signup: undefined;
-  // The authenticated flow is one component: the DrawerRoot
-  App: undefined; 
 };
 
-export type AppStackParamList = {
-  Login: undefined;
-  Signup: undefined;
+export type FlightStackParamList = {
   Dashboard: undefined;
-  ComponentTest: undefined;
+  FilterScreen: { filters?: FlightFilters } | undefined;
+  FlightConfirmation: { itinerary: ItineraryPayload };
+  FlightResults: {
+    flightsByLeg?: Flight[][];
+    searchDetails?: SearchDetails;
+    legIndex?: number;
+    selections?: ItineraryPayload["flights"];
+    filters?: FlightFilters;
+  } | undefined;
   FlightSearch: {searchResults: Flight[]};
+  FlightSummary: { itinerary: ItineraryPayload };
+};
+
+export type AccountStackParamList = {
   Account: undefined;
-  PaymentMethod: undefined;
+  AirportInfo: { airportCode?: string; airportName?: string } | undefined;
+  AirportPreference: undefined;
+  BillingHistory: undefined;
+  Chat: undefined;
+  Contact: undefined;
+  Currency: undefined;
+  EditTraveler: { traveler?: TravelerProfile } | undefined;
+  FAQ: undefined;
+  FlightInfo: { trip?: TripCardData } | undefined;
+  GetHelp: undefined;
+  Language: undefined;
+  ManageSubscription: undefined;
   Payment: {
     selectedFlights?: any[];
     tripType?: string;
@@ -68,129 +89,116 @@ export type AppStackParamList = {
     departureDate?: Date | string | null;
     returnDate?: Date | string | null;
   } | undefined;
-  FlightResults: {
-    flightsByLeg?: Flight[][];
-    searchDetails?: SearchDetails;
-    legIndex?: number;
-    selections?: ItineraryPayload["flights"];
-    filters?: FlightFilters;
-  } | undefined;
-  FlightSummary: { itinerary: ItineraryPayload };
-  FlightConfirmation: { itinerary: ItineraryPayload };
-  FilterScreen: { filters?: FlightFilters } | undefined;
-  ManageSubscription: undefined;
-  BillingHistory: undefined;
   PaymentDetails: undefined;
+  PaymentMethod: undefined;
   TravelerDetails: undefined;
-  EditTraveler: { traveler?: TravelerProfile } | undefined;
   Trips: undefined;
-  FlightInfo: { trip?: TripCardData } | undefined;
-  AirportInfo: { airportCode?: string; airportName?: string } | undefined;
-  AirportPreference: undefined;
-  Language: undefined;
-  Currency: undefined;
-  GetHelp: undefined;
-  FAQ: undefined;
-  Contact: undefined;
-  Chat: undefined;
 };
 
 const Drawer = createDrawerNavigator();
 const AuthSwitchStack = createNativeStackNavigator<AuthSwitchNavigatorParamList>();
-const AppStack = createNativeStackNavigator<AppStackParamList>();
+const FlightStack = createNativeStackNavigator<FlightStackParamList>();
+const AccountStack = createNativeStackNavigator<AccountStackParamList>();
 const NavContainer = NavigationContainer as unknown as React.ComponentType<React.PropsWithChildren<{}>>;
 
 // 1. PRIMARY APP STACK (Handles history and custom header for logged-in users)
-function GenerateAppStack() {
+function GenerateFlightStack() {
   return (
-    <AppStack.Navigator
-      // Apply the custom header to ALL screens within this stack
+    <FlightStack.Navigator
       screenOptions={{
         header: (props) => (<SkyboundNavBar {...props}/>),
       }}
-      // Set the initial route for the authenticated flow
-      initialRouteName="Dashboard" 
+      initialRouteName="Dashboard"
     >
-      {/* All authenticated screens are moved here. 
-        They get stack history (push/pop) and the custom header.
-      */}
-      <AppStack.Screen name="Dashboard" component={DashboardScreen} />
-      <AppStack.Screen name="Account" component={AccountScreen} />
-      <AppStack.Screen name="ComponentTest" component={ComponentTestScreen}/>
-      <AppStack.Screen name="FlightSearch" component={FlightSearchScreen}/>
-      <AppStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
-      <AppStack.Screen name="Payment" component={PaymentScreen} />
-      <AppStack.Screen name="FlightResults" component={FlightResultsScreen} />
-      <AppStack.Screen name="FlightSummary" component={FlightSummaryScreen} />
-      <AppStack.Screen name="FlightConfirmation" component={FlightConfirmationScreen} />
-      <AppStack.Screen name="FilterScreen" component={FilterScreen} options={{ presentation: 'modal' }} />
-      <AppStack.Screen name="ManageSubscription" component={ManageSubscription} />
-      <AppStack.Screen name="BillingHistory" component={BillingHistory} />
-      <AppStack.Screen name="PaymentDetails" component={PaymentDetails} />
-      <AppStack.Screen name="TravelerDetails" component={TravelerDetails} />
-      <AppStack.Screen name="EditTraveler" component={EditTraveler} />
-      <AppStack.Screen name="Trips" component={Trips} />
-      <AppStack.Screen name="FlightInfo" component={FlightInfo} />
-      <AppStack.Screen name="AirportInfo" component={AirportInfo} />
-      <AppStack.Screen name="AirportPreference" component={AirportPreference} />
-      <AppStack.Screen name="Language" component={LanguageModal} options={{ presentation: 'transparentModal', animation: 'fade' }} />
-      <AppStack.Screen name="Currency" component={CurrencyScreen} />
-      <AppStack.Screen name="GetHelp" component={GetHelp} />
-      <AppStack.Screen name="FAQ" component={FAQscreen} />
-      <AppStack.Screen name="Contact" component={ContactScreen} />
-      <AppStack.Screen name="Chat" component={ChatScreen} />
-    </AppStack.Navigator>
+      <FlightStack.Screen name="ComponentTest" component={ComponentTestScreen}/>
+      <FlightStack.Screen name="Dashboard" component={DashboardScreen} />
+      <FlightStack.Screen name="FilterScreen" component={FilterScreen} options={{ presentation: 'modal' }} />
+      <FlightStack.Screen name="FlightConfirmation" component={FlightConfirmationScreen} />
+      <FlightStack.Screen name="FlightResults" component={FlightResultsScreen} />
+      <FlightStack.Screen name="FlightSearch" component={FlightSearchScreen}/>
+      <FlightStack.Screen name="FlightSummary" component={FlightSummaryScreen} />
+      <FlightStack.Screen name="Payment" component={PaymentScreen} />
+    </FlightStack.Navigator>
   );
 }
 
+function GenerateAccountStack() {
+  return (
+    <AccountStack.Navigator
+      screenOptions={{
+        header: (props) => (<SkyboundNavBar {...props}/>),
+      }}
+      initialRouteName="Account"
+    >
+      <AccountStack.Screen name="Account" component={AccountScreen} />
+      <AccountStack.Screen name="AirportInfo" component={AirportInfo} />
+      <AccountStack.Screen name="AirportPreference" component={AirportPreference} />
+      <AccountStack.Screen name="BillingHistory" component={BillingHistory} />
+      <AccountStack.Screen name="Chat" component={ChatScreen} />
+      <AccountStack.Screen name="Contact" component={ContactScreen} />
+      <AccountStack.Screen name="Currency" component={CurrencyScreen} />
+      <AccountStack.Screen name="EditTraveler" component={EditTraveler} />
+      <AccountStack.Screen name="FAQ" component={FAQscreen} />
+      <AccountStack.Screen name="FlightInfo" component={FlightInfo} />
+      <AccountStack.Screen name="GetHelp" component={GetHelp} />
+      <AccountStack.Screen name="Language" component={LanguageModal} options={{ presentation: 'transparentModal', animation: 'fade' }} />
+      <AccountStack.Screen name="ManageSubscription" component={ManageSubscription} />
+      <AccountStack.Screen name="PaymentDetails" component={PaymentDetails} />
+      <AccountStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
+      <AccountStack.Screen name="TravelerDetails" component={TravelerDetails} />
+      <AccountStack.Screen name="Trips" component={Trips} />
+    </AccountStack.Navigator>
+  );
+}
 
-// 2. DRAWER ROOT (Handles the side menu layout for the entire app)
+// Drawer contains "Flights" and "My Account" flows
 function GenerateDrawerRoot() {
   return (
     <Drawer.Navigator screenOptions={{ headerShown: false }}>
-      <Drawer.Screen 
-        name="Dashboard" 
-        component={GenerateAppStack} 
-        options={{ title: 'Dashboard' }} 
+      <Drawer.Screen
+        name="Flights"
+        component={GenerateFlightStack}
+        options={{ title: 'Flights' }}
+      />
+
+      <Drawer.Screen
+        name="Accounts"
+        component={GenerateAccountStack}
+        options={{ title: 'My Account' }}
       />
     </Drawer.Navigator>
   );
 }
 
-
-// 3. ROOT NAVIGATOR (Handles the Authentication Switch)
-export default function RootNavigator(): React.JSX.Element 
+export default function RootNavigator(): React.JSX.Element
 {
-// The initial route must be one of the screens defined in AuthSwitchNavigatorParamList
-  const [initialRoute, setInitialRoute] = useState<'Login' | 'App' | null>(null); // Use null for initial check
+  const [initialRoute, setInitialRoute] = useState<'Login' | 'App' | null>(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
       // Use 'App' to navigate to the DrawerRoot when authenticated
-      setInitialRoute(user ? 'App' : 'Login'); 
+      setInitialRoute(user ? 'App' : 'Login');
     });
     return () => unsub();
   }, []);
-  
-  // Conditionally render the NavigationContainer only when initialRoute is determined
+ 
   if (!initialRoute) return null;
 
   return (
     <NavContainer>
-      {/* Use the new AuthSwitchStack here */}
-      <AuthSwitchStack.Navigator 
+      <AuthSwitchStack.Navigator
         screenOptions={{ headerShown: false }}
-        initialRouteName={initialRoute!} // The 'if (!initialRoute) return null' guard makes this safe
+        initialRouteName={initialRoute!}
       >
-        {/* Auth Screens */}
         <AuthSwitchStack.Screen name="Login" component={LoginScreen} />
         <AuthSwitchStack.Screen name="Signup" component={SignupScreen} />
+        <AuthSwitchStack.Screen name="ComponentTest" component={ComponentTestScreen} />
 
-        {/* The entire authenticated app is now one single Drawer component */}
-        <AuthSwitchStack.Screen 
-          name="App" 
-          component={GenerateDrawerRoot} 
-          options={{ headerShown: false }} 
+        { /* Auth flow for the actual app (after auth) */}
+        <AuthSwitchStack.Screen
+          name="App"
+          component={GenerateDrawerRoot}
+          options={{ headerShown: false }}
         />
       </AuthSwitchStack.Navigator>
     </NavContainer>
