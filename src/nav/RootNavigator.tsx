@@ -6,6 +6,7 @@ import * as React from "react";
 
 import AirportPreference from "@/src/screens/Account/AirportPreference";
 import BillingHistory from "@/src/screens/Account/BillingHistory";
+import ChoosePaymentMethod from "@/src/screens/Account/ChoosePaymentMethod";
 import CurrencyScreen from "@/src/screens/Account/Currency";
 import EditTraveler from "@/src/screens/Account/EditTraveler";
 import ChatScreen from "@/src/screens/Account/GetHelp/ChatScreen";
@@ -94,6 +95,7 @@ export type AccountStackParamList = {
   PaymentMethod: undefined;
   TravelerDetails: undefined;
   Trips: undefined;
+  ChoosePaymentMethod: { onSelect: (paymentId: string) => void } | undefined;
 };
 
 export type NotificationStackParamList = {
@@ -154,6 +156,7 @@ function GenerateAccountStack() {
       <AccountStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
       <AccountStack.Screen name="TravelerDetails" component={TravelerDetails} />
       <AccountStack.Screen name="Trips" component={Trips} />
+      <AccountStack.Screen name="ChoosePaymentMethod" component={ChoosePaymentMethod} />
     </AccountStack.Navigator>
   );
 }

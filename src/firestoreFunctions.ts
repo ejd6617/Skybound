@@ -24,6 +24,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
           UserID: userID,
           DateCreated: serverTimestamp(),
           LastLogIn: serverTimestamp(),
+          subscriptionTier: "free",
         },
         { merge: true }
       );

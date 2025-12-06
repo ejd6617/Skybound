@@ -12,7 +12,6 @@ import SkyboundItemHolder from "@components/ui/SkyboundItemHolder";
 import SkyboundText from "@components/ui/SkyboundText";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { reviveDates, skyboundRequest } from "@src/api/SkyboundUtils";
-import { RootStackParamList } from "@src/nav/RootNavigator";
 
 export default function DashboardScreen() {
   const nav = useNavigation<any>();

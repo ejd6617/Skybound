@@ -161,8 +161,9 @@ export default function SignupScreen() {
       setIsLoading(false);
       return;
     }
+    
 
-    navigation.navigate("Dashboard");
+    navigation.navigate("App");
     setIsLoading(false);
   } catch (error: any) {
     setSignUpError(error.message);
@@ -208,16 +209,7 @@ export default function SignupScreen() {
 
   }
 
-  const handleRegisterWithEmail = async (email : string, password : string, name : string) =>
-  {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password)
-    const user = userCredential.user;
 
-    updateProfile(user, {
-      displayName: name
-    })
-    console.log("User with email" + email + " Registered!")
-  }
 
   //error message helper functions
 
