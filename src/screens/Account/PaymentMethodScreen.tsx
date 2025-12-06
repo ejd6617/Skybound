@@ -1,3 +1,4 @@
+import { auth } from '@/src/firebase';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -5,7 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import { collection, deleteDoc, doc, getDocs, getFirestore, setDoc, updateDoc } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import {
   Image,
   Modal,
@@ -16,6 +18,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import LoadingScreen from '../LoadingScreen';
+const db = getFirestore();
 
 interface PaymentMethod {
   id: string;
@@ -39,26 +43,16 @@ export default function PaymentMethodScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isDark = colors.background !== '#FFFFFF';
   const insets = useSafeAreaInsets();
+  //error text
+  const [modalErrorText, setModalErrorText] = useState("");
+  const [cardNumberErrorText, setCardNumberErrorText] = useState("")
+  const [expirationErrorText, setExpirationErrorText] = useState("")
+  const [cvvErrorText, setCvvErrorText] = useState("")
+
+  const [isLoading, setIsLoading] = useState(false);
 
   // Sample payment methods data
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([
-    {
-      id: '1',
-      cardType: 'visa',
-      lastFourDigits: '4242',
-      expirationDate: '12/26',
-      cardholderName: 'John Doe',
-      isPrimary: true,
-    },
-    {
-      id: '2',
-      cardType: 'mastercard',
-      lastFourDigits: '5555',
-      expirationDate: '08/25',
-      cardholderName: 'John Doe',
-      isPrimary: false,
-    },
-  ]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>();
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -94,47 +88,220 @@ export default function PaymentMethodScreen() {
     setShowModal(true);
   };
 
-  const handleDeletePaymentMethod = (id: string) => {
-    setPaymentMethods(paymentMethods.filter((method) => method.id !== id));
-  };
+  const handleDeletePaymentMethod = async (id: string) => {
+  if (!auth.currentUser) return;
 
-  const handleSavePaymentMethod = () => {
-    if (editingId) {
-      // Update existing
-      setPaymentMethods(
-        paymentMethods.map((method) =>
-          method.id === editingId
-            ? {
-                ...method,
-                cardholderName: formData.cardholderName,
-              }
-            : method
-        )
-      );
-    } else {
-      // Add new
-      const newMethod: PaymentMethod = {
-        id: Date.now().toString(),
-        cardType: 'visa',
-        lastFourDigits: formData.cardNumber.slice(-4),
-        expirationDate: formData.expirationDate,
-        cardholderName: formData.cardholderName,
-        isPrimary: paymentMethods.length === 0,
-      };
-      setPaymentMethods([...paymentMethods, newMethod]);
+  const uid = auth.currentUser.uid;
+
+  await deleteDoc(doc(db, "Users", uid, "payments", id));
+
+  setPaymentMethods((prev) => prev.filter((pm) => pm.id !== id));
+};
+
+  const handleSavePaymentMethod = async () => {
+    
+    console.log("Hello!");
+
+
+    setIsLoading(true);
+
+    if(formData.cardNumber === '' || formData.billingAddress === '' || formData.cardholderName === '' || formData.cvv === '' || formData.expirationDate === '')
+    {
+      setModalErrorText("Fields cannot be left blank.");
+      setIsLoading(false);
+      return;
     }
-    setShowModal(false);
-  };
 
-  const handleSetAsPrimary = (id: string) => {
-    setPaymentMethods(
-      paymentMethods.map((method) => ({
-        ...method,
-        isPrimary: method.id === id,
-      }))
-    );
-  };
+    let foundError = false;
 
+    //perform error checking on various fields
+    if(!checkCardNumberFormat(formData.cardNumber)){
+      foundError = true;
+      setCardNumberErrorText("Card number must be 16 consecutive digits.");
+    }
+
+    if(!checkCardExpiryFormat(formData.expirationDate)){
+      foundError = true;
+      setExpirationErrorText("Expiration Date must be in MM/YY format.");
+    }
+
+    if(!checkCVVFormat(formData.cvv)){
+      foundError = true;
+      setCvvErrorText("CVV must be 3 consecutive digits.")
+    }
+
+    //if an error has been detected 
+    if(foundError)
+    {
+      setIsLoading(false);
+      return;
+    }
+    console.log("No errors found in payment details. attempting to send to firestore. ");
+
+    //if no error found, add the new card to the database
+    //collect user
+    if(!auth.currentUser)
+    {
+      setModalErrorText("There was an error adding your payment details. Check your connection and try again later.");
+      setIsLoading(false);
+      return;
+    }
+    
+    const uid = auth.currentUser.uid;
+    console.log("user collected. ");
+
+    const docRef = doc(db, "Users", uid, "payments", Date.now().toString());
+    console.log("Doc Ref collected. attempting set doc...");
+
+    try {
+      // Generate a unique ID for this card
+      const paymentId = Date.now().toString();
+
+      const docRef = doc(db, "Users", uid, "payments", paymentId);
+
+      await setDoc(docRef, {
+        ...formData,
+        lastFourDigits: formData.cardNumber.slice(-4),
+        createdAt: new Date(),
+      });
+
+      console.log("Payment method saved!");
+
+      // Update local state so UI reflects the new card
+      setPaymentMethods((prev) => [
+        ...prev,
+        {
+          id: paymentId,
+          cardType: detectCardType(formData.cardNumber), 
+          lastFourDigits: formData.cardNumber.slice(-4),
+          expirationDate: formData.expirationDate,
+          cardholderName: formData.cardholderName,
+          isPrimary: prev.length === 0, // first card is primary
+        },
+      ]);
+
+      setShowModal(false);
+  } catch (error) {
+      console.error("Error saving payment method:", error);
+      setModalErrorText("Failed to save payment method.");
+  } finally {
+      setIsLoading(false);
+  };
+};
+
+//helper function to detect card type
+function detectCardType(number: string): PaymentMethod["cardType"] {
+  if (/^4/.test(number)) return "visa";
+  if (/^5[1-5]/.test(number)) return "mastercard";
+  if (/^3[47]/.test(number)) return "amex";
+  if (/^6/.test(number)) return "discover";
+  return "visa";
+}
+
+//use effect to populate the screen whenever it is mounted
+useEffect(() => {
+  async function loadPaymentMethods() {
+    if (!auth.currentUser) return;
+
+    const uid = auth.currentUser.uid;
+    const colRef = collection(db, "Users", uid, "payments");
+
+    const snapshot = await getDocs(colRef);
+
+    const loaded = snapshot.docs.map((docSnap) => {
+      const data = docSnap.data();
+      return {
+        id: docSnap.id,
+        cardType: data.cardType ?? "visa",
+        lastFourDigits: data.lastFourDigits,
+        expirationDate: data.expirationDate,
+        cardholderName: data.cardholderName,
+        isPrimary: data.isPrimary ?? false,
+      } as PaymentMethod;
+    });
+
+    // Sort so primary card shows first
+    loaded.sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary));
+
+    setPaymentMethods(loaded);
+  }
+
+  loadPaymentMethods();
+}, []);
+
+
+
+  const handleSetAsPrimary = async (id: string) => {
+  if (!auth.currentUser) return;
+
+  const uid = auth.currentUser.uid;
+
+  // 1. Update Firestore: set selected card to primary
+  const selectedRef = doc(db, "Users", uid, "payments", id);
+  await updateDoc(selectedRef, { isPrimary: true });
+
+  // 2. Unset primary on all other cards
+  const colRef = collection(db, "Users", uid, "payments");
+  const snapshot = await getDocs(colRef);
+
+  const batchUpdates = snapshot.docs.map(async (docSnap) => {
+    if (docSnap.id !== id) {
+      await updateDoc(docSnap.ref, { isPrimary: false });
+    }
+  });
+
+  await Promise.all(batchUpdates);
+
+  // 3. Update local UI state
+  setPaymentMethods((prev) =>
+    prev.map((pm) => ({
+      ...pm,
+      isPrimary: pm.id === id,
+    }))
+  );
+};
+
+  //helper functions for saving new payment details
+  const checkCardNumberFormat = (number: string) => {
+    const cardNumberRegex = /^\d{16}$/;
+    if(cardNumberRegex.test(number))
+    {
+      setCardNumberErrorText("");
+      return true;
+    }
+    else
+    {
+      return false
+    }
+  }
+
+  const checkCVVFormat = (cvv: string) => {
+    const cvvRegex = /^\d{3}$/;
+    if(cvvRegex.test(cvv))
+    {
+      setCvvErrorText("");
+      return true;
+    }
+    else
+    {
+      return false
+    }
+
+  }
+
+  const checkCardExpiryFormat = (date: string) => {
+      const expiryRegex = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
+      if(expiryRegex.test(date))
+      {
+        setExpirationErrorText("");
+        return true;
+      }
+      else
+      {
+        return false;
+      }
+
+  }
   const getCardIcon = (cardType: string) => {
     switch (cardType) {
       case 'visa':
@@ -147,6 +314,12 @@ export default function PaymentMethodScreen() {
         return 'card-outline';
     }
   };
+
+  //displays loading screen
+    if (isLoading) {
+      return <LoadingScreen />;
+    }
+  
 
   return (
     <View
@@ -208,7 +381,7 @@ export default function PaymentMethodScreen() {
             </Pressable>
 
             {/* Payment Methods List or Empty State */}
-            {paymentMethods.length === 0 ? (
+            {paymentMethods?.length === 0 || paymentMethods === undefined ? (
               <View style={[styles.emptyState, { backgroundColor: colors.card }]}>
                 <View style={styles.emptyIconContainer}>
                   <Ionicons
@@ -261,7 +434,7 @@ export default function PaymentMethodScreen() {
               </View>
             ) : (
               <View>
-                {paymentMethods.map((method) => (
+                {paymentMethods?.map((method) => (
                   <View
                     key={method.id}
                     style={[
@@ -411,7 +584,7 @@ export default function PaymentMethodScreen() {
             )}
 
             {/* Billing History Link */}
-            {paymentMethods.length > 0 && (
+            {paymentMethods?.length > 0 && (
               <Pressable
                 onPress={() => {}}
                 style={({ pressed }) => [
@@ -518,7 +691,7 @@ export default function PaymentMethodScreen() {
                         Card Number
                       </SkyboundText>
                       <TextInput
-                        placeholder="0000 0000 0000 0000"
+                        placeholder="0000000000000000"
                         placeholderTextColor={colors.icon}
                         value={formData.cardNumber}
                         onChangeText={(text) =>
@@ -527,6 +700,7 @@ export default function PaymentMethodScreen() {
                             cardNumber: text,
                           })
                         }
+                        maxLength={16}
                         editable={!editingId}
                         style={[
                           styles.textInput,
@@ -541,6 +715,8 @@ export default function PaymentMethodScreen() {
                         keyboardType="numeric"
                         accessibilityLabel="Card Number Input"
                       />
+                      <SkyboundText variant='error' accessabilityLabel='Card Number Error'>{cardNumberErrorText}</SkyboundText>
+                      
                     </View>
 
                     <View style={styles.twoColumnRow}>
@@ -566,6 +742,7 @@ export default function PaymentMethodScreen() {
                               expirationDate: text,
                             })
                           }
+                          maxLength={5}
                           style={[
                             styles.textInput,
                             {
@@ -576,9 +753,10 @@ export default function PaymentMethodScreen() {
                                 : '#F9FAFB',
                             },
                           ]}
-                          keyboardType="numeric"
+                          keyboardType="numbers-and-punctuation"
                           accessibilityLabel="Expiration Date Input"
                         />
+                        <SkyboundText variant='error' accessabilityLabel='Expiration Date Error'>{expirationErrorText}</SkyboundText>
                       </View>
 
                       <View style={[styles.formGroup, { flex: 1, marginLeft: 12 }]}>
@@ -603,6 +781,7 @@ export default function PaymentMethodScreen() {
                               cvv: text,
                             })
                           }
+                          maxLength={3}
                           style={[
                             styles.textInput,
                             {
@@ -617,7 +796,10 @@ export default function PaymentMethodScreen() {
                           secureTextEntry
                           accessibilityLabel="CVV Input"
                         />
+                      
+                      <SkyboundText variant='error' accessabilityLabel='CVV error text'>{cvvErrorText}</SkyboundText>
                       </View>
+
                     </View>
 
                     <View style={styles.formGroup}>
@@ -642,6 +824,7 @@ export default function PaymentMethodScreen() {
                             cardholderName: text,
                           })
                         }
+                        maxLength={100}
                         style={[
                           styles.textInput,
                           {
@@ -678,6 +861,7 @@ export default function PaymentMethodScreen() {
                             billingAddress: text,
                           })
                         }
+                        maxLength={100}
                         style={[
                           styles.textInput,
                           {
@@ -693,6 +877,8 @@ export default function PaymentMethodScreen() {
                         numberOfLines={3}
                         accessibilityLabel="Billing Address Input"
                       />
+
+                      <SkyboundText variant='error' accessabilityLabel='Error text'>{modalErrorText}</SkyboundText>
                     </View>
                   </View>
                 </ScrollView>
@@ -731,7 +917,7 @@ export default function PaymentMethodScreen() {
                     </SkyboundText>
                   </Pressable>
                   <Pressable
-                    onPress={handleSavePaymentMethod}
+                    onPress={ async () => await handleSavePaymentMethod() }
                     style={({ pressed }) => [
                       styles.saveButton,
                       {

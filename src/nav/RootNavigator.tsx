@@ -33,6 +33,7 @@ import FlightResultsScreen, {
 import FlightSearchScreen from "@src/screens/FlightSearchScreen";
 import FlightSummaryScreen from "@src/screens/FlightSummaryScreen";
 import LoginScreen from "@src/screens/LoginScreen";
+import NotificationsScreen from "@src/screens/NotificationsScreen";
 import PaymentScreen from "@src/screens/PaymentScreen";
 import SignupScreen from "@src/screens/SignupScreen";
 
@@ -95,10 +96,15 @@ export type AccountStackParamList = {
   Trips: undefined;
 };
 
+export type NotificationStackParamList = {
+  Notifications: undefined;
+};
+
 const Drawer = createDrawerNavigator();
 const AuthSwitchStack = createNativeStackNavigator<AuthSwitchNavigatorParamList>();
 const FlightStack = createNativeStackNavigator<FlightStackParamList>();
 const AccountStack = createNativeStackNavigator<AccountStackParamList>();
+const NotificationStack = createNativeStackNavigator<NotificationStackParamList>();
 const NavContainer = NavigationContainer as unknown as React.ComponentType<React.PropsWithChildren<{}>>;
 
 // Stack for flight searching, details, etc.
@@ -167,8 +173,28 @@ function GenerateDrawerRoot() {
         component={GenerateAccountStack}
         options={{ title: 'My Account' }}
       />
+      
+      <Drawer.Screen
+        name="Notifications"
+        component={GenerateNotificationStack}
+        options={{ title: 'Notifications' }}
+      />
+      
     </Drawer.Navigator>
   );
+}
+
+function GenerateNotificationStack() {
+  return (
+    <NotificationStack.Navigator
+      screenOptions={{
+        header: (props) => (<SkyboundNavBar {...props}/>),
+      }}
+      initialRouteName="Notifications"
+    >
+      <NotificationStack.Screen name="Notifications" component={NotificationsScreen} />
+    </NotificationStack.Navigator>
+  )
 }
 
 // The overall navigation structure of the project

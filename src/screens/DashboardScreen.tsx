@@ -2,7 +2,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Image, Pressable, RefreshControl, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
+import { ActivityIndicator, FlatList, Image, Pressable, RefreshControl, SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from "react-native";
 
 import DisplayMap from "@/components/ui/DisplayMap";
 import { OneWayQueryParams } from "@/skyboundTypes/SkyboundAPI";
@@ -75,7 +75,12 @@ export default function DashboardScreen() {
   return (
     // Gradient for optional use in future, white for now
     <LinearGradient colors={["#FFFFFF", "#FFFFFF"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }}>
-      <View style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#FFFFFF' : '#1E1E1E'}}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colorScheme === 'light' ? '#FFFFFF' : '#1E1E1E'}}>
+        {/* NavBar (required props) */}  
+        <View style={{ backgroundColor: "#fff" }}>
+        
+        </View>
+
           <ScrollView
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -155,8 +160,11 @@ export default function DashboardScreen() {
             <Pressable style={styles.readyBtn}><SkyboundText accessabilityLabel=' View All Deals' variant="primaryButton" size={14} style={{ color: "#fff" }}>View All Deals</SkyboundText></Pressable>
           </SkyboundItemHolder>
         </ScrollView>
-      </View>
-    </LinearGradient>
+        </SafeAreaView>
+        </LinearGradient>
+   
+      
+    
   );
 }
 

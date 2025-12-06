@@ -31,7 +31,9 @@ const SkyboundNavBar: React.FC<NativeStackHeaderProps> = (props) => {
                 </View>
 
                 <View style = {styles.rightHandIconsHolder}>
-                    <TouchableOpacity onPress={() => {}}>
+                    <TouchableOpacity onPress={() => {
+                            navigation.navigate("Notifications")
+                        }}>
                         <Ionicons name="notifications-outline" size={22} color="#0071E2" />
                     </TouchableOpacity>
 
