@@ -142,6 +142,24 @@ const TravelerDetails: React.FC = () => {
           Add Traveler
         </SkyboundText>
       </Pressable>
+
+       {/* Return button */}
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [
+              styles.returnButton,
+              { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },
+            ]}
+          >
+            <SkyboundText
+              variant="primary"
+              size={16}
+              accessabilityLabel="Return to manage subscription"
+              style={{ color: "white" }}
+            >
+              Back
+            </SkyboundText>
+            </Pressable>
     </SkyboundScreen>
   );
 };
@@ -189,6 +207,13 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingVertical: 12,
     alignItems: 'center',
+  },
+
+  returnButton: {
+    marginTop: 20,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
   },
 });
 

@@ -161,7 +161,7 @@ export default function ChoosePaymentMethod() {
             ]}
           >
             <SkyboundText
-              variant="primaryButton"
+              variant="primary"
               size={16}
               accessabilityLabel="Return to manage subscription"
               style={{ color: "white" }}

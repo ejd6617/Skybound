@@ -317,48 +317,7 @@ useEffect(() => {
               </SkyboundText>
             </Pressable>
 
-            {/* Secondary buttons */}
-            <View style={styles.secondaryButtons}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Navigate to Billing History"
-                onPress={() => navigation.navigate("BillingHistory")}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  { backgroundColor: isDark ? "#262626" : "#F3F4F6" },
-                  { opacity: pressed ? 0.8 : 1 },
-                ]}
-              >
-                <SkyboundText
-                  variant="primary"
-                  accessabilityLabel="Billing History"
-                  size={12}
-                  style={{ color: isDark ? colors.text : "#374151" }}
-                >
-                  Billing History
-                </SkyboundText>
-              </Pressable>
-
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Navigate to Payment Details"
-                onPress={() => navigation.navigate("PaymentDetails")}
-                style={({ pressed }) => [
-                  styles.secondaryButton,
-                  { backgroundColor: isDark ? "#262626" : "#F3F4F6" },
-                  { opacity: pressed ? 0.8 : 1 },
-                ]}
-              >
-                <SkyboundText
-                  variant="primary"
-                  accessabilityLabel="Payment Details"
-                  size={12}
-                  style={{ color: isDark ? colors.text : "#374151" }}
-                >
-                  Payment Details
-                </SkyboundText>
-              </Pressable>
-            </View>
+           
             </View>
             {/* Settings & Preferences Card */}
             <View style={[styles.card, { backgroundColor: colors.card }]}>
