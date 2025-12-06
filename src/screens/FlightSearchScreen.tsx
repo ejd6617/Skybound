@@ -21,7 +21,7 @@ import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
 import * as Location from 'expo-location';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 
@@ -347,6 +347,12 @@ export default function FlightSearchScreen() {
       setIsLoading(false);
     }
   };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: !isLoading, 
+    });
+  }, [navigation, isLoading]);
 
   if (isLoading) {
     return <LoadingScreen />;

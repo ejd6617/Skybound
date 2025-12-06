@@ -1,6 +1,7 @@
 // mobile/expo/src/nav/RootNavigator.tsx
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
 import { auth } from "@src/firebase";
 import * as React from "react";
 
@@ -102,6 +103,8 @@ export type NotificationStackParamList = {
   Notifications: undefined;
 };
 
+
+
 const Drawer = createDrawerNavigator();
 const AuthSwitchStack = createNativeStackNavigator<AuthSwitchNavigatorParamList>();
 const FlightStack = createNativeStackNavigator<FlightStackParamList>();
@@ -109,23 +112,49 @@ const AccountStack = createNativeStackNavigator<AccountStackParamList>();
 const NotificationStack = createNativeStackNavigator<NotificationStackParamList>();
 const NavContainer = NavigationContainer as unknown as React.ComponentType<React.PropsWithChildren<{}>>;
 
+function GenerateSkyboundHeaderOptions(customHeaderProps = {}) {
+  return {
+    header: (props) => (
+      <SkyboundNavBar
+        {...props}
+        {...customHeaderProps}
+      />
+    ),
+  };
+};
+
 // Stack for flight searching, details, etc.
 function GenerateFlightStack() {
+  const flightSearchHeaderOptions = {useBackNavigation: true, showNotifications: false, showUserProfile: false}
   return (
     <FlightStack.Navigator
-      screenOptions={{
-        header: (props) => (<SkyboundNavBar {...props}/>),
-      }}
       initialRouteName="Dashboard"
     >
-      <FlightStack.Screen name="ComponentTest" component={ComponentTestScreen}/>
-      <FlightStack.Screen name="Dashboard" component={DashboardScreen} />
-      <FlightStack.Screen name="FilterScreen" component={FilterScreen} options={{ presentation: 'modal' }} />
-      <FlightStack.Screen name="FlightConfirmation" component={FlightConfirmationScreen} />
-      <FlightStack.Screen name="FlightResults" component={FlightResultsScreen} />
-      <FlightStack.Screen name="FlightSearch" component={FlightSearchScreen}/>
-      <FlightStack.Screen name="FlightSummary" component={FlightSummaryScreen} />
-      <FlightStack.Screen name="Payment" component={PaymentScreen} />
+      <FlightStack.Screen name="ComponentTest" component={ComponentTestScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Component Test", ...flightSearchHeaderOptions})
+      } />
+      <FlightStack.Screen name="Dashboard" component={DashboardScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Dashboard"})
+      } />
+      <FlightStack.Screen name="FilterScreen" component={FilterScreen} options={
+        { presentation: 'modal', ...GenerateSkyboundHeaderOptions({titleText: "Filter Flights", ...flightSearchHeaderOptions}) }
+      } />
+      <FlightStack.Screen name="FlightConfirmation" component={FlightConfirmationScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Flight Confirmation", ...flightSearchHeaderOptions})
+      } />
+      <FlightStack.Screen name="FlightResults" component={FlightResultsScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Flight Results", showFilter: true, ...flightSearchHeaderOptions})
+      } />
+      <FlightStack.Screen name="FlightSearch" component={FlightSearchScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Flight Search"})
+      } />
+      <FlightStack.Screen name="FlightSummary" component={FlightSummaryScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Flight Summary", showShare: true, ...flightSearchHeaderOptions})
+      } />
+      <FlightStack.Screen name="Payment" component={PaymentScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Payment", ...flightSearchHeaderOptions})
+      } />
+
     </FlightStack.Navigator>
   );
 }
@@ -134,29 +163,62 @@ function GenerateFlightStack() {
 function GenerateAccountStack() {
   return (
     <AccountStack.Navigator
-      screenOptions={{
-        header: (props) => (<SkyboundNavBar {...props}/>),
-      }}
       initialRouteName="Account"
     >
-      <AccountStack.Screen name="Account" component={AccountScreen} />
-      <AccountStack.Screen name="AirportInfo" component={AirportInfo} />
-      <AccountStack.Screen name="AirportPreference" component={AirportPreference} />
-      <AccountStack.Screen name="BillingHistory" component={BillingHistory} />
-      <AccountStack.Screen name="Chat" component={ChatScreen} />
-      <AccountStack.Screen name="Contact" component={ContactScreen} />
-      <AccountStack.Screen name="Currency" component={CurrencyScreen} />
-      <AccountStack.Screen name="EditTraveler" component={EditTraveler} />
-      <AccountStack.Screen name="FAQ" component={FAQscreen} />
-      <AccountStack.Screen name="FlightInfo" component={FlightInfo} />
-      <AccountStack.Screen name="GetHelp" component={GetHelp} />
-      <AccountStack.Screen name="Language" component={LanguageModal} options={{ presentation: 'transparentModal', animation: 'fade' }} />
-      <AccountStack.Screen name="ManageSubscription" component={ManageSubscription} />
-      <AccountStack.Screen name="PaymentDetails" component={PaymentDetails} />
-      <AccountStack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
-      <AccountStack.Screen name="TravelerDetails" component={TravelerDetails} />
-      <AccountStack.Screen name="Trips" component={Trips} />
-      <AccountStack.Screen name="ChoosePaymentMethod" component={ChoosePaymentMethod} />
+      <AccountStack.Screen name="Account" component={AccountScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Account"})
+      } />
+      <AccountStack.Screen name="AirportInfo" component={AirportInfo} options={
+        GenerateSkyboundHeaderOptions({titleText: "Airport Info"})
+      } />
+      <AccountStack.Screen name="AirportPreference" component={AirportPreference} options={
+        GenerateSkyboundHeaderOptions({titleText: "Airport Preference"})
+      } />
+      <AccountStack.Screen name="BillingHistory" component={BillingHistory} options={
+        GenerateSkyboundHeaderOptions({titleText: "Billing History"})
+      } />
+      <AccountStack.Screen name="Chat" component={ChatScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Chat"})
+      } />
+      <AccountStack.Screen name="Contact" component={ContactScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Contact"})
+      } />
+      <AccountStack.Screen name="Currency" component={CurrencyScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Currency"})
+      } />
+      <AccountStack.Screen name="EditTraveler" component={EditTraveler} options={
+        GenerateSkyboundHeaderOptions({titleText: "Edit Traveler"})
+      } />
+      <AccountStack.Screen name="FAQ" component={FAQscreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "FAQ"})
+      } />
+      <AccountStack.Screen name="FlightInfo" component={FlightInfo} options={
+        GenerateSkyboundHeaderOptions({titleText: "Flight Info"})
+      } />
+      <AccountStack.Screen name="GetHelp" component={GetHelp} options={
+        GenerateSkyboundHeaderOptions({titleText: "Get Help"})
+      } />
+      <AccountStack.Screen name="Language" component={LanguageModal} options={
+        { presentation: 'transparentModal', animation: 'fade', ...GenerateSkyboundHeaderOptions("Change Language") }
+      }  />
+      <AccountStack.Screen name="ManageSubscription" component={ManageSubscription} options={
+        GenerateSkyboundHeaderOptions({titleText: "Manage Subscription"})
+      } />
+      <AccountStack.Screen name="PaymentDetails" component={PaymentDetails} options={
+        GenerateSkyboundHeaderOptions({titleText: "Payment Details"})
+      } />
+      <AccountStack.Screen name="PaymentMethod" component={PaymentMethodScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Payment Methods"})
+      } />
+      <AccountStack.Screen name="TravelerDetails" component={TravelerDetails} options={
+        GenerateSkyboundHeaderOptions({titleText: "Traveler Details"})
+      } />
+      <AccountStack.Screen name="Trips" component={Trips} options={
+        GenerateSkyboundHeaderOptions({titleText: "Trips"})
+      } />
+      <AccountStack.Screen name="ChoosePaymentMethod" component={ChoosePaymentMethod} options={
+        GenerateSkyboundHeaderOptions({titleText: "Select Payment Method"})
+      } />
     </AccountStack.Navigator>
   );
 }
@@ -190,9 +252,6 @@ function GenerateDrawerRoot() {
 function GenerateNotificationStack() {
   return (
     <NotificationStack.Navigator
-      screenOptions={{
-        header: (props) => (<SkyboundNavBar {...props}/>),
-      }}
       initialRouteName="Notifications"
     >
       <NotificationStack.Screen name="Notifications" component={NotificationsScreen} />

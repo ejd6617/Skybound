@@ -7,7 +7,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
 import { collection, deleteDoc, doc, getDocs, getFirestore, setDoc, updateDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   Image,
   Modal,
@@ -314,6 +314,13 @@ useEffect(() => {
         return 'card-outline';
     }
   };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: !isLoading, 
+    });
+  }, [navigation, isLoading]);
+
 
   //displays loading screen
     if (isLoading) {

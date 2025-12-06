@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import {
   Image,
   Pressable,
@@ -34,26 +34,26 @@ export default  function AccountScreen() {
   const user = auth.currentUser;
 
   //load the user data through auth
- const [userData, setUserData] = useState<any>(null);
-const [loadingUser, setLoadingUser] = useState(true);
+  const [userData, setUserData] = useState<any>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
 
-useEffect(() => {
-  if (!user) return;
+  useEffect(() => {
+    if (!user) return;
 
-  const ref = doc(db, "Users", user.uid);
+    const ref = doc(db, "Users", user.uid);
 
-  const unsubscribe = onSnapshot(ref, (snapshot) => {
-    const data = snapshot.data();
-    console.log(
-      "🔥 ACCOUNT SCREEN USERDATA (LIVE):",
-      JSON.stringify(data, null, 2)
-    );
-    setUserData(data || null);
-    setLoadingUser(false);
-  });
+    const unsubscribe = onSnapshot(ref, (snapshot) => {
+      const data = snapshot.data();
+      console.log(
+        "🔥 ACCOUNT SCREEN USERDATA (LIVE):",
+        JSON.stringify(data, null, 2)
+      );
+      setUserData(data || null);
+      setLoadingUser(false);
+    });
 
-  return unsubscribe;
-}, [user]);
+    return unsubscribe;
+  }, [user]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -127,9 +127,15 @@ useEffect(() => {
     </Pressable>
   );
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: !isLoading, 
+    });
+  }, [navigation, isLoading]);
+
   if (isLoading) {
-        return <LoadingScreen />;
-      }
+    return <LoadingScreen />;
+  }
 
   return (
     <View

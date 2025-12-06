@@ -1,5 +1,4 @@
 import { Flight, FlightLeg } from "@/skyboundTypes/SkyboundAPI";
-import SkyboundNavBar from "@components/ui/SkyboundNavBar";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -73,7 +72,7 @@ function formatStops(legs: FlightLeg[]): string {
   : `${numStops} stops`;
 }
 
-// Convert API flights to local flight datatype
+// convert api flights to local flight datatype
 function toUIFlights(data: Flight[]): UIFlight[] {
   let flights: UIFlight[] = data.map((flight: Flight, index) => {
     // Placeholder values for missing fields
@@ -385,15 +384,6 @@ export default function FlightResultsScreen() {
     <View style={styles.container}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
-          <SkyboundNavBar
-            title={generateTitle()}
-            leftHandIcon={<Ionicons name="arrow-back" size={22} color={colors.link} />}
-            leftHandIconOnPressEvent={() => navigation.goBack()}
-            rightHandFirstIcon={<Ionicons name="filter" size={22} color={colors.link} />}
-            rightHandFirstIconOnPressEvent={() => navigation.navigate('FilterScreen')}
-            rightHandSecondIcon={<Ionicons name="swap-vertical" size={22} color={colors.link} />}
-            rightHandSecondIconOnPressEvent={() => openSortSheet()}
-          />
           <View style={{ paddingBottom: 8 }}>
             <SkyboundText
               variant="secondary"
