@@ -4,6 +4,7 @@ import LoadingScreen from "@src/screens/LoadingScreen";
 import { useFonts } from "expo-font";
 import React from "react";
 import Toast from "react-native-toast-message";
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function App()
 {
@@ -30,11 +31,10 @@ export default function App()
 
   if (!fontsLoaded) return <LoadingScreen />;
 
-  return( 
-  <>
-    <RootNavigator />
-    <Toast/>
-  </>
-          
+  return(
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <RootNavigator />
+      <Toast/>
+    </GestureHandlerRootView>
   );
 }

@@ -72,7 +72,7 @@ export default function LoginScreen() {
         signInWithCredential(auth, credential)
         .then(userCredential => {
             console.log('Google sign in successful: ', userCredential.user.email);
-            navigation.navigate('Dashboard');
+            navigation.navigate('App');
         })
         .catch(error => {
             console.error("Failed sign in with Google: ", error.message);
@@ -102,10 +102,10 @@ export default function LoginScreen() {
       console.log("Attempting Sign in...");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('sign in successful!');
-      navigation.navigate('Dashboard');
+      navigation.navigate('App');
       setIsLoading(false);
       
-      navigation.navigate('Dashboard');
+      navigation.navigate('App');
       setIsLoading(false);
 
       updateUserData(userCredential.user.uid, {LastLogIn: serverTimestamp()});

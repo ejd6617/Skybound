@@ -184,7 +184,7 @@ export default function SignupScreen() {
         return;
       }
 
-      navigation.navigate('Dashboard');
+      navigation.navigate('App');
       //renable the register button
       setIsLoading(false);
     }catch(error : any)
@@ -292,7 +292,7 @@ function getPasswordBoxErrors(passwordsNotMatch: boolean, passwordTooShort: bool
       signInWithCredential(auth, credential)
       .then(userCredential => {
           console.log('Google sign in successful: ', userCredential.user.email);
-          navigation.navigate('Dashboard');
+          navigation.navigate('App');
       })
       .catch(error => {
           console.error("Failed sign in with Google: ", error.message);
