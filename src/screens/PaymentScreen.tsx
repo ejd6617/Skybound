@@ -567,6 +567,7 @@ export default function PaymentScreen() {
                   traveler: itinerary?.traveler,
                   paymentMethodId: selectedPaymentId,
                   totalPrice,
+                  searchDetails: itinerary?.searchDetails,   
                 },
               })
             }

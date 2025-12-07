@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
 import SkyboundScreen from '@components/ui/SkyboundScreen';
@@ -11,47 +11,10 @@ import { useColors } from '@constants/theme';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import type { TripCardData } from '@src/types/trips';
 
-const upcomingTrips: TripCardData[] = [
-  {
-    id: 'trip-001',
-    dateRange: 'Nov 14 – Nov 21, 2025',
-    route: 'JFK → LAX',
-    airline: 'Delta Air Lines · DL 342',
-    travelerCount: 2,
-    status: 'Confirmed',
-    upcoming: true,
-    gate: 'B12',
-    terminal: '4',
-    departureTime: '07:20 AM',
-    arrivalTime: '10:05 AM',
-    layovers: [
-      { id: 'L1', airportName: 'Denver International', airportCode: 'DEN', duration: '1h 05m' },
-    ],
-  },
-  {
-    id: 'trip-002',
-    dateRange: 'Dec 02 – Dec 08, 2025',
-    route: 'SFO → NRT',
-    airline: 'ANA · NH 7',
-    travelerCount: 1,
-    status: 'Boarding Soon',
-    upcoming: true,
-    gate: 'F3',
-    terminal: 'INTL',
-  },
-];
+import { auth, db } from "@src/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
-const pastTrips: TripCardData[] = [
-  {
-    id: 'trip-101',
-    dateRange: 'Sep 01 – Sep 08, 2024',
-    route: 'PIT → CDG',
-    airline: 'Air France · AF 69',
-    travelerCount: 2,
-    status: 'Completed',
-    upcoming: false,
-  },
-];
+
 
 const statusColors: Record<string, { background: string; text: string }> = {
   Confirmed: { background: 'rgba(34,197,94,0.15)', text: '#22C55E' },
@@ -68,17 +31,138 @@ const Trips: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [activeTab, setActiveTab] = useState<'upcoming' | 'past'>('upcoming');
 
-  const trips = useMemo(() => (activeTab === 'upcoming' ? upcomingTrips : pastTrips), [activeTab]);
+const [upcomingTrips, setUpcomingTrips] = useState<TripCardData[]>([]);
+const [pastTrips, setPastTrips] = useState<TripCardData[]>([]);
+const [loading, setLoading] = useState(true);
+
+//use effect to load the user's booked trips from firebase
+useEffect(() => {
+  async function loadTrips() {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      const ref = collection(db, "Users", user.uid, "trips");
+      const snap = await getDocs(ref);
+
+      const now = new Date();
+      const upcoming: TripCardData[] = [];
+      const past: TripCardData[] = [];
+
+      snap.forEach((docSnap) => {
+        const data = docSnap.data();
+        
+
+        // -----------------------------
+        // FIX 1: Properly decode dates
+        // -----------------------------
+        let startDate: Date | null = null;
+        let endDate: Date | null = null;
+
+        if (data.departureDate?.toDate)
+          startDate = data.departureDate.toDate();
+        else if (typeof data.departureDate === "string")
+          startDate = new Date(data.departureDate);
+
+        if (data.returnDate?.toDate)
+          endDate = data.returnDate.toDate();
+        else if (typeof data.returnDate === "string")
+          endDate = new Date(data.returnDate);
+
+        const dateRange =
+          startDate
+            ? `${startDate.toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })} – ${
+                endDate
+                  ? endDate.toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                    })
+                  : "N/A"
+              }, ${startDate.getFullYear()}`
+            : "Date unavailable";
+
+        // -----------------------------
+        // FIX 2: Route based on searchDetails
+        // -----------------------------
+        const route = `${data.searchDetails?.fromCode || "???"} → ${
+          data.searchDetails?.toCode || "???"
+        }`;
+
+        // -----------------------------
+        // FIX 3: Extract airline + schedule from legs
+        // -----------------------------
+        const firstFlight = data.flights?.[0];
+        const firstLeg = firstFlight?.legs?.[0] || null;
+        const lastLeg =
+          firstFlight?.legs?.[firstFlight.legs.length - 1] || null;
+
+        const airline = firstFlight?.airline || "Unknown Airline";
+        const departureTime = firstLeg?.departureTime || "";
+        const arrivalTime = lastLeg?.arrivalTime || "";
+        const terminal = firstLeg?.from?.terminal || "";
+        const gate = firstLeg?.from?.gate || "";
+
+        // -----------------------------
+        // FIX 4: Traveler count
+        // -----------------------------
+        const travelerCount =
+          Array.isArray(data.traveler) ? data.traveler.length : 1;
+
+        const trip: TripCardData = {
+          id: docSnap.id,
+          dateRange,
+          route,
+          airline,
+          travelerCount,
+          status: "Confirmed",
+          upcoming: startDate ? startDate >= now : false,
+          terminal,
+          gate,
+          departureTime,
+          arrivalTime,
+          layovers: firstFlight?.layovers || [],
+          traveler: data.traveler || null,   // <-- ADD THIS LINE
+          
+        };
+
+        if (trip.upcoming) upcoming.push(trip);
+        else past.push(trip);
+      });
+
+      // Sort correctly by date
+      upcoming.sort((a, b) => new Date(a.dateRange).getTime() - new Date(b.dateRange).getTime());
+      past.sort((a, b) => new Date(b.dateRange).getTime() - new Date(a.dateRange).getTime());
+
+      setUpcomingTrips(upcoming);
+      setPastTrips(past);
+    } catch (err) {
+      console.error("Error loading trips:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadTrips();
+}, []);
+
+
+  const trips = useMemo(
+  () => (activeTab === "upcoming" ? upcomingTrips : pastTrips),
+  [activeTab, upcomingTrips, pastTrips]
+);
 
   const renderTripCard = (trip: TripCardData) => (
     <SkyboundCard key={trip.id}>
       <View style={styles.tripHeader}>
         <View>
           <SkyboundText variant="primaryBold" size={16} accessabilityLabel={`Trip dates ${trip.dateRange}`}>
-            {trip.dateRange}
+            {trip.route}
           </SkyboundText>
           <SkyboundText variant="secondary" size={13} accessabilityLabel={`Trip route ${trip.route}`}>
-            {trip.route}
+            {trip.dateRange}
           </SkyboundText>
         </View>
         <View style={[styles.statusPill, statusColors[trip.status]]}>
@@ -144,6 +228,14 @@ const Trips: React.FC = () => {
       </Pressable>
     </SkyboundCard>
   );
+  //loading state
+  if (loading) {
+  return (
+    <SkyboundScreen title="Your Trips" subtitle="Keep tabs on every journey in one place.">
+      <SkyboundText variant="primary" accessabilityLabel='loading Trips...'>Loading trips...</SkyboundText>
+    </SkyboundScreen>
+  );
+}
 
   return (
     <SkyboundScreen title="Your Trips" subtitle="Keep tabs on every journey in one place." showLogo>
@@ -165,8 +257,25 @@ const Trips: React.FC = () => {
           </Pressable>
         ))}
       </View>
-
+        
       {trips.length > 0 ? trips.map(renderTripCard) : renderEmptyState()}
+       {/* Return button */}
+          <Pressable
+            onPress={() => navigation.navigate("Account")}
+            style={({ pressed }) => [
+              styles.returnButton,
+              { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },
+            ]}
+          >
+            <SkyboundText
+              variant="primary"
+              size={16}
+              accessabilityLabel="Return to manage subscription"
+              style={{ color: "white" }}
+            >
+              Back
+            </SkyboundText>
+            </Pressable>
     </SkyboundScreen>
   );
 };
@@ -225,6 +334,12 @@ const styles = StyleSheet.create({
   emptyCopy: {
     textAlign: 'center',
     marginVertical: 8,
+  },
+   returnButton: {
+    marginTop: 20,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
   },
 });
 

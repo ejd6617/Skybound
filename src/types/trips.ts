@@ -28,4 +28,6 @@ export interface TripCardData {
   departureTime?: string;
   arrivalTime?: string;
   layovers?: LayoverInfo[];
+  traveler: object,
+
 }
