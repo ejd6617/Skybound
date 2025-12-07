@@ -10,11 +10,16 @@ services:
       - ./.env.ngrok.local:/.env.ngrok.local # Ngrok forwarding credentials
       - ./.env.test.local:/.env.test.local # Token to bypass firebase auth for testing
       - ./.env.firebase-backend.local:/.env.firebase-backend.local # Base64-encoded admin service account credentials for authenticating user session tokens on the backend
+
+      # Certs that live on the oracle cloud server and need to be made available to docker (for HTTPS)
+      # - /etc/letsencrypt/live/skybound-api.xyz:/certs:ro
+      # - /etc/letsencrypt/archive/skybound-api.xyz:/certs/archive:ro
+      # - /etc/letsencrypt/renewal/skybound-api.xyz.conf:/certs/renewal.conf:ro
     ports:
       # - 4000:4000
       - 80:80
       # - 443:443
     environment:
-      # - USE_HTTPS=true
+      # - USE_HTTP=true
       - USE_NGROK=true
     command: ["npm", "start"]

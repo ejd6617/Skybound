@@ -45,13 +45,13 @@ export async function authenticate(req: AuthenticatedRequest, res: Response, nex
     return res.status(401).json({ error: "Missing or malformed Authorization header" });
   }
   const idToken = authHeader.split(" ")[1];
-  
+
   // Immediately approve auth if it is the bypass token
   if (idToken === TEST_BYPASS_TOKEN) {
     console.log("The test suite has successfully authenticated with the internal API")
     return next();
   }
-  
+
   // Try to verify the token with firebase
   try {
     const decoded = await admin.auth().verifyIdToken(idToken);

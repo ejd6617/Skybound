@@ -13,24 +13,18 @@ const api: SkyboundAPI = new AmadeusAPI();
 
 const HTTP_PORT = Number(process.env.HTTP_PORT) || 80;
 const HTTPS_PORT = Number(process.env.HTTPS_PORT) || 443;
-const USE_HTTPS = process.env.USE_HTTPS === 'true';
+const USE_HTTP = process.env.USE_HTTPS === 'true';
 const USE_NGROK = process.env.USE_NGROK === 'true';
-const PORT = USE_HTTPS ? HTTPS_PORT : HTTP_PORT;
+const PORT = USE_HTTP ? HTTP_PORT : HTTPS_PORT;
 const DOMAIN = 'skybound-api.xyz';
 
-const privateKeyPath = `/etc/letsencrypt/live/${DOMAIN}/privkey.pem`;
-const fullChainPath = `/etc/letsencrypt/live/${DOMAIN}/fullchain.pem`;
+const privateKeyPath = `/cert/privkey.pem`;
+const fullChainPath = `/cert/fullchain.pem`;
 
 admin.initializeApp(getAdminCredential());
 app.use(express.json());
 
 app.use('/api/logos', express.static('./logos'));
-
-(async () => {
-  if (USE_NGROK) {
-    await exposeServer("127.0.0.1", PORT);
-  }
-})();
 
 app.get('/hello', authenticate, (_: AuthenticatedRequest, res: Response) => {
   res.json({hello: 'Hello world!'});
@@ -88,30 +82,33 @@ app.post('/api/searchFlightsMultiCity', authenticate, async (req: AuthenticatedR
   }
 });
 
-if (USE_HTTPS) {
+if (USE_NGROK) {
+  (async () => { await exposeServer("127.0.0.1", PORT); })();
+} else {
+  if (USE_HTTP) {
+    app.listen(HTTP_PORT, "0.0.0.0", () => {
+      console.log(`API server is listening on port ${HTTP_PORT} on all network interfaces (HTTP only)`);
+    });
+  } else {
     http.createServer((req, res) => {
-        res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
-        res.end();
+      res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+      res.end();
     }).listen(HTTP_PORT, "0.0.0.0", () => {
-        console.log(`HTTP Redirect server listening on port ${HTTP_PORT} for ${DOMAIN}`);
+      console.log(`HTTP Redirect server listening on port ${HTTP_PORT} for ${DOMAIN}`);
     });
 
     try {
-        const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
-        const certificate = fs.readFileSync(fullChainPath, 'utf8');
+      const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
+      const certificate = fs.readFileSync(fullChainPath, 'utf8');
 
-        const credentials = { key: privateKey, cert: certificate };
+      const credentials = { key: privateKey, cert: certificate };
 
-        https.createServer(credentials, app).listen(HTTPS_PORT, "0.0.0.0", () => {
-            console.log(`HTTPS API server listening securely on port ${HTTPS_PORT} on all network interfaces`);
-        });
+      https.createServer(credentials, app).listen(HTTPS_PORT, "0.0.0.0", () => {
+        console.log(`HTTPS API server listening securely on port ${HTTPS_PORT} on all network interfaces`);
+      });
     } catch (error) {
-        console.error(`Failed to start HTTPS server: Error reading certificate files at ${privateKeyPath}.`);
-        console.error("Make sure Certbot has run and the files exist and are readable by this process.");
+      console.error(`Failed to start HTTPS server: Error reading certificate files at ${privateKeyPath}.`);
+      console.error("Make sure Certbot has run and the files exist and are readable by this process.");
     }
-
-} else {
-  app.listen(HTTP_PORT, "0.0.0.0", () => {
-      console.log(`API server is listening on port ${HTTP_PORT} on all network interfaces (HTTP only)`);
-  });
+  }
 }
