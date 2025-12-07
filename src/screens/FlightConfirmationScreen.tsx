@@ -6,7 +6,8 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
 import type { ItineraryPayload } from "@src/screens/FlightResultsScreen";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import { doc, setDoc, Timestamp } from "firebase/firestore";
+import React, { useEffect, useRef } from "react";
 import {
   Animated,
   Image,
@@ -15,6 +16,7 @@ import {
   StyleSheet,
   View,
 } from "react-native";
+import { auth, db } from "../firebase";
 
 // Match the UIFlight type used in FlightResultsScreen
 interface UIFlight {
@@ -60,6 +62,61 @@ export default function ConfirmationScreen() {
     0
   );
 
+  //helper function to recursively clean any object being saved to firestore
+  // Recursively clean any object before saving to Firestore
+function sanitize(value: any): any {
+  if (value === undefined) return null;               // Firestore-safe
+  if (value instanceof Date) return value.toISOString();
+  if (Array.isArray(value)) return value.map(sanitize);
+  if (value !== null && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, sanitize(v)])
+    );
+  }
+  return value;
+}
+
+  //reference to see if this flight has been booked to prevent duplicate booking
+  const hasSaved = useRef(false);
+    //use effect to save fligh to firestore
+    useEffect(() => {
+      if (hasSaved.current) return;
+      hasSaved.current = true;
+
+      async function saveTrip() {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const tripId = Date.now().toString();
+
+        try {
+          //  sanitize objects before saving to Firestore
+          const safe = sanitize({
+            totalPaid: itinerary.totalPrice,
+            paymentMethodId: itinerary.paymentMethodId,
+            traveler: itinerary.traveler,
+            flights: itinerary.flights,
+            searchDetails: itinerary.searchDetails || null,
+            departureDate: itinerary.searchDetails?.departureDate || null,
+            returnDate: itinerary.searchDetails?.returnDate || null,
+            status: "upcoming",
+          });
+
+          await setDoc(doc(db, "Users", user.uid, "trips", tripId), {
+            createdAt: Timestamp.now(),
+            ...safe,
+          });
+
+          console.log("Trip Saved to Firestore:", tripId);
+
+        } catch (error) {
+          console.log("Error saving trip:", error);
+        }
+      }
+
+      saveTrip();
+    }, []);
+
   // Animation refs
   const scale = React.useRef(new Animated.Value(0.6)).current;
   const ring = React.useRef(new Animated.Value(0)).current;
@@ -86,6 +143,7 @@ export default function ConfirmationScreen() {
         <SkyboundText
           variant="secondary"
           size={14}
+          accessabilityLabel={label}
           style={{ marginBottom: 8 }}
         >
           {label}
@@ -97,10 +155,10 @@ export default function ConfirmationScreen() {
               <Ionicons name="airplane" size={14} color="#FFF" />
             </View>
             <View style={{ flex: 1 }}>
-              <SkyboundText variant="primaryBold" size={16}>
+              <SkyboundText accessabilityLabel={"Airline" + flight.airline} variant="primaryBold" size={16}>
                 {flight.airline ?? "—"}
               </SkyboundText>
-              <SkyboundText variant="secondary" size={14}>
+              <SkyboundText variant="secondary" accessabilityLabel={"Cabin Class: " + flight.cabinClass}size={14}>
                 {flight.cabinClass ?? "—"}
               </SkyboundText>
             </View>
@@ -108,6 +166,7 @@ export default function ConfirmationScreen() {
           <SkyboundText
             variant="primary"
             size={16}
+            accessabilityLabel={"Airline Code: " + flight.airlineCode}
             style={{ fontWeight: "600", color: colors.link }}
           >
             {flight.airlineCode ?? "—"} {flight.id ?? ""}
@@ -116,13 +175,13 @@ export default function ConfirmationScreen() {
 
         <View style={styles.routeDisplay}>
           <View style={{ alignItems: "center" }}>
-            <SkyboundText variant="primaryBold" size={24}>
+            <SkyboundText accessabilityLabel={"Departure Code" + flight.departureCode} variant="primaryBold" size={24}>
               {flight.departureCode ?? "—"}
             </SkyboundText>
-            <SkyboundText variant="secondary" size={14}>
+            <SkyboundText variant="secondary" accessabilityLabel={"Departure Code " + flight.departureCode} size={14}>
               {flight.departureCode ?? "—"}
             </SkyboundText>
-            <SkyboundText variant="secondary" size={14}>
+            <SkyboundText variant="secondary" accessabilityLabel={"Departure Time: " + flight.departureTime} size={14}>
               {flight.departureTime ?? ""}
             </SkyboundText>
           </View>
@@ -134,18 +193,18 @@ export default function ConfirmationScreen() {
             <View
               style={{ height: 2, width: 43, backgroundColor: "#E5E7EB" }}
             />
-            <SkyboundText variant="secondary" size={12}>
+            <SkyboundText variant="secondary" accessabilityLabel={"Flight Duration: " + flight.duration} size={12}>
               {flight.duration ?? ""}
             </SkyboundText>
           </View>
           <View style={{ alignItems: "center" }}>
-            <SkyboundText variant="primaryBold" size={24}>
+            <SkyboundText variant="primaryBold" accessabilityLabel={"Arrival Code: " + flight.arrivalCode} size={24}>
               {flight.arrivalCode ?? "—"}
             </SkyboundText>
-            <SkyboundText variant="secondary" size={14}>
+            <SkyboundText variant="secondary" accessabilityLabel={"Arrival Code: " + flight.arrivalCode} size={14}>
               {flight.arrivalCode ?? "—"}
             </SkyboundText>
-            <SkyboundText variant="secondary" size={14}>
+            <SkyboundText variant="secondary" accessabilityLabel={"Arrival Time:" + flight.arrivalTime} size={14}>
               {flight.arrivalTime ?? ""}
             </SkyboundText>
           </View>
@@ -191,6 +250,7 @@ export default function ConfirmationScreen() {
           <SkyboundText
             variant="primary"
             size={36}
+            accessabilityLabel="Success!"
             style={styles.successTitle}
           >
             Success!
@@ -198,6 +258,7 @@ export default function ConfirmationScreen() {
           <SkyboundText
             variant="primary"
             size={18}
+            accessabilityLabel="Your Flight Has Been Booked!"
             style={styles.successSubtitle}
           >
             Your flight has been booked!
@@ -211,10 +272,10 @@ export default function ConfirmationScreen() {
         {/* Total Price + Email notice */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View style={styles.priceSection}>
-            <SkyboundText variant="secondary" size={16}>
+            <SkyboundText variant="secondary" size={16} accessabilityLabel="Total Price">
               Total Price
             </SkyboundText>
-            <SkyboundText variant="primaryBold" size={30}>
+            <SkyboundText variant="primaryBold" size={30} accessabilityLabel={totalPrice.toString()}>
               $
               {totalPrice?.toFixed
                 ? totalPrice.toFixed(2)
@@ -233,6 +294,7 @@ export default function ConfirmationScreen() {
               <SkyboundText
                 variant="primary"
                 size={14}
+                accessabilityLabel="You will recieve your flight ticked by email"
                 style={{ color: colors.link }}
               >
                 You will receive your flight ticket by email
@@ -240,12 +302,12 @@ export default function ConfirmationScreen() {
             </View>
 
           {traveler && (
-            <SkyboundText variant="secondary" size={14} style={{ marginTop: 8 }}>
+            <SkyboundText variant="secondary" size={14} style={{ marginTop: 8 }} accessabilityLabel={"Traveler: " + traveler.firstName + " " + traveler.lastName}>
               Traveler: {traveler.firstName} {traveler.lastName}
             </SkyboundText>
           )}
           {paymentMethodId && (
-            <SkyboundText variant="secondary" size={14} style={{ marginTop: 4 }}>
+            <SkyboundText variant="secondary" size={14} style={{ marginTop: 4 }} accessabilityLabel={"Payment Method ID: " + paymentMethodId}>
               Payment method: {paymentMethodId}
             </SkyboundText>
           )}
@@ -257,6 +319,7 @@ export default function ConfirmationScreen() {
           <SkyboundText
             variant="primaryBold"
             size={18}
+            accessabilityLabel={"Add To wallet"}
             style={{ marginBottom: 16 }}
           >
             Add to Wallet
@@ -271,6 +334,7 @@ export default function ConfirmationScreen() {
             <SkyboundText
               variant="primary"
               size={16}
+              accessabilityLabel="Add to apple wallet"
               style={{ color: "#FFF" }}
             >
               Add to Apple Wallet
@@ -291,6 +355,7 @@ export default function ConfirmationScreen() {
             <SkyboundText
               variant="primary"
               size={16}
+              accessabilityLabel="Add to google wallet"
               style={{ color: "#111827" }}
             >
               Add to Google Wallet
@@ -302,6 +367,7 @@ export default function ConfirmationScreen() {
           <SkyboundText
             variant="primary"
             size={16}
+            accessabilityLabel="Share Itinearary"
             style={{ fontWeight: "500", marginBottom: 12 }}
           >
             Share Itinerary
@@ -328,6 +394,7 @@ export default function ConfirmationScreen() {
         {/* Quick Actions */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <SkyboundText
+            accessabilityLabel="Quick actions"
             variant="primaryBold"
             size={18}
             style={{ marginBottom: 16 }}
@@ -340,6 +407,7 @@ export default function ConfirmationScreen() {
               <SkyboundText
                 variant="primary"
                 size={16}
+                accessabilityLabel="Check Flight Status"
                 style={{ fontWeight: "500" }}
               >
                 Check Flight Status
@@ -353,6 +421,7 @@ export default function ConfirmationScreen() {
               <SkyboundText
                 variant="primary"
                 size={16}
+                accessabilityLabel="Customer Support"
                 style={{ fontWeight: "500" }}
               >
                 Customer Support
@@ -366,6 +435,7 @@ export default function ConfirmationScreen() {
               <SkyboundText
                 variant="primary"
                 size={16}
+                accessabilityLabel="View all bookings"
                 style={{ fontWeight: "500" }}
               >
                 View All Bookings
@@ -384,6 +454,7 @@ export default function ConfirmationScreen() {
             <SkyboundText
               variant="primary"
               size={18}
+              accessabilityLabel="Contineue exploring"
               style={{ fontWeight: "600", color: colors.link }}
             >
               Continue Exploring
