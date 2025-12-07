@@ -130,7 +130,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     return travelers.map((traveler, index) => {
       return {
         id: (index + 1).toString(),
-        dateOfBirth: this.toLocalISOString (traveler.dateOfBirth),
+        dateOfBirth: this.toLocalISOString (new Date(traveler.dateOfBirth)),
         travelerType: traveler.travelerType,
         nationality: traveler.nationality,
       }

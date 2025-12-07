@@ -1,5 +1,6 @@
 import AmadeusAPI from '@/AmadeusAPI';
 import { authenticate, AuthenticatedRequest, getAdminCredential } from "@/auth";
+import { createCacheMiddleware } from "@/caching";
 import abbreviatedLog from '@/logging';
 import exposeServer from '@/ngrok';
 import SkyboundAPI, { FlightDealsParams, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
@@ -21,6 +22,9 @@ const DOMAIN = 'skybound-api.xyz';
 const privateKeyPath = `/cert/privkey.pem`;
 const fullChainPath = `/cert/fullchain.pem`;
 
+const shortCache = createCacheMiddleware(120);
+const longCache = createCacheMiddleware(600);
+
 admin.initializeApp(getAdminCredential());
 app.use(express.json());
 
@@ -30,7 +34,7 @@ app.get('/hello', authenticate, (_: AuthenticatedRequest, res: Response) => {
   res.json({hello: 'Hello world!'});
 });
 
-app.post('/api/flightDeals', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+app.post('/api/flightDeals', longCache, authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query: FlightDealsParams = req.body;
     abbreviatedLog("Input", query, Infinity);
@@ -43,7 +47,7 @@ app.post('/api/flightDeals', authenticate, async (req: AuthenticatedRequest, res
   }
 });
 
-app.post('/api/searchFlightsOneWay', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+app.post('/api/searchFlightsOneWay', shortCache, authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query: OneWayQueryParams = req.body;
     abbreviatedLog("Input", query, Infinity);
@@ -56,7 +60,7 @@ app.post('/api/searchFlightsOneWay', authenticate, async (req: AuthenticatedRequ
   }
 });
 
-app.post('/api/searchFlightsRoundTrip', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+app.post('/api/searchFlightsRoundTrip', shortCache, authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query: RoundTripQueryParams = req.body;
     abbreviatedLog("Input", query, Infinity);
@@ -69,7 +73,7 @@ app.post('/api/searchFlightsRoundTrip', authenticate, async (req: AuthenticatedR
   }
 });
 
-app.post('/api/searchFlightsMultiCity', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+app.post('/api/searchFlightsMultiCity', shortCache, authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const query: MultiCityQueryParams = req.body;
     abbreviatedLog("Input", query, Infinity);
