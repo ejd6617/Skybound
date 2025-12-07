@@ -206,6 +206,7 @@
     "napi-postinstall": "^0.3.4",
     "natural-compare": "^1.4.0",
     "netmask": "^2.0.2",
+    "ngrok": "^5.0.0-beta.2",
     "npm": "^11.6.2",
     "object-assign": "^4.1.1",
     "object-inspect": "^1.13.4",

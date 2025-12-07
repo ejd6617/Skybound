@@ -6,6 +6,7 @@ services:
     volumes:
       - ./api:/app
       - ./skyboundTypes:/skyboundTypes
+      - ./assets:/assets # For airport data
       - ./.env.amadeus.local:/.env.amadeus.local # Amadeus API credentials
       - ./.env.ngrok.local:/.env.ngrok.local # Ngrok forwarding credentials
       - ./.env.test.local:/.env.test.local # Token to bypass firebase auth for testing
@@ -16,8 +17,8 @@ services:
       # - /etc/letsencrypt/archive/skybound-api.xyz:/certs/archive:ro
       # - /etc/letsencrypt/renewal/skybound-api.xyz.conf:/certs/renewal.conf:ro
     ports:
-      # - 4000:4000
-      - 80:80
+      - 4000:4000
+      # - 80:80
       # - 443:443
     environment:
       # - USE_HTTP=true

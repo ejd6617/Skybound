@@ -3,7 +3,8 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@skyboundTypes/*": ["../skyboundTypes/*"]
+      "@skyboundTypes/*": ["../skyboundTypes/*"],
+      "@assets/*": ["../assets/*"]
     },
     "target": "ES2020",
     "module": "CommonJS",

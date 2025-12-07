@@ -1,4 +1,5 @@
-import SkyboundAPI, { Airline, Airport, Flight, FlightDealsParams, FlightLeg, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams, TravelClass } from "@skyboundTypes/SkyboundAPI";
+import airports from "@assets/airports.json";
+import SkyboundAPI, { Airline, Airport, Flight, FlightDealsParams, FlightLeg, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams, TravelClass, Traveler } from "@skyboundTypes/SkyboundAPI";
 import * as dotenv from 'dotenv';
 import pLimit from 'p-limit';
 const Amadeus = require('amadeus');
@@ -16,6 +17,13 @@ export interface AmadeusResponse {
 // Represents a "flight endpoint" (effectively an airport)
 export interface AmadeusFlightEndPoint {
   iataCode: string;
+}
+
+interface JsonAirport {
+  iata: string,
+  city: string,
+  name: string,
+  country: string,
 }
 
 // Represents per-segment fare details
@@ -58,6 +66,7 @@ interface AmadeusSegment {
 // May include more than one segment/leg
 interface AmadeusItinerary {
   segments?: AmadeusSegment[];
+  duration: string;
 }
 
 // An offer of several itineraries
@@ -106,6 +115,88 @@ export default class AmadeusAPI implements SkyboundAPI {
 
     return this.parseFlights(response);
   }
+
+  private processTravelers(travelers: Traveler[]): any[] {
+    if (travelers.length == 0 )
+    {
+      return [{
+        id: "1",
+        travelerType: "ADULT",
+        nationality: "US",
+        dateOfBirth: "2002-01-01",
+      }];
+    }
+
+    return travelers.map((traveler, index) => {
+      return {
+        id: (index + 1).toString(),
+        dateOfBirth: this.toLocalISOString (traveler.dateOfBirth),
+        travelerType: traveler.travelerType,
+        nationality: traveler.nationality,
+      }
+    })
+  }
+
+  private logAmadeusError(rawError: any) {
+    if (!rawError) {
+    console.error("An unknown and null/undefined error occurred.");
+    return;
+  }
+  
+  // --- 1. Handle Amadeus API errors (Likely the source of complex objects) ---
+  if (rawError.response && rawError.response.result && rawError.response.result.errors) {
+    const amadeusErrors = rawError.response.result.errors;
+    
+    // Log a header
+    console.error("--- Amadeus API Error Details ---");
+
+    // Log the primary message
+    if (amadeusErrors.length > 0) {
+      const firstError = amadeusErrors[0];
+      const message = `Code: ${firstError.code}. Detail: ${firstError.detail || 'Unknown issue'}`;
+      console.error(`Amadeus API Primary Error: ${message}`);
+    } else {
+      console.error("Amadeus API returned errors in an unexpected format.");
+    }
+
+    // Log the full JSON details for deep inspection
+    try {
+         console.error("Full Amadeus Error Response:", JSON.stringify(rawError.response.result.errors, null, 2));
+      } catch (e) {
+         console.error("Could not stringify full Amadeus error response.");
+      }
+      return;
+    }
+
+    // --- 2. Handle Standard JavaScript Error objects ---
+    if (rawError instanceof Error) {
+      // Log the human-readable message and the stack trace
+      console.error(`--- Standard JavaScript Error ---`);
+      console.error(`Error Message: ${rawError.message || rawError.name || "Error object with no message."}`);
+      
+      // Stack trace is critical for debugging
+      if (rawError.stack) {
+        console.error("Stack Trace:", rawError.stack);
+      }
+      return;
+    }
+    
+    // --- 3. Handle Generic Objects or Primitive Types (Fallback) ---
+    
+    // Log a header
+    console.error(`--- Generic Error or Thrown Value ---`);
+
+    // Try to stringify any object or cast any primitive
+    try {
+      const loggedValue = (typeof rawError === 'object' && rawError !== null)
+        ? JSON.stringify(rawError, null, 2)
+        : String(rawError);
+        
+      console.error("Caught Value:", loggedValue);
+    } catch (e) {
+      console.error("Caught a value that could not be logged or stringified.");
+    }
+  }
   
   // Flight deals/inspiration endpoint
   // Just takes in a city and returns cheap flights
@@ -125,9 +216,7 @@ export default class AmadeusAPI implements SkyboundAPI {
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
-          travelers: params.travelers.map((traveler, index) => {
-            return { id: (index + 1).toString(), ...traveler }
-          }),
+          travelers: this.processTravelers(params.travelers),
           originDestinations: [
             {
               id: "1",
@@ -151,7 +240,8 @@ export default class AmadeusAPI implements SkyboundAPI {
         });
         return this.extractResponseFlights(response);
       } catch (error) {
-        console.error(`Error in one of the flexible airports: ${error}`)
+        console.error("There is an error in one of the flexible airports provided");
+        this.logAmadeusError(error);
         return []
       }
     }
@@ -166,7 +256,7 @@ export default class AmadeusAPI implements SkyboundAPI {
         try {
           flights = amadeusSearchFlights(params);
         } catch(error) {
-          console.error(`Error in one of the flexible airports: ${error}`)
+          this.logAmadeusError(error);
           flights = [];
         }
         return flights;
@@ -184,9 +274,7 @@ export default class AmadeusAPI implements SkyboundAPI {
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
-          travelers: params.travelers.map((traveler, index) => {
-            return { id: (index + 1).toString(), ...traveler }
-          }),
+          travelers: this.processTravelers(params.travelers),
           originDestinations: [
             {
               id: "1",
@@ -202,7 +290,8 @@ export default class AmadeusAPI implements SkyboundAPI {
         
         return this.extractResponseFlights(response);
       } catch (error) {
-        console.error(`Error in one of the flexible airports: ${error}`)
+        console.error("There is an error in one of the flexible airports provided");
+        this.logAmadeusError(error);
         return []
       }
     }
@@ -217,7 +306,8 @@ export default class AmadeusAPI implements SkyboundAPI {
         try {
           flights = amadeusSearchFlights(params);
         } catch(error) {
-          console.error(`Error in one of the flexible airports: ${error}`)
+          console.error("There is an error in one of the flexible airports provided");
+          this.logAmadeusError(error);
           flights = [];
         }
         return flights;
@@ -232,9 +322,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
       ...this.baseFlightOfferParams,
       currencyCode: params.currencyCode,
-      travelers: params.travelers.map((traveler, index) => {
-        return { id: (index + 1).toString(), ...traveler }
-      }),
+      travelers: this.processTravelers(params.travelers),
       originDestinations: params.legs.map((leg, index) => ({
         id: (index + 1).toString(),
         originLocationCode: leg.originAirportIATA,
@@ -320,20 +408,23 @@ export default class AmadeusAPI implements SkyboundAPI {
       const flight: Flight = (oneWay)
       ? {
         price: parseFloat(offer.price.grandTotal),
+        currencyCode: offer.price.currencyCode,
         airline: airline,
         freeBaggage: this.hasFreeBaggage(offer),
         outbound: this.parseItinerary(offer.itineraries[0], fareDetailsMap),
+        outboundDuration: this.parseISODuration(offer.itineraries[0].duration),
         travelers: [],
-        currencyCode: "USD,"
       }
       : {
         price: parseFloat(offer.price.grandTotal),
+        currencyCode: offer.price.currencyCode,
         airline: airline,
         freeBaggage: this.hasFreeBaggage(offer),
         outbound: this.parseItinerary(offer.itineraries[0], fareDetailsMap),
+        outboundDuration: this.parseISODuration(offer.itineraries[0].duration),
         return: this.parseItinerary(offer.itineraries[1], fareDetailsMap),
+        returnDuration: this.parseISODuration(offer.itineraries[1].duration),
         travelers: [],
-        currencyCode: "USD,"
       };
 
       return flight;
@@ -374,15 +465,26 @@ export default class AmadeusAPI implements SkyboundAPI {
   }
 
   // Amadeus flight endpoint -> Skybound Airport
-  // TODO: Pull better data here from our local dataset
   private parseAirport(endpoint: AmadeusFlightEndPoint): Airport {
-      return {
-        iata: endpoint.iataCode,
-        city: "PlaceholderCity",
-        name: "PlaceholderName",
-        country: "PlaceholderCountry",
-      }
+    const getAirport = (airportsDataSet: JsonAirport[], iataCode: string) => {
+        return airportsDataSet.find(airport => airport.iata === iataCode.toUpperCase());
+    }
+
+    const foundAirport = getAirport(airports, endpoint.iataCode);
+
+    if (!foundAirport) {
+        throw new Error(`Airport with IATA code ${endpoint.iataCode} not found in dataset.`);
+    }
+
+    console.log(foundAirport);
+    return foundAirport;
   }
+
+  private getDurationInMinutes = (date1: Date, date2: Date) => {
+    const timeDifferenceMs = date2.getTime() - date1.getTime();
+    const minutes = timeDifferenceMs / 1000 / 60;
+    return Math.abs(minutes);
+  };
   
   // Amadeus itinerary -> FlightLeg[]
   private parseItinerary(itinerary: AmadeusItinerary, fareDetailsMap: {[segmentId: number]: AmadeusFareDetail}): FlightLeg[] {
@@ -398,7 +500,7 @@ export default class AmadeusAPI implements SkyboundAPI {
       return {
         from: this.parseAirport(leg.departure),
         to: this.parseAirport(leg.arrival),
-        duration: this.parseISODuration(leg.duration),
+        duration: this.getDurationInMinutes(new Date(leg.arrival.at), new Date(leg.departure.at)),
         date: new Date(leg.departure.at),
         departureTime: new Date(leg.departure.at),
         arrivalTime: new Date(leg.arrival.at),

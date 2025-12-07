@@ -4,7 +4,6 @@ export interface FlightDealsParams extends Params {
   originAirportIATA: string,
 }
 
-
 export interface OneWayQueryParams extends Params {
   originAirportIATA: string, // 3 Letter IATA code
   destinationAirportIATA: string, // 3 Letter IATA code
@@ -81,7 +80,9 @@ export interface Flight {
   travelers: Traveler[],
   airline: Airline,
   outbound: FlightLeg[],
+  outboundDuration: number,
   return?: FlightLeg[], // Optional, may not be set for one way flights
+  returnDuration?: number,
   freeBaggage: boolean,
 }
 

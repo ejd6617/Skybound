@@ -1,11 +1,11 @@
-import { Flight, FlightLeg } from "@/skyboundTypes/SkyboundAPI";
+import { Flight, FlightLeg, TravelClass } from "@/skyboundTypes/SkyboundAPI";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getURL, reviveDates } from "@src/api/SkyboundUtils";
-import type { RootStackParamList } from "@src/nav/RootNavigator";
+import { type RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -59,6 +59,8 @@ export interface UIFlight {
   cabinClass: string;
   departureTime: string;
   arrivalTime: string;
+  departureDate: string;
+  arrivalDate: string;
   departureCode: string;
   arrivalCode: string;
   duration: string;
@@ -74,6 +76,12 @@ function formatTime(date: Date) {
     minute: 'numeric',
     hour12: true
   }).format(date);
+}
+
+// output example: Oct 25
+function formatDate(date: Date): string {
+  const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  return new Date(date).toLocaleString('en-US', options);
 }
 
 // output example: 10h 22m
@@ -98,11 +106,29 @@ function toUIFlights(data: Flight[]): UIFlight[] {
     const id = (index + 1).toString();
     const airlineColor = '#1E40AF'; // Placeholder airline color (JetBlue)
 
-    const outboundLength = flight.outbound.length
+    const outboundLength = flight.outbound.length;
     const firstOutbound = flight.outbound[0];
     const lastOutbound = flight.outbound[outboundLength-1];
     
-    const totalDuration = flight.outbound.reduce((sum, leg) => sum + leg.duration, 0);
+    const totalDuration = flight.outboundDuration;
+    
+    const findMostCommonTravelClass = (legs: FlightLeg[]): TravelClass | undefined => {
+        if (!legs || legs.length === 0) {
+            return "ECONOMY";
+        }
+
+        const classCounts = legs.reduce((counts, leg) => {
+            const key = leg.travelClass;
+            counts[key] = (counts[key] || 0) + 1;
+            return counts;
+        }, {} as Record<TravelClass, number>);
+
+        const mostCommonClass = Object.keys(classCounts).reduce((a, b) => {
+            return classCounts[a as TravelClass] > classCounts[b as TravelClass] ? a : b;
+        }) as TravelClass;
+
+        return mostCommonClass;
+    }
     
     // Return the formatted flight object
     return {
@@ -111,9 +137,11 @@ function toUIFlights(data: Flight[]): UIFlight[] {
       airlineCode: flight.airline.iata,
       airlineColor,
       price: flight.price,
-      cabinClass: flight.class,
+      cabinClass: findMostCommonTravelClass(flight.outbound),
       departureTime: formatTime(firstOutbound.departureTime),
       arrivalTime: formatTime(lastOutbound.arrivalTime),
+      departureDate: formatDate(firstOutbound.departureTime),
+      arrivalDate: formatDate(firstOutbound.arrivalTime),
       departureCode: firstOutbound.from.iata,
       arrivalCode: lastOutbound.to.iata,
       duration: formatDuration(totalDuration),
@@ -131,69 +159,6 @@ function toUIFlights(data: Flight[]): UIFlight[] {
   
   return flights;
 };
-
-const MOCK_FLIGHTS: UIFlight[] = [
-  {
-    id: '1',
-    airline: 'American Airlines',
-    airlineCode: 'AA',
-    airlineColor: '#DC2626',
-    category: 'best',
-    price: 428,
-    cabinClass: 'Main Basic',
-    departureTime: '7:20 AM',
-    arrivalTime: '1:05 PM',
-    departureCode: 'CLE',
-    arrivalCode: 'LAX',
-    duration: '5h 45m',
-    stops: '1 stop DFW',
-    hasBaggage: true,
-  },
-  {
-    id: '2',
-    airline: 'Southwest Airlines',
-    airlineCode: 'SW',
-    airlineColor: '#EAB308',
-    category: 'cheapest',
-    price: 384,
-    cabinClass: 'Wanna Get Away',
-    departureTime: '6:15 AM',
-    arrivalTime: '11:35 AM',
-    departureCode: 'CLE',
-    arrivalCode: 'LAX',
-    duration: '7h 20m',
-    stops: '1 stop PHX',
-  },
-  {
-    id: '3',
-    airline: 'United Airlines',
-    airlineCode: 'UA',
-    airlineColor: '#1E40AF',
-    category: 'fastest',
-    price: 512,
-    cabinClass: 'Basic Economy',
-    departureTime: '2:45 PM',
-    arrivalTime: '5:20 PM',
-    departureCode: 'CLE',
-    arrivalCode: 'LAX',
-    duration: '4h 35m',
-    stops: 'Nonstop',
-  },
-  {
-    id: '4',
-    airline: 'Delta Airlines',
-    airlineCode: 'DL',
-    airlineColor: '#9333EA',
-    price: 467,
-    cabinClass: 'Main Cabin',
-    departureTime: '10:30 AM',
-    arrivalTime: '2:45 PM',
-    departureCode: 'CLE',
-    arrivalCode: 'LAX',
-    duration: '6h 15m',
-    stops: '1 stop ATL',
-  },
-];
 
 export default function FlightResultsScreen() {
   const route = useRoute();
@@ -257,16 +222,9 @@ export default function FlightResultsScreen() {
   };
   
   const generateTitle = () => {
-    return `Outbound: ${flights[0].departureCode} to ${flights[0].arrivalCode}`
-  }
-
-  const generateDateRange = () => {
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-
-    const start = new Date(flights[0].departureTime).toLocaleString('en-US', options);
-    const end = new Date(flights[0].arrivalTime).toLocaleString('en-US', options);
-
-    return `${start} - ${end}`;
+    return (flights[0] === undefined)
+      ? "No flights found"
+      : `Outbound: ${flights[0].departureCode} to ${flights[0].arrivalCode}`;
   }
 
   const normalizeDateValue = (value?: Date | string | null) => {
@@ -277,6 +235,10 @@ export default function FlightResultsScreen() {
   
   
   const generateFlightOverview = () => {
+    if (flights[0] === undefined) {
+      return <View></View>
+    }
+
     const sourceAirport: string = flights[0].departureCode;
     const destAirport: string = flights[0].arrivalCode;
     return <View style={[styles.routeInfo, { backgroundColor: 'rgba(239, 246, 255, 0.95)' }]}>
@@ -288,7 +250,7 @@ export default function FlightResultsScreen() {
       <View style={styles.routeCenter}>
         <View style={[styles.routeLine, { backgroundColor: colors.link }]} />
         <Ionicons name="airplane" size={20} color={colors.link} />
-        <SkyboundText variant="secondary" size={12} accessabilityLabel="2,048 miles">2,048 miles</SkyboundText>
+        {/* <SkyboundText variant="secondary" size={12} accessabilityLabel="2,048 miles">2,048 miles</SkyboundText> */}
       </View>
       <View style={[styles.routePoint, { width: 96 }]}>
         <View style={[styles.dot, { backgroundColor: colors.link }]} />
@@ -316,8 +278,13 @@ export default function FlightResultsScreen() {
     setSortBy(criteria);
     setSortDirection(direction);
   };
+
   const toggleDirection = () => setSortDirection(d => d === 'asc' ? 'desc' : 'asc');
   const arrowFor = (crit: typeof sortBy) => (sortBy === crit && sortDirection === 'desc') ? 'arrow-down' : 'arrow-up';
+
+  useEffect(() => {
+    navigation.setOptions({ title: generateTitle()});
+  }, [flights, navigation, colors])
 
   const FlightCard = ({ flight }: { flight: UIFlight }) => {
     const badge = getCategoryBadge(flight.category);
@@ -470,21 +437,42 @@ export default function FlightResultsScreen() {
     );
   };
 
+  const generateDateRangeHeader = () => {
+    
+    const startDate: string = (departureDate)
+      ? formatDate(new Date(departureDate))
+      : "";
+
+    const endDate: string = (returnDate)
+      ? formatDate(new Date(returnDate))
+      : "";
+
+    const dateRange: string = [startDate, endDate]
+      .map(s => s?.trim() || '')
+      .filter(s => s.length > 0)
+      .join(' - ');
+
+    return (
+      <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
+        <View style={{ paddingBottom: 8 }}>
+          <SkyboundText
+            variant="secondary"
+            size={14}
+            accessabilityLabel={dateRange}
+            style={{ textAlign: 'center' }}
+          >
+            {dateRange}
+          </SkyboundText>
+        </View>
+      </View>
+    )
+  };
+
   return (
     <View style={styles.container}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
-        <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
-          <View style={{ paddingBottom: 8 }}>
-            <SkyboundText
-              variant="secondary"
-              size={14}
-              accessabilityLabel={generateDateRange()}
-              style={{ textAlign: 'center' }}
-            >
-              Nov 7 - Nov 12
-            </SkyboundText>
-          </View>
-        </View>
+        
+        {generateDateRangeHeader()}
 
         {/* Map Placeholder */}
         <View style={[styles.mapContainer, { backgroundColor: colors.surfaceMuted }]}>

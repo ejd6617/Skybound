@@ -13,9 +13,9 @@ const api: SkyboundAPI = new AmadeusAPI();
 
 const HTTP_PORT = Number(process.env.HTTP_PORT) || 80;
 const HTTPS_PORT = Number(process.env.HTTPS_PORT) || 443;
-const USE_HTTP = process.env.USE_HTTPS === 'true';
+const NGROK_PORT = 4000;
 const USE_NGROK = process.env.USE_NGROK === 'true';
-const PORT = USE_HTTP ? HTTP_PORT : HTTPS_PORT;
+const USE_HTTP = process.env.USE_HTTP === 'true';
 const DOMAIN = 'skybound-api.xyz';
 
 const privateKeyPath = `/cert/privkey.pem`;
@@ -83,7 +83,10 @@ app.post('/api/searchFlightsMultiCity', authenticate, async (req: AuthenticatedR
 });
 
 if (USE_NGROK) {
-  (async () => { await exposeServer("127.0.0.1", PORT); })();
+  (async () => { await exposeServer("127.0.0.1", NGROK_PORT); })();
+  app.listen(NGROK_PORT, "127.0.0.1", () => {
+    console.log(`Local Express server running on ${NGROK_PORT} for Ngrok.`);
+  });
 } else {
   if (USE_HTTP) {
     app.listen(HTTP_PORT, "0.0.0.0", () => {

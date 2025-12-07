@@ -12,7 +12,9 @@ if (process.env.USE_NGROK === 'true') {
 }
 
 // Use old URL if connecting over plain http
-const ORACLE_URL = USE_HTTP ? "http://129.80.33.141" : "https://skybound-api.xyz"
+const ORACLE_URL = (process.env.USE_HTTP === "true")
+  ? "http://129.80.33.141"
+  : "https://skybound-api.xyz";
 
 export default ({ config }) => ({
   ...config,

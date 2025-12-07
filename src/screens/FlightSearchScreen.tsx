@@ -1,6 +1,7 @@
+import { NATIONALITIES_TO_ISO } from '@/assets/data/nationalitiesToISO';
 import InteractiveMap, { LatLng } from '@/components/ui/InteractiveMap';
 import SkyboundItemHolder from '@/components/ui/SkyboundItemHolder';
-import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
+import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams, Traveler, TravelerType } from '@/skyboundTypes/SkyboundAPI';
 import AirportIcon from '@assets/images/AirportIcon.svg';
 import ArrivalIcon from '@assets/images/ArrivalIcon.svg';
 import CalandarIcon from '@assets/images/CalandarIcon.svg';
@@ -25,6 +26,11 @@ import React, { useEffect, useLayoutEffect, useState } from "react";
 import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 
+import { db } from "@src/firebase";
+import { getTravelerDetails } from '@src/firestoreFunctions';
+import { getAuth } from 'firebase/auth';
+import { collection, getDocs } from 'firebase/firestore';
+import { GenderOption, TravelerProfile } from '../types/travelers';
 
 interface ValidationErrors {
   from?: string;
@@ -73,6 +79,49 @@ export default function FlightSearchScreen() {
   const [flexibleAirports, setFlexibleAirports] = useState<any[]>([]);
   //contains the flexible airport codes
   const [flexibleAirportCodes, setFlexibleAirportCodes] = useState<string[]>([]);
+  
+  const [travelers, setTravelers] = useState<TravelerProfile[]>([]);
+
+  const auth = getAuth();
+  const user = auth.currentUser?.uid;
+
+  //fetches traveler details from firebase
+  const fetchTravelers = async () => {
+    try {
+      const travelersRef = collection(db, 'Users', user, 'TravelerDetails');
+      const travelersSnap = await getDocs(travelersRef);
+
+      const fetchedTravelers: TravelerProfile[] = [];
+
+      for (const doc of travelersSnap.docs) {
+        const travelerID = doc.id;
+        const travelerDetails = await getTravelerDetails(user, travelerID);
+        if (travelerDetails) {
+          fetchedTravelers.push({
+            id: travelerID,
+            firstName: travelerDetails.FirstName,
+            middleName: travelerDetails.MiddleName || "",
+            lastName: travelerDetails.LastName,
+            birthdate: travelerDetails.Birthday,
+            gender: travelerDetails.Gender as GenderOption,
+            nationality: travelerDetails.Nationality,
+            passportNumber: travelerDetails.PassportNumber,
+            passportExpiry: travelerDetails.PassportExpiration,
+            type: travelerDetails.Type as TravelerType
+          });
+        }
+      }
+
+      setTravelers(fetchedTravelers);
+    } catch (error) {
+      console.error("Error fetching travelers: ", error);
+    }
+  };
+
+ // Fetch traveler details when the screen loads
+  useEffect(() => {
+    fetchTravelers();
+  }, []);
 
   //updates airport codes when airport objects are collected
   useEffect(() => {
@@ -81,7 +130,7 @@ export default function FlightSearchScreen() {
   }, [flexibleAirports])
 
   //stores user's current location
-   const [userLocation, setUserLocation] = useState<LatLng | undefined>(undefined);
+  const [userLocation, setUserLocation] = useState<LatLng | undefined>(undefined);
 
   //function for getting the user's location
   const getUserLocation = async () => {
@@ -117,7 +166,9 @@ export default function FlightSearchScreen() {
     departureTime: null,
     arrivalTime: null,
     duration: 0,
-    travelClass: null
+    travelClass: null,
+    flightNumber: null,
+    terminal: null,
   });
 
   const [multiCityLegs, setMultiCityLegs] = useState<FlightLeg[]>([
@@ -274,6 +325,33 @@ export default function FlightSearchScreen() {
     setErrors(newErrors);
     return isValid;
   };
+  
+  // Convert firebase traveler to API-compatible traveler
+  const extractAPIRelevantTravelerDetails = (traveler: TravelerProfile): Traveler => {
+    const TRAVELER_TYPE_MAP = {
+      "Adult": "ADULT",
+      "Child": "CHILD",
+      "Elderly": "SENIOR",
+    };
+    
+    if (!(traveler.type in TRAVELER_TYPE_MAP)) {
+      throw new Error("Invalid traveler type " + traveler.type + " for API query");
+    }
+
+    if (traveler.nationality && !(traveler.nationality in NATIONALITIES_TO_ISO)) {
+      throw new Error("Invalid nationality " + traveler.nationality + " for API query");
+    }
+    
+    const nationality = (traveler.nationality)
+      ? {nationality: NATIONALITIES_TO_ISO[traveler.nationality]}
+      : {};
+
+    return {
+      dateOfBirth: new Date(traveler.birthdate),
+      travelerType: TRAVELER_TYPE_MAP[traveler.type],
+      ...nationality
+    }
+  };
 
   const handleSearch = async () => {
     if (!validateForm()) {
@@ -294,6 +372,8 @@ export default function FlightSearchScreen() {
               date: departureDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
+              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);
           }
@@ -307,6 +387,8 @@ export default function FlightSearchScreen() {
               endDate: returnDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
+              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);
           }
@@ -320,6 +402,8 @@ export default function FlightSearchScreen() {
                 destinationAirportIATA: leg.to?.iata,
                 date: leg.date,
               })), 
+              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);
           }
@@ -389,7 +473,7 @@ export default function FlightSearchScreen() {
             location={userLocation}>
 
             </InteractiveMap>
-            <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight}width={300} height={50} onPress={() => {setFlexibleAirportsVisible(false);}}>Close</SkyboundButton>
+            <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight} width={300} height={50} onPress={() => {setFlexibleAirportsVisible(false);}}>Close</SkyboundButton>
             <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight} width={300} height={50} onPress={ async () =>  await getUserLocation()}>Use My location</SkyboundButton>
           </SkyboundItemHolder> 
         </View>

@@ -8,7 +8,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import SkyboundText from './SkyboundText';
 
 interface SkyboundNavBarProps extends NativeStackHeaderProps {
-    titleText?: string;
     showLogo?: boolean;
     useBackNavigation?: boolean;
     showNotifications?: boolean;
@@ -19,15 +18,14 @@ interface SkyboundNavBarProps extends NativeStackHeaderProps {
 
 type DrawerNavProps = DrawerNavigationProp<any>;
 
-// Accept all props so we can use utility functions like getHeaderTitle
 const SkyboundNavBar: React.FC<SkyboundNavBarProps> = ({
-    titleText = "Default Title (Make sure to update)",
     showLogo = false,
     useBackNavigation = false,
     showNotifications = true,
     showUserProfile = true,
     showFilter = false,
     showShare = false,
+    options,
 }) => { 
     const navigation = useNavigation<DrawerNavProps>();
     const {width, height} = Dimensions.get('window')
@@ -58,8 +56,8 @@ const SkyboundNavBar: React.FC<SkyboundNavBarProps> = ({
                         </SkyboundText>
                     </View>
                     : <View style={styles.title}>
-                        <SkyboundText variant='blue' accessabilityLabel={'Title: ' + titleText}>
-                           {titleText}
+                        <SkyboundText variant='blue' accessabilityLabel={'Title: ' + options.title}>
+                           {options.title}
                         </SkyboundText>
                     </View>
                 }
