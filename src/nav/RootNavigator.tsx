@@ -225,12 +225,27 @@ function GenerateAccountStack() {
   );
 }
 
+function GenerateNotificationStack() {
+  return (
+    <NotificationStack.Navigator
+      initialRouteName="Notifications"
+    >
+      <NotificationStack.Screen name="Notifications" component={NotificationsScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Notifications"})
+      } />
+    </NotificationStack.Navigator>
+  )
+}
+
 // Drawer contains "Flights" and "My Account" flows
 function GenerateDrawerRoot() {
   const colors = useColors();
   const isDark = colors.background !== "#FFFFFF";
   return (
-    <Drawer.Navigator screenOptions={{ headerShown: false,
+    <Drawer.Navigator screenOptions={{
+      headerShown: false,
+      swipeEnabled: false,
+
       drawerStyle: {
         backgroundColor: colors.card
       },
@@ -253,25 +268,15 @@ function GenerateDrawerRoot() {
         component={GenerateAccountStack}
         options={{ title: 'My Account' }}
       />
-      
+
       <Drawer.Screen
         name="Notifications"
         component={GenerateNotificationStack}
         options={{ title: 'Notifications' }}
       />
-      
+
     </Drawer.Navigator>
   );
-}
-
-function GenerateNotificationStack() {
-  return (
-    <NotificationStack.Navigator
-      initialRouteName="Notifications"
-    >
-      <NotificationStack.Screen name="Notifications" component={NotificationsScreen} />
-    </NotificationStack.Navigator>
-  )
 }
 
 // The overall navigation structure of the project
