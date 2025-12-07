@@ -86,7 +86,6 @@ export type AccountStackParamList = {
   Language: undefined;
   ManageSubscription: undefined;
   Payment: {
-    itinerary?: ItineraryPayload;
     selectedFlights?: any[];
     tripType?: string;
     fromCode?: string;
@@ -104,12 +103,6 @@ export type AccountStackParamList = {
 export type NotificationStackParamList = {
   Notifications: undefined;
 };
-
-export type RootStackParamList =
-  AuthSwitchNavigatorParamList &
-  FlightStackParamList &
-  AccountStackParamList &
-  NotificationStackParamList;
 
 
 

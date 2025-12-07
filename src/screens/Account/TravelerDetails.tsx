@@ -145,7 +145,7 @@ const TravelerDetails: React.FC = () => {
 
        {/* Return button */}
           <Pressable
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.navigate("Account")}
             style={({ pressed }) => [
               styles.returnButton,
               { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },

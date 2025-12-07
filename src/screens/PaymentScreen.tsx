@@ -4,22 +4,60 @@ import { Ionicons } from '@expo/vector-icons';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { ItineraryPayload } from '@src/screens/FlightResultsScreen';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
+import type { ItineraryPayload } from '@src/screens/FlightResultsScreen';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import React, { useEffect, useState } from 'react';
 import {
   Pressable,
   ScrollView,
   StyleSheet,
   View
 } from 'react-native';
+import { auth, db } from '../firebase';
 
 export default function PaymentScreen() {
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Payment'>>();
   const isDark = colors.background !== '#FFFFFF';
+
+  //use states for saving payment data
+  const [savedPaymentMethods, setSavedPaymentMethods] = useState([]);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string | null>(null);
+
+  //use Effect for fetching card data from firestore:
+  useEffect(() => {
+  async function loadMethods() {
+    if (!auth.currentUser) return;
+
+    const uid = auth.currentUser.uid;
+    const ref = collection(db, "Users", uid, "payments");
+    const snap = await getDocs(ref);
+
+    const methods = snap.docs.map((docSnap) => {
+      const data = docSnap.data();
+
+      return {
+        id: docSnap.id,
+        label: "Card", // <-- used in your UI badge
+        detail: `•••• ${data.lastFourDigits} · exp ${data.expirationDate}`,
+        cardholderName: data.cardholderName,
+        expiration: data.expirationDate,
+        lastFourDigits: data.lastFourDigits,
+      };
+    });
+
+    setSavedPaymentMethods(methods);
+
+    // auto-select primary method
+    const primary = snap.docs.find((d) => d.data().isPrimary);
+    if (primary) setSelectedPaymentId(primary.id);
+  }
+
+  loadMethods();
+}, []);
 
   const {
     itinerary,
@@ -43,11 +81,6 @@ export default function PaymentScreen() {
   const searchDetails = itinerary?.searchDetails ?? { tripType, fromCode, toCode, departureDate, returnDate };
 
   const [expandedFlightIndex, setExpandedFlightIndex] = useState<number | null>(null);
-  const savedPaymentMethods = [
-    { id: 'saved-card', label: 'Visa', detail: '•••• 4532 · Expires 08/27' },
-    { id: 'saved-card-2', label: 'Mastercard', detail: '•••• 0099 · Expires 03/28' },
-  ];
-  const [selectedPaymentId, setSelectedPaymentId] = useState<string>(savedPaymentMethods[0]?.id ?? 'saved-card');
 
   // Calculate pricing
   const basePriceFromFlights = flights.reduce((sum: number, f: any) => sum + (f?.price || 0), 0);
@@ -463,69 +496,6 @@ export default function PaymentScreen() {
                 style={{ color: colors.link, marginLeft: 8 }}
               >
                 Add New Card
-              </SkyboundText>
-            </Pressable>
-
-            {/* Apple Pay */}
-            <Pressable
-              onPress={() => setSelectedPaymentId('apple-pay')}
-              style={({ pressed }) => [
-                styles.altPaymentButton,
-                {
-                  backgroundColor: '#000',
-                  borderWidth: selectedPaymentId === 'apple-pay' ? 1 : 0,
-                  borderColor: selectedPaymentId === 'apple-pay' ? colors.link : 'transparent',
-                  opacity: pressed ? 0.9 : 1,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Pay with Apple Pay"
-          >
-            <Ionicons name="logo-apple" size={20} color="#FFF" />
-            <SkyboundText
-                variant="primaryButton"
-                size={16}
-                accessabilityLabel="Pay with Apple Pay"
-                style={{ color: 'white', marginLeft: 12 }}
-              >
-                Pay with Apple Pay
-              </SkyboundText>
-            </Pressable>
-
-            {/* Google Pay */}
-            <Pressable
-              onPress={() => setSelectedPaymentId('google-pay')}
-              style={({ pressed }) => [
-                styles.altPaymentButton,
-                {
-                  backgroundColor: colors.card,
-                  borderColor: colors.outline,
-                  borderWidth: 1,
-                  borderColor:
-                    selectedPaymentId === 'google-pay' ? colors.link : colors.outline,
-                  opacity: pressed ? 0.9 : 1,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Pay with Google Pay"
-            >
-              <View style={[styles.googleIcon, { backgroundColor: '#3B82F6' }]}>
-                <SkyboundText
-                  variant="primaryButton"
-                  size={12}
-                  accessabilityLabel="G"
-                  style={{ color: 'white', fontWeight: '700' }}
-                >
-                  G
-                </SkyboundText>
-              </View>
-              <SkyboundText
-                variant="primary"
-                size={16}
-                accessabilityLabel="Pay with Google Pay"
-                style={{ marginLeft: 12 }}
-              >
-                Pay with Google Pay
               </SkyboundText>
             </Pressable>
           </View>
