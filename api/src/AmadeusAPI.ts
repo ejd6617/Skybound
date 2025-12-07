@@ -36,13 +36,17 @@ interface AmadeusTravelerPricing {
 interface AmadeusSegment {
   id: number,
   duration: string,
+  carrierCode: string, // carrierCode + number = flight number
+  number: string,
   departure: {
     iataCode: string,
     at: string,
+    terminal: string,
   },
   arrival: {
     iataCode: string,
     at: string,
+    terminal: string,
   },
 
   includedCheckedBags?: {
@@ -66,13 +70,6 @@ export default class AmadeusAPI implements SkyboundAPI {
   private amadeus: typeof Amadeus | null = null;
   private baseFlightOfferParams = {
     sources: ["GDS"],
-    currencyCode: "USD",
-    travelers: [
-      {
-        id: "1",
-        travelerType: "ADULT"
-      }
-    ],
   };
    
   // Authenticate with AmadeusAPI upon creation of new object
@@ -127,6 +124,10 @@ export default class AmadeusAPI implements SkyboundAPI {
       try {
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
+          currencyCode: params.currencyCode,
+          travelers: params.travelers.map((traveler, index) => {
+            return { id: (index + 1).toString(), ...traveler }
+          }),
           originDestinations: [
             {
               id: "1",
@@ -182,6 +183,10 @@ export default class AmadeusAPI implements SkyboundAPI {
       try {
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
+          currencyCode: params.currencyCode,
+          travelers: params.travelers.map((traveler, index) => {
+            return { id: (index + 1).toString(), ...traveler }
+          }),
           originDestinations: [
             {
               id: "1",
@@ -226,6 +231,10 @@ export default class AmadeusAPI implements SkyboundAPI {
   async searchFlightsMultiCity(params: MultiCityQueryParams): Promise<Flight[]> {
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
       ...this.baseFlightOfferParams,
+      currencyCode: params.currencyCode,
+      travelers: params.travelers.map((traveler, index) => {
+        return { id: (index + 1).toString(), ...traveler }
+      }),
       originDestinations: params.legs.map((leg, index) => ({
         id: (index + 1).toString(),
         originLocationCode: leg.originAirportIATA,
@@ -314,6 +323,8 @@ export default class AmadeusAPI implements SkyboundAPI {
         airline: airline,
         freeBaggage: this.hasFreeBaggage(offer),
         outbound: this.parseItinerary(offer.itineraries[0], fareDetailsMap),
+        travelers: [],
+        currencyCode: "USD,"
       }
       : {
         price: parseFloat(offer.price.grandTotal),
@@ -321,6 +332,8 @@ export default class AmadeusAPI implements SkyboundAPI {
         freeBaggage: this.hasFreeBaggage(offer),
         outbound: this.parseItinerary(offer.itineraries[0], fareDetailsMap),
         return: this.parseItinerary(offer.itineraries[1], fareDetailsMap),
+        travelers: [],
+        currencyCode: "USD,"
       };
 
       return flight;
@@ -389,6 +402,8 @@ export default class AmadeusAPI implements SkyboundAPI {
         date: new Date(leg.departure.at),
         departureTime: new Date(leg.departure.at),
         arrivalTime: new Date(leg.arrival.at),
+        terminal: leg.departure.terminal,
+        flightNumber: leg.carrierCode + leg.number,
         ... currentSegmentFareDetails
       };
     });

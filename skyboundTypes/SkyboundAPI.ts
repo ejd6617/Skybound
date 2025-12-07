@@ -50,8 +50,8 @@ export interface FlightLeg {
   arrivalTime: Date,
   duration: number, // In minutes
   travelClass: TravelClass,
-  // terminal: string,
-  // flightNumber: string,
+  terminal: string,
+  flightNumber: string,
 }
 
 export interface Airline {
