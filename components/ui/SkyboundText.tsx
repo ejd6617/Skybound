@@ -22,6 +22,27 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
     size,
     accessabilityLabel,
 }) => {
+    const normalizeChild = React.useCallback((node: React.ReactNode): React.ReactNode => {
+        if (React.isValidElement(node) || typeof node === 'string' || typeof node === 'number') {
+            return node;
+        }
+        if (Array.isArray(node)) {
+            return node.map((item, idx) => <React.Fragment key={idx}>{normalizeChild(item)}</React.Fragment>);
+        }
+        if (node && typeof node === 'object') {
+            const travelLike = node as Record<string, any>;
+            const first = travelLike.firstName ?? travelLike.firstname ?? '';
+            const last = travelLike.lastName ?? travelLike.lastname ?? '';
+            if (first || last) {
+                return `${first}${first && last ? ' ' : ''}${last}`.trim();
+            }
+            return JSON.stringify(node);
+        }
+        return '';
+    }, []);
+
+    const normalizedChildren = React.useMemo(() => normalizeChild(children), [children, normalizeChild]);
+
     let variantStyle = basicStyles.skyboundTextPrimaryLight;
     const colorScheme = useColorScheme();
     
@@ -91,17 +112,17 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
     }
 
     return (
-        <Text style = {[
-            variantStyle,
-            size ? {fontSize: size} : null,
-            style,
-         ]} accessibilityLabel= {accessabilityLabel}
-         >
-            {children}
-         </Text>
-    )
+        <Text
+            style={[
+                variantStyle,
+                size ? { fontSize: size } : null,
+                style,
+            ]}
+            accessibilityLabel={accessabilityLabel}
+        >
+            {normalizedChildren}
+        </Text>
+    );
+};
 
-
-}
-
-export default SkyboundText
+export default SkyboundText;

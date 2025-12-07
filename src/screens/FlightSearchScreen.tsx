@@ -332,15 +332,21 @@ export default function FlightSearchScreen() {
       })();
 
       setIsLoading(false);
+      const normalizeDateValue = (value?: Date | string | null) => {
+        if (!value) return null;
+        if (typeof value === 'string') return value;
+        return value.toISOString();
+      };
+
       navigation.navigate('FlightResults', {
         searchResults: searchResults,
         tripType: tripType,
         fromCode: fromAirport?.iata,
         toCode: toAirport?.iata,
-        departureDate: departureDate,
-        returnDate: returnDate,
+        departureDate: normalizeDateValue(departureDate),
+        returnDate: normalizeDateValue(returnDate),
         legsCount: tripType === 'multi-city' ? multiCityLegs.length : (tripType === 'round-trip' ? 2 : 1),
-        legsDates: tripType === 'multi-city' ? multiCityLegs.map(l => l.date) : undefined,
+        legsDates: tripType === 'multi-city' ? multiCityLegs.map(l => normalizeDateValue(l.date)) : undefined,
       });
     } catch (err) {
       console.error('API call failed', err);

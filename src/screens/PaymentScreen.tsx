@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { RouteProp } from '@react-navigation/native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { ItineraryPayload } from '@src/screens/FlightResultsScreen';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useState } from 'react';
@@ -21,6 +22,7 @@ export default function PaymentScreen() {
   const isDark = colors.background !== '#FFFFFF';
 
   const {
+    itinerary,
     selectedFlights = [],
     tripType,
     fromCode,
@@ -28,6 +30,7 @@ export default function PaymentScreen() {
     departureDate,
     returnDate,
   } = (route.params as {
+    itinerary?: ItineraryPayload;
     selectedFlights?: any[];
     tripType?: string;
     fromCode?: string;
@@ -36,13 +39,19 @@ export default function PaymentScreen() {
     returnDate?: Date | string | null;
   }) || {};
 
+  const flights = itinerary?.flights ?? selectedFlights ?? [];
+  const searchDetails = itinerary?.searchDetails ?? { tripType, fromCode, toCode, departureDate, returnDate };
+
   const [expandedFlightIndex, setExpandedFlightIndex] = useState<number | null>(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    'saved-card' | 'apple-pay' | 'google-pay'
-  >('saved-card');
+  const savedPaymentMethods = [
+    { id: 'saved-card', label: 'Visa', detail: '•••• 4532 · Expires 08/27' },
+    { id: 'saved-card-2', label: 'Mastercard', detail: '•••• 0099 · Expires 03/28' },
+  ];
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string>(savedPaymentMethods[0]?.id ?? 'saved-card');
 
   // Calculate pricing
-  const basePrice = selectedFlights.reduce((sum: number, f: any) => sum + (f?.price || 0), 0) || 398;
+  const basePriceFromFlights = flights.reduce((sum: number, f: any) => sum + (f?.price || 0), 0);
+  const basePrice = basePriceFromFlights || 398;
   const taxesAndFees = Math.round(basePrice * 0.075);
   const totalPrice = basePrice + taxesAndFees;
 
@@ -57,8 +66,8 @@ export default function PaymentScreen() {
     const cabinClass = flight?.cabinClass || 'Main Basic';
     const departureTime = flight?.departureTime || '7:20 AM';
     const arrivalTime = flight?.arrivalTime || '1:05 PM';
-    const departureCode = flight?.departureCode || (isOutbound ? fromCode || 'CLE' : toCode || 'LAX');
-    const arrivalCode = flight?.arrivalCode || (isOutbound ? toCode || 'LAX' : fromCode || 'CLE');
+    const departureCode = flight?.departureCode || (isOutbound ? searchDetails?.fromCode || 'CLE' : searchDetails?.toCode || 'LAX');
+    const arrivalCode = flight?.arrivalCode || (isOutbound ? searchDetails?.toCode || 'LAX' : searchDetails?.fromCode || 'CLE');
     const duration = flight?.duration || '5h 45m';
     const stops = flight?.stops || '1 stop DFW';
     const price = flight?.price || basePrice;
@@ -274,8 +283,8 @@ export default function PaymentScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Flight Summary Section */}
-          {selectedFlights.length > 0 ? (
-            selectedFlights.map((flight: any, index: number) => renderFlightCard(flight, index))
+          {flights.length > 0 ? (
+            flights.map((flight: any, index: number) => renderFlightCard(flight, index))
           ) : (
             <View style={[styles.flightCard, { backgroundColor: colors.card }]}>
               <View style={styles.flightCardHeader}>
@@ -376,44 +385,45 @@ export default function PaymentScreen() {
 
           {/* Payment Method Section */}
           <View style={{ marginTop: 8 }}>
-            <SkyboundText
-              variant="primaryBold"
-              size={18}
-              accessabilityLabel="Payment Method Title"
-              style={{ marginBottom: 12 }}
-            >
-              Payment Method
-            </SkyboundText>
+          <SkyboundText
+            variant="primaryBold"
+            size={18}
+            accessabilityLabel="Payment Method Title"
+            style={{ marginBottom: 12 }}
+          >
+            Payment Method
+          </SkyboundText>
 
-            {/* Saved Card */}
+          {savedPaymentMethods.map((method) => (
             <Pressable
-              onPress={() => setSelectedPaymentMethod('saved-card')}
+              key={method.id}
+              onPress={() => setSelectedPaymentId(method.id)}
               style={({ pressed }) => [
                 styles.paymentOption,
                 {
                   backgroundColor: colors.card,
                   borderColor:
-                    selectedPaymentMethod === 'saved-card' ? colors.link : colors.outline,
+                    selectedPaymentId === method.id ? colors.link : colors.outline,
                   opacity: pressed ? 0.9 : 1,
                 },
               ]}
               accessibilityRole="button"
-              accessibilityLabel="Select saved card"
+              accessibilityLabel={`Select ${method.label}`}
             >
               <View style={styles.paymentOptionContent}>
                 <View style={[styles.visaLogo, { backgroundColor: colors.link }]}>
                   <SkyboundText
                     variant="primaryButton"
                     size={12}
-                    accessabilityLabel="Visa"
+                    accessabilityLabel={method.label}
                     style={{ color: 'white', fontWeight: '700' }}
                   >
-                    VISA
+                    {method.label.toUpperCase()}
                   </SkyboundText>
                 </View>
                 <View style={{ flex: 1 }}>
                   <SkyboundText variant="primary" size={14} accessabilityLabel="Card number">
-                    •••• 4532
+                    {method.detail.split('·')[0]}
                   </SkyboundText>
                   <SkyboundText
                     variant="secondary"
@@ -421,17 +431,20 @@ export default function PaymentScreen() {
                     accessabilityLabel="Expiration"
                     style={{ marginTop: 2, color: colors.icon }}
                   >
-                    Expires 08/27
+                    {method.detail.split('·')[1]?.trim() || ''}
                   </SkyboundText>
                 </View>
               </View>
-              <Ionicons name="chevron-forward" size={20} color={colors.icon} />
+              {selectedPaymentId === method.id && (
+                <Ionicons name="checkmark-circle" size={20} color={colors.link} />
+              )}
             </Pressable>
+          ))}
 
-            {/* Add New Card */}
-            <Pressable
-              onPress={() => navigation.navigate('PaymentMethod')}
-              style={({ pressed }) => [
+          {/* Add New Card */}
+          <Pressable
+            onPress={() => navigation.navigate('PaymentMethod')}
+            style={({ pressed }) => [
                 styles.addCardButton,
                 {
                   backgroundColor: colors.card,
@@ -439,11 +452,11 @@ export default function PaymentScreen() {
                   opacity: pressed ? 0.9 : 1,
                 },
               ]}
-              accessibilityRole="button"
-              accessibilityLabel="Add new card"
-            >
-              <Ionicons name="add" size={16} color={colors.link} />
-              <SkyboundText
+            accessibilityRole="button"
+            accessibilityLabel="Add new card"
+          >
+            <Ionicons name="add" size={16} color={colors.link} />
+            <SkyboundText
                 variant="primary"
                 size={14}
                 accessabilityLabel="Add New Card"
@@ -455,19 +468,21 @@ export default function PaymentScreen() {
 
             {/* Apple Pay */}
             <Pressable
-              onPress={() => setSelectedPaymentMethod('apple-pay')}
+              onPress={() => setSelectedPaymentId('apple-pay')}
               style={({ pressed }) => [
                 styles.altPaymentButton,
                 {
                   backgroundColor: '#000',
+                  borderWidth: selectedPaymentId === 'apple-pay' ? 1 : 0,
+                  borderColor: selectedPaymentId === 'apple-pay' ? colors.link : 'transparent',
                   opacity: pressed ? 0.9 : 1,
                 },
               ]}
               accessibilityRole="button"
               accessibilityLabel="Pay with Apple Pay"
-            >
-              <Ionicons name="logo-apple" size={20} color="#FFF" />
-              <SkyboundText
+          >
+            <Ionicons name="logo-apple" size={20} color="#FFF" />
+            <SkyboundText
                 variant="primaryButton"
                 size={16}
                 accessabilityLabel="Pay with Apple Pay"
@@ -479,13 +494,15 @@ export default function PaymentScreen() {
 
             {/* Google Pay */}
             <Pressable
-              onPress={() => setSelectedPaymentMethod('google-pay')}
+              onPress={() => setSelectedPaymentId('google-pay')}
               style={({ pressed }) => [
                 styles.altPaymentButton,
                 {
                   backgroundColor: colors.card,
                   borderColor: colors.outline,
                   borderWidth: 1,
+                  borderColor:
+                    selectedPaymentId === 'google-pay' ? colors.link : colors.outline,
                   opacity: pressed ? 0.9 : 1,
                 },
               ]}
@@ -575,8 +592,11 @@ export default function PaymentScreen() {
             onPress={() =>
               navigation.navigate('FlightConfirmation', {
                 itinerary: {
-                  flights: selectedFlights,
-                  total: totalPrice,
+                  ...(itinerary || { flights }),
+                  flights,
+                  traveler: itinerary?.traveler,
+                  paymentMethodId: selectedPaymentId,
+                  totalPrice,
                 },
               })
             }

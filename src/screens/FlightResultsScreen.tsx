@@ -7,7 +7,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getURL, reviveDates } from "@src/api/SkyboundUtils";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -20,6 +20,24 @@ import {
   View
 } from "react-native";
 
+export interface SearchDetails {
+  tripType?: 'one-way' | 'round-trip' | 'multi-city';
+  fromCode?: string;
+  toCode?: string;
+  departureDate?: Date | string | null;
+  returnDate?: Date | string | null;
+  legsCount?: number;
+  legsDates?: (Date | string | null)[];
+}
+
+export interface ItineraryPayload {
+  flights: UIFlight[];
+  searchDetails?: SearchDetails;
+  traveler?: any | null;
+  paymentMethodId?: string | null;
+  totalPrice?: number;
+}
+
 const bgWithAlpha = (hex: string, a: number) => {
   const raw = hex.replace('#', '');
   const expand = raw.length === 3
@@ -31,7 +49,7 @@ const bgWithAlpha = (hex: string, a: number) => {
   return `rgba(${r},${g},${b},${a})`;
 };
 
-interface UIFlight {
+export interface UIFlight {
   id: string;
   airline: string;
   airlineCode: string;
@@ -46,6 +64,7 @@ interface UIFlight {
   duration: string;
   stops: string;
   hasBaggage?: boolean;
+  legs?: FlightLeg[];
 }
 
 // output example: 8:30 AM
@@ -66,10 +85,10 @@ function formatDuration(duration: number): string {
 
 // output example: 1 stop ATL
 function formatStops(legs: FlightLeg[]): string {
-  const numStops: number = legs.length;
-  return (numStops == 0) ? 'Nonstop'
-  : (numStops == 1) ? `${numStops} stop ${legs[0].from.iata}`
-  : `${numStops} stops`;
+  const stopCount = Math.max(legs.length - 1, 0);
+  if (stopCount === 0) return 'Non-stop';
+  if (stopCount === 1) return `${stopCount} stop ${legs[0]?.to.iata ?? ''}`.trim();
+  return `${stopCount} stops`;
 }
 
 // convert api flights to local flight datatype
@@ -100,6 +119,7 @@ function toUIFlights(data: Flight[]): UIFlight[] {
       duration: formatDuration(totalDuration),
       stops: formatStops(flight.outbound),
       hasBaggage: flight.freeBaggage,
+      legs: flight.outbound,
     };
   });
   
@@ -177,7 +197,16 @@ const MOCK_FLIGHTS: UIFlight[] = [
 
 export default function FlightResultsScreen() {
   const route = useRoute();
-  const {searchResults} = route.params;
+  const {
+    searchResults,
+    tripType,
+    fromCode,
+    toCode,
+    departureDate,
+    returnDate,
+    legsCount,
+    legsDates,
+  } = route.params as SearchDetails & { searchResults: Flight[] };
   
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -188,6 +217,7 @@ export default function FlightResultsScreen() {
   const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const canLoadMore = visibleCount < flights.length;
+  const [activeFlightId, setActiveFlightId] = useState<string | null>(null);
   
   // Filter states
   const [maxStops, setMaxStops] = useState(2);
@@ -238,6 +268,12 @@ export default function FlightResultsScreen() {
 
     return `${start} - ${end}`;
   }
+
+  const normalizeDateValue = (value?: Date | string | null) => {
+    if (!value) return null;
+    if (typeof value === 'string') return value;
+    return value.toISOString();
+  };
   
   
   const generateFlightOverview = () => {
@@ -285,13 +321,56 @@ export default function FlightResultsScreen() {
 
   const FlightCard = ({ flight }: { flight: UIFlight }) => {
     const badge = getCategoryBadge(flight.category);
+    const slideAnim = React.useRef(new Animated.Value(0)).current;
+    const isActive = activeFlightId === flight.id;
 
-    console.log(`${getURL()}/logos/${flight.airlineCode}.png`);
-    
+    useEffect(() => {
+      Animated.timing(slideAnim, {
+        toValue: isActive ? 1 : 0,
+        duration: 220,
+        easing: isActive ? Easing.out(Easing.cubic) : Easing.in(Easing.quad),
+        useNativeDriver: false,
+      }).start();
+    }, [isActive, slideAnim]);
+
+    const slideStyles = useMemo(() => ({
+      opacity: slideAnim,
+      transform: [
+        {
+          translateY: slideAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [-10, 0],
+          }),
+        },
+      ],
+      height: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 60] }),
+      marginTop: slideAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 12] }),
+    }), [slideAnim]);
+
+    const handlePressCard = () => {
+      setActiveFlightId(prev => prev === flight.id ? null : flight.id);
+    };
+
+    const handleChooseFlight = () => {
+      const itinerary: ItineraryPayload = {
+        flights: [flight],
+        searchDetails: {
+          tripType,
+          fromCode: fromCode ?? flight.departureCode,
+          toCode: toCode ?? flight.arrivalCode,
+          departureDate: normalizeDateValue(departureDate),
+          returnDate: normalizeDateValue(returnDate),
+          legsCount,
+          legsDates: legsDates?.map(normalizeDateValue),
+        },
+      };
+      navigation.navigate('FlightSummary', { itinerary });
+    };
+
     return (
-      <Pressable 
+      <Pressable
         style={[styles.flightCard, { backgroundColor: colors.card }]}
-        onPress={() => navigation.navigate('ComponentTest')}
+        onPress={handlePressCard}
       >
         {badge && (
           <View style={[styles.categoryBadge, { backgroundColor: badge.color }]}>
@@ -362,10 +441,21 @@ export default function FlightResultsScreen() {
                 {flight.arrivalTime}
               </SkyboundText>
               <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.arrivalCode}>
-                {flight.arrivalCode}
+              {flight.arrivalCode}
               </SkyboundText>
             </View>
           </View>
+
+          <Animated.View style={[styles.chooseFlightContainer, slideStyles]}>
+            <Pressable
+              style={[styles.chooseFlightButton, { backgroundColor: colors.link }]}
+              onPress={handleChooseFlight}
+            >
+              <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFFFFF' }}>
+                Choose flight
+              </SkyboundText>
+            </Pressable>
+          </Animated.View>
 
           {flight.hasBaggage && (
             <View style={styles.baggageBanner}>
@@ -600,7 +690,24 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 1,
   },
-  
+
+  chooseFlightContainer: {
+    overflow: 'hidden',
+    width: '100%',
+    justifyContent: 'center',
+  },
+  chooseFlightButton: {
+    width: '100%',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
   baggageBanner: {
     flexDirection: 'row',
     alignItems: 'center',
