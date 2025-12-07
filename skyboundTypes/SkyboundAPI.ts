@@ -1,7 +1,8 @@
 export interface Params {};
 
 export interface FlightDealsParams extends Params {
-  originAirportIATA: string,
+  originAirports: string[],
+  destinationAirports: string[],
 }
 
 export interface OneWayQueryParams extends Params {

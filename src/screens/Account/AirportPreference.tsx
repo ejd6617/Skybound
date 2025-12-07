@@ -1,114 +1,160 @@
 import { Ionicons } from '@expo/vector-icons';
-import React, { useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  StyleSheet,
+  TextInput,
+  View
+} from 'react-native';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
 import SkyboundScreen from '@components/ui/SkyboundScreen';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
-
-import airportInfo from '../../../assets/airports.json';
-
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { useEffect } from "react";
 import { auth, db } from "../../firebase";
 
+// Ensure this path is correct based on your project structure
+import airportInfoData from '@assets/airports.json';
 
+// --- Types ---
+
+// The structure of the raw JSON data
+interface AirportData {
+  iata: string;
+  city: string;
+  name: string;
+  country: string;
+}
+
+// The structure used in your preferences
 interface AirportChip {
   code: string;
   city: string;
 }
 
+// Cast the import to the correct type
+const airportInfo = airportInfoData as AirportData[];
+
 const AirportPreference: React.FC = () => {
   const colors = useColors();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  // --- State ---
   const [departures, setDepartures] = useState<AirportChip[]>([]);
   const [arrivals, setArrivals] = useState<AirportChip[]>([]);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  
+  // Modal State
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [activeList, setActiveList] = useState<'departures' | 'arrivals' | null>(null);
+
+  // --- Firebase Loading Logic (Preserved) ---
+  useEffect(() => {
+    async function loadPrefs() {
+      if (!auth.currentUser) return;
+      const uid = auth.currentUser.uid;
+      const docRef = doc(db, "Users", uid, "airportPreferences", "prefs");
+      const snapshot = await getDoc(docRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        setDepartures(data.departures || []);
+        setArrivals(data.arrivals || []);
+      }
+    }
+    loadPrefs();
+  }, []);
+
+  // --- Firebase Saving Logic (Preserved) ---
+  useEffect(() => {
+    async function savePrefs() {
+      if (!auth.currentUser) return;
+      const uid = auth.currentUser.uid;
+      const docRef = doc(db, "Users", uid, "airportPreferences", "prefs");
+      try {
+        await setDoc(docRef, {
+          departures,
+          arrivals,
+          updatedAt: new Date(),
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    if (departures.length > 0 || arrivals.length > 0) {
+      savePrefs();
+    }
+  }, [departures, arrivals]);
+
+  // --- Actions ---
 
   const removeChip = (list: AirportChip[], setter: (chips: AirportChip[]) => void, code: string) => {
     setter(list.filter((chip) => chip.code !== code));
   };
 
-  //use effect to load user preferences on screen mount
-  useEffect(() => {
-  async function loadPrefs() {
-    if (!auth.currentUser) return;
-
-    const uid = auth.currentUser.uid;
-    const docRef = doc(db, "Users", uid, "airportPreferences", "prefs");
-
-    const snapshot = await getDoc(docRef);
-
-    if (snapshot.exists()) {
-      const data = snapshot.data();
-
-      setDepartures(data.departures || []);
-      setArrivals(data.arrivals || []);
-    }
-  }
-
-  loadPrefs();
-  }, []);
-
-  //use effect to update the screen whenever departure or arrival airports change
-  useEffect(() => {
-  async function savePrefs() {
-    if (!auth.currentUser) return;
-
-    const uid = auth.currentUser.uid;
-
-    const docRef = doc(db, "Users", uid, "airportPreferences", "prefs");
-    try {
-    await setDoc(docRef, {
-      departures,
-      arrivals,
-      updatedAt: new Date(),
-    });
-    }
-    catch (error)
-    {
-      console.log(error);
-    }
-  }
-
-  // avoid writing on first load
-  if (departures.length > 0 || arrivals.length > 0) {
-    savePrefs();
-  }
-  }, [departures, arrivals]);
-
-
-
-  const addChip = (setter: (chips: AirportChip[]) => void) => {
-    if (Alert.prompt) {
-      Alert.prompt('Add airport', 'Enter IATA code (e.g., BOS)', (text) => {
-        if (!text) return;
-
-        const result = airportInfo.find(item => item.iata === text);
-
-        if(result)
-        {
-          setter((prev) => [...prev, { code: result.iata, city: result.city }]);
-
-        }
-        else
-        {
-            Alert.alert("ERROR: Airport code does not match an existing airport in our database.");
-        }
-
-       
-      });
-    } else {
-      Alert.alert('Airport picker coming soon', 'We’ll let you search all airports in a future update.');
-    }
+  const openSearchModal = (type: 'departures' | 'arrivals') => {
+    setActiveList(type);
+    setSearchText('');
+    setIsModalVisible(true);
   };
+
+  const handleSelectAirport = (airport: AirportData) => {
+    if (!activeList) return;
+
+    const newChip: AirportChip = { code: airport.iata, city: airport.city || airport.name };
+
+    if (activeList === 'departures') {
+      // Prevent duplicates
+      if (!departures.find(d => d.code === newChip.code)) {
+        setDepartures(prev => [...prev, newChip]);
+      } else {
+        Alert.alert("Already added", `${newChip.code} is already in your list.`);
+      }
+    } else {
+      // Prevent duplicates
+      if (!arrivals.find(a => a.code === newChip.code)) {
+        setArrivals(prev => [...prev, newChip]);
+      } else {
+        Alert.alert("Already added", `${newChip.code} is already in your list.`);
+      }
+    }
+
+    setIsModalVisible(false);
+  };
+
+  // --- Computed Data ---
+  
+  // Filter airports based on search text. 
+  // Memoized to prevent heavy calculation on every render.
+  const filteredAirports = useMemo(() => {
+    if (!searchText) return [];
+    
+    const lowerText = searchText.toLowerCase();
+    
+    return airportInfo.filter(item => 
+      item.iata.toLowerCase().includes(lowerText) ||
+      (item.city && item.city.toLowerCase().includes(lowerText)) ||
+      (item.name && item.name.toLowerCase().includes(lowerText))
+    ).slice(0, 50); // Limit to 50 results for performance
+  }, [searchText]);
+
+  // --- Sub-Components ---
 
   const renderSection = (
     title: string,
     chips: AirportChip[],
     setter: (chips: AirportChip[]) => void,
+    type: 'departures' | 'arrivals',
     ctaLabel: string
   ) => (
     <SkyboundCard key={title}>
@@ -132,7 +178,7 @@ const AirportPreference: React.FC = () => {
       </View>
       <Pressable
         accessibilityRole="button"
-        onPress={() => addChip(setter)}
+        onPress={() => openSearchModal(type)}
         style={({ pressed }) => [styles.addRow, pressed && { opacity: 0.8 }]}
       >
         <Ionicons name="add-circle" size={20} color={colors.link} />
@@ -149,30 +195,101 @@ const AirportPreference: React.FC = () => {
       subtitle="Set your favorite departure and arrival airports for smarter deal alerts."
       showLogo
     >
-      {renderSection('Preferred Departure Airports', departures, setDepartures, 'Add Departure Airport')}
-      {renderSection('Preferred Arrival Airports', arrivals, setArrivals, 'Add Arrival Airport')}
+      {renderSection('Preferred Departure Airports', departures, setDepartures, 'departures', 'Add Departure Airport')}
+      {renderSection('Preferred Arrival Airports', arrivals, setArrivals, 'arrivals', 'Add Arrival Airport')}
+      
       <SkyboundCard muted elevate={false}>
         <SkyboundText variant="secondary" size={13} accessabilityLabel="Preference description">
           We use these airports to send personalized deal notifications on the dashboard and in your inbox. Adjust them anytime.
         </SkyboundText>
       </SkyboundCard>
-       {/* Return button */}
-          <Pressable
-            onPress={() => navigation.navigate("Account")}
-            style={({ pressed }) => [
-              styles.returnButton,
-              { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },
-            ]}
+
+      {/* Return button */}
+      <Pressable
+        onPress={() => navigation.navigate("Account")}
+        style={({ pressed }) => [
+          styles.returnButton,
+          { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },
+        ]}
+      >
+        <SkyboundText
+          variant="primary"
+          size={16}
+          accessabilityLabel="Return to manage subscription"
+          style={{ color: "white" }}
+        >
+          Back
+        </SkyboundText>
+      </Pressable>
+
+      {/* --- Search Modal --- */}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet" // Looks great on iOS
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
           >
-            <SkyboundText
-              variant="primary"
-              size={16}
-              accessabilityLabel="Return to manage subscription"
-              style={{ color: "white" }}
-            >
-              Back
-            </SkyboundText>
-            </Pressable>
+            <View style={styles.modalHeader}>
+              <SkyboundText variant="primaryBold" size={20}>
+                Select Airport
+              </SkyboundText>
+              <Pressable onPress={() => setIsModalVisible(false)} style={styles.closeButton}>
+                <Ionicons name="close-circle" size={28} color="#6B7280" />
+              </Pressable>
+            </View>
+
+            <View style={styles.searchContainer}>
+              <Ionicons name="search" size={20} color="#9CA3AF" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by city or code (e.g. NYC, LHR)"
+                value={searchText}
+                onChangeText={setSearchText}
+                autoCorrect={false}
+                autoFocus={true}
+                clearButtonMode="while-editing"
+              />
+            </View>
+
+            <FlatList
+              data={filteredAirports}
+              keyExtractor={(item) => item.iata}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 40 }}
+              renderItem={({ item }) => (
+                <Pressable 
+                  style={({pressed}) => [styles.resultItem, pressed && styles.resultItemPressed]} 
+                  onPress={() => handleSelectAirport(item)}
+                >
+                  <View style={styles.codeBadge}>
+                    <SkyboundText variant="primaryBold" size={14}>{item.iata}</SkyboundText>
+                  </View>
+                  <View style={styles.resultText}>
+                     <SkyboundText variant="primary" size={16}>{item.city || item.name}</SkyboundText>
+                     <SkyboundText variant="secondary" size={12}>{item.country}</SkyboundText>
+                  </View>
+                </Pressable>
+              )}
+              ListEmptyComponent={
+                searchText.length > 0 ? (
+                  <View style={styles.emptyState}>
+                    <SkyboundText variant="secondary" size={14}>No airports found.</SkyboundText>
+                  </View>
+                ) : (
+                  <View style={styles.emptyState}>
+                     <SkyboundText variant="secondary" size={14}>Type to search airports...</SkyboundText>
+                  </View>
+                )
+              }
+            />
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
 
     </SkyboundScreen>
   );
@@ -201,12 +318,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-
-   returnButton: {
+  returnButton: {
     padding: 14,
     borderRadius: 12,
     alignItems: "center",
     backgroundColor: "#6B7280",
+    marginTop: 20, 
+  },
+  // --- Modal Styles ---
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  closeButton: {
+    padding: 4,
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    margin: 16,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8, // slight adjustment for TextInput height
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#111827',
+    height: 40, 
+  },
+  resultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  resultItemPressed: {
+    backgroundColor: '#F9FAFB',
+  },
+  codeBadge: {
+    backgroundColor: '#E5E7EB',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    marginRight: 12,
+    minWidth: 50,
+    alignItems: 'center',
+  },
+  resultText: {
+    flex: 1,
+  },
+  emptyState: {
+    padding: 32,
+    alignItems: 'center',
   },
 });
 

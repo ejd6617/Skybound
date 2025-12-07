@@ -12,6 +12,8 @@ import SkyboundItemHolder from "@components/ui/SkyboundItemHolder";
 import SkyboundText from "@components/ui/SkyboundText";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { reviveDates, skyboundRequest } from "@src/api/SkyboundUtils";
+import { auth, db } from "@src/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function DashboardScreen() {
   const nav = useNavigation<any>();
@@ -22,25 +24,70 @@ export default function DashboardScreen() {
   const [focusedFlight, setFocusedFlight] = useState(null); //keeping track which flash deal is in focus
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 70 }).current;
 
+  interface AirportChip {
+    code: string;
+    city: string;
+  }
+
+  const [departures, setDepartures] = useState<AirportChip[]>([]);
+  const [arrivals, setArrivals] = useState<AirportChip[]>([]);
+
+  useEffect(() => {
+    async function loadPrefs() {
+      if (!auth.currentUser) return;
+
+      const uid = auth.currentUser.uid;
+      const docRef = doc(db, "Users", uid, "airportPreferences", "prefs");
+
+      const snapshot = await getDoc(docRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+
+        setDepartures(data.departures || []);
+        setArrivals(data.arrivals || []);
+      }
+    }
+
+    loadPrefs();
+  }, []);
 
   const fetchData = (async () => {
-    const params: OneWayQueryParams = {
-      originAirportIATA: 'JFK',
-      destinationAirportIATA: 'LAX',
-      flexibleAirports: ['BUF', 'PIT', 'CLE'],
-      flexibleDates: false,
-      date: new Date('2026-02-10'),
-      travelers: [
-        {
-          dateOfBirth: new Date("2000-01-03"),
-          travelerType: "ADULT",
-        }
-      ],
-      currencyCode: "USD"
-    };
-    const responseData = await skyboundRequest("searchFlightsOneWay", params);
-    const revivedData = reviveDates(responseData);
-    setData(revivedData);
+    if (!arrivals) { return; }
+    if (!departures) { return; }
+
+    try {
+      const randomAirport = (arrivals.length > 0)
+        ? (arrivals[Math.floor(Math.random() * arrivals.length)]).code
+        : "BUF"
+
+      const destAirports = (departures.length > 0)
+        ? departures.map((departure) => {return departure.code})
+        : ["LAX", "JFK", "CLE"];
+
+      // Date 20 days from now
+      const futureDate = new Date(Date.now() + 20 * 24 * 60 * 60 * 1000);
+
+      const params: OneWayQueryParams = {
+        originAirportIATA: 'JFK',
+        destinationAirportIATA: randomAirport,
+        flexibleAirports: destAirports,
+        flexibleDates: true,
+        date: futureDate,
+        travelers: [
+          {
+            dateOfBirth: new Date("2000-01-03"),
+            travelerType: "ADULT",
+          }
+        ],
+        currencyCode: "USD"
+      };
+      const responseData = await skyboundRequest("searchFlightsOneWay", params);
+      const revivedData = reviveDates(responseData);
+      setData(revivedData);
+    } catch (error) {
+      console.error("Error fetching data for dashboard", error);
+    }
   });
 
   useEffect(() => {
