@@ -30,6 +30,13 @@ export default function DashboardScreen() {
       flexibleAirports: ['BUF', 'PIT', 'CLE'],
       flexibleDates: false,
       date: new Date('2026-02-10'),
+      travelers: [
+        {
+          dateOfBirth: new Date("2000-01-03"),
+          travelerType: "ADULT",
+        }
+      ],
+      currencyCode: "USD"
     };
     const responseData = await skyboundRequest("searchFlightsOneWay", params);
     const revivedData = reviveDates(responseData);

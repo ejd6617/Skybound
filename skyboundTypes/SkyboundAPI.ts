@@ -71,7 +71,7 @@ export type TravelerType = "ADULT" | "CHILD" | "SENIOR" | "YOUNG" | "STUDENT";
 export interface Traveler {
   travelerType: TravelerType,
   dateOfBirth: Date, 
-  nationality: string, // 2 letter country code
+  nationality?: string, // 2 letter country code
 }
 
 // Represents a full flight ticket, may be round trip
