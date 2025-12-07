@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
+import type { ItineraryPayload } from "@src/screens/FlightResultsScreen";
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import {
@@ -39,29 +40,14 @@ export default function ConfirmationScreen() {
 
   const route = useRoute();
 
-  const {
-    selectedFlights = [],
-    tripType,
-    fromCode,
-    toCode,
-    departureDate,
-    returnDate,
-    legsCount,
-    legsDates,
-  } = (route.params as {
-    selectedFlights?: UIFlight[];
-    tripType?: "one-way" | "round-trip" | "multi-city";
-    fromCode?: string;
-    toCode?: string;
-    departureDate?: Date | string | null;
-    returnDate?: Date | string | null;
-    legsCount?: number;
-    legsDates?: (Date | string | null)[];
-  }) || {};
+  const { itinerary } = (route.params as { itinerary?: ItineraryPayload }) || {};
 
-  const flightsArray: UIFlight[] = Array.isArray(selectedFlights)
-    ? selectedFlights
+  const flightsArray: UIFlight[] = Array.isArray(itinerary?.flights)
+    ? itinerary?.flights || []
     : [];
+  const tripType = itinerary?.searchDetails?.tripType ?? "one-way";
+  const traveler = itinerary?.traveler;
+  const paymentMethodId = itinerary?.paymentMethodId;
 
   const outboundFlight = flightsArray[0];
   const returnFlight =
@@ -69,7 +55,7 @@ export default function ConfirmationScreen() {
       ? flightsArray[1]
       : undefined;
 
-  const totalPrice = flightsArray.reduce(
+  const totalPrice = itinerary?.totalPrice ?? flightsArray.reduce(
     (sum, f) => sum + (f?.price || 0),
     0
   );
@@ -252,7 +238,18 @@ export default function ConfirmationScreen() {
                 You will receive your flight ticket by email
               </SkyboundText>
             </View>
-          </View>
+
+          {traveler && (
+            <SkyboundText variant="secondary" size={14} style={{ marginTop: 8 }}>
+              Traveler: {traveler.firstName} {traveler.lastName}
+            </SkyboundText>
+          )}
+          {paymentMethodId && (
+            <SkyboundText variant="secondary" size={14} style={{ marginTop: 4 }}>
+              Payment method: {paymentMethodId}
+            </SkyboundText>
+          )}
+        </View>
         </View>
 
         {/* Add to Wallet */}

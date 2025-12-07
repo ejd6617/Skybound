@@ -41,6 +41,7 @@ import SignupScreen from "@src/screens/SignupScreen";
 
 // Login listener
 import SkyboundNavBar from "@/components/ui/SkyboundNavBar";
+import { useColors } from "@/constants/theme";
 import { Flight } from "@/skyboundTypes/SkyboundAPI";
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import type { TravelerProfile } from '@src/types/travelers';
@@ -111,6 +112,7 @@ const FlightStack = createNativeStackNavigator<FlightStackParamList>();
 const AccountStack = createNativeStackNavigator<AccountStackParamList>();
 const NotificationStack = createNativeStackNavigator<NotificationStackParamList>();
 const NavContainer = NavigationContainer as unknown as React.ComponentType<React.PropsWithChildren<{}>>;
+
 
 function GenerateSkyboundHeaderOptions(customHeaderProps = {}) {
   return {
@@ -223,10 +225,38 @@ function GenerateAccountStack() {
   );
 }
 
+function GenerateNotificationStack() {
+  return (
+    <NotificationStack.Navigator
+      initialRouteName="Notifications"
+    >
+      <NotificationStack.Screen name="Notifications" component={NotificationsScreen} options={
+        GenerateSkyboundHeaderOptions({titleText: "Notifications"})
+      } />
+    </NotificationStack.Navigator>
+  )
+}
+
 // Drawer contains "Flights" and "My Account" flows
 function GenerateDrawerRoot() {
+  const colors = useColors();
+  const isDark = colors.background !== "#FFFFFF";
   return (
-    <Drawer.Navigator screenOptions={{ headerShown: false }}>
+    <Drawer.Navigator screenOptions={{
+      headerShown: false,
+      swipeEnabled: false,
+
+      drawerStyle: {
+        backgroundColor: colors.card
+      },
+
+      drawerLabelStyle: {
+        fontFamily: 'Regular',
+        fontSize: 15,
+        color: '#0071E2',
+        marginLeft: -4,
+      },
+    }}>
       <Drawer.Screen
         name="Flights"
         component={GenerateFlightStack}
@@ -238,25 +268,15 @@ function GenerateDrawerRoot() {
         component={GenerateAccountStack}
         options={{ title: 'My Account' }}
       />
-      
+
       <Drawer.Screen
         name="Notifications"
         component={GenerateNotificationStack}
         options={{ title: 'Notifications' }}
       />
-      
+
     </Drawer.Navigator>
   );
-}
-
-function GenerateNotificationStack() {
-  return (
-    <NotificationStack.Navigator
-      initialRouteName="Notifications"
-    >
-      <NotificationStack.Screen name="Notifications" component={NotificationsScreen} />
-    </NotificationStack.Navigator>
-  )
 }
 
 // The overall navigation structure of the project

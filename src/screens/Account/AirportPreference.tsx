@@ -9,6 +9,8 @@ import { useColors } from '@constants/theme';
 
 import airportInfo from '../../../assets/airports.json';
 
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useEffect } from "react";
 import { auth, db } from "../../firebase";
@@ -23,6 +25,7 @@ const AirportPreference: React.FC = () => {
   const colors = useColors();
   const [departures, setDepartures] = useState<AirportChip[]>([]);
   const [arrivals, setArrivals] = useState<AirportChip[]>([]);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const removeChip = (list: AirportChip[], setter: (chips: AirportChip[]) => void, code: string) => {
     setter(list.filter((chip) => chip.code !== code));
@@ -153,6 +156,24 @@ const AirportPreference: React.FC = () => {
           We use these airports to send personalized deal notifications on the dashboard and in your inbox. Adjust them anytime.
         </SkyboundText>
       </SkyboundCard>
+       {/* Return button */}
+          <Pressable
+            onPress={() => navigation.navigate("Account")}
+            style={({ pressed }) => [
+              styles.returnButton,
+              { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },
+            ]}
+          >
+            <SkyboundText
+              variant="primary"
+              size={16}
+              accessabilityLabel="Return to manage subscription"
+              style={{ color: "white" }}
+            >
+              Back
+            </SkyboundText>
+            </Pressable>
+
     </SkyboundScreen>
   );
 };
@@ -179,6 +200,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+  },
+
+   returnButton: {
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    backgroundColor: "#6B7280",
   },
 });
 

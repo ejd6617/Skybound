@@ -590,31 +590,23 @@ useEffect(() => {
               </View>
             )}
 
-            {/* Billing History Link */}
-            {paymentMethods?.length > 0 && (
-              <Pressable
-                onPress={() => {}}
-                style={({ pressed }) => [
-                  styles.billingHistoryButton,
-                  { opacity: pressed ? 0.7 : 1 },
-                ]}
-                accessibilityRole="button"
-                accessibilityLabel="View Billing History"
-              >
-                <SkyboundText
-                  variant="blue"
-                  size={14}
-                  accessabilityLabel="Billing History Link"
-                >
-                  View Billing History
-                </SkyboundText>
-                <Ionicons
-                  name="chevron-forward"
-                  size={16}
-                  color={colors.link}
-                />
-              </Pressable>
-            )}
+            {/* Return button */}
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [
+              styles.returnButton,
+              { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },
+            ]}
+          >
+            <SkyboundText
+              variant="primary"
+              size={16}
+              accessabilityLabel="Return to manage subscription"
+              style={{ color: "white" }}
+            >
+              Back
+            </SkyboundText>
+            </Pressable>
 
             {/* Skybound Logo at bottom */}
             <View style={styles.logoContainer}>
@@ -1131,5 +1123,11 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
+  },
+  returnButton: {
+    marginTop: 20,
+    padding: 14,
+    borderRadius: 12,
+    alignItems: "center",
   },
 });
