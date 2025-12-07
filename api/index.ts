@@ -5,21 +5,30 @@ import exposeServer from '@/ngrok';
 import SkyboundAPI, { FlightDealsParams, MultiCityQueryParams, OneWayQueryParams, RoundTripQueryParams } from "@skyboundTypes/SkyboundAPI";
 import express, { Response } from 'express';
 import admin from "firebase-admin";
-
+import * as fs from 'fs';
+import * as http from 'http';
+import * as https from 'https';
 const app = express();
-const PORT = Number(process.env.PORT) || 4000;
+
+const HTTP_PORT = Number(process.env.HTTP_PORT) || 80;
+const HTTPS_PORT = Number(process.env.HTTPS_PORT) || 443;
+const API_PORT = Number(process.env.PORT) || HTTP_PORT;
 const api: SkyboundAPI = new AmadeusAPI();
+
+const USE_HTTPS = process.env.USE_HTTPS === 'true';
+const DOMAIN = 'skybound-api.xyz';
+
+const privateKeyPath = `/etc/letsencrypt/live/${DOMAIN}/privkey.pem`;
+const fullChainPath = `/etc/letsencrypt/live/${DOMAIN}/fullchain.pem`;
 
 admin.initializeApp(getAdminCredential());
 app.use(express.json());
 
-// Logos are publicly accessible
 app.use('/api/logos', express.static('./logos'));
 
-// Expose the local dev server with NGROK (if USE_NGROK=true)
 (async () => {
   if (process.env.USE_NGROK === 'true') {
-    await exposeServer("127.0.0.1", PORT);
+    await exposeServer("127.0.0.1", API_PORT);
   }
 })();
 
@@ -79,6 +88,30 @@ app.post('/api/searchFlightsMultiCity', authenticate, async (req: AuthenticatedR
   }
 });
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`API server is listening on port ${PORT} on all network interfaces`);
-});
+if (USE_HTTPS) {
+    http.createServer((req, res) => {
+        res.writeHead(301, { "Location": "https://" + req.headers['host'] + req.url });
+        res.end();
+    }).listen(HTTP_PORT, "0.0.0.0", () => {
+        console.log(`HTTP Redirect server listening on port ${HTTP_PORT} for ${DOMAIN}`);
+    });
+
+    try {
+        const privateKey = fs.readFileSync(privateKeyPath, 'utf8');
+        const certificate = fs.readFileSync(fullChainPath, 'utf8');
+
+        const credentials = { key: privateKey, cert: certificate };
+
+        https.createServer(credentials, app).listen(HTTPS_PORT, "0.0.0.0", () => {
+            console.log(`HTTPS API server listening securely on port ${HTTPS_PORT} on all network interfaces`);
+        });
+    } catch (error) {
+        console.error(`Failed to start HTTPS server: Error reading certificate files at ${privateKeyPath}.`);
+        console.error("Make sure Certbot has run and the files exist and are readable by this process.");
+    }
+
+} else {
+  app.listen(API_PORT, "0.0.0.0", () => {
+      console.log(`API server is listening on port ${API_PORT} on all network interfaces (HTTP only)`);
+  });
+}
