@@ -9,13 +9,13 @@ import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
 const app = express();
+const api: SkyboundAPI = new AmadeusAPI();
 
 const HTTP_PORT = Number(process.env.HTTP_PORT) || 80;
 const HTTPS_PORT = Number(process.env.HTTPS_PORT) || 443;
-const API_PORT = Number(process.env.PORT) || HTTP_PORT;
-const api: SkyboundAPI = new AmadeusAPI();
-
 const USE_HTTPS = process.env.USE_HTTPS === 'true';
+const USE_NGROK = process.env.USE_NGROK === 'true';
+const PORT = USE_HTTPS ? HTTPS_PORT : HTTP_PORT;
 const DOMAIN = 'skybound-api.xyz';
 
 const privateKeyPath = `/etc/letsencrypt/live/${DOMAIN}/privkey.pem`;
@@ -27,8 +27,8 @@ app.use(express.json());
 app.use('/api/logos', express.static('./logos'));
 
 (async () => {
-  if (process.env.USE_NGROK === 'true') {
-    await exposeServer("127.0.0.1", API_PORT);
+  if (USE_NGROK) {
+    await exposeServer("127.0.0.1", PORT);
   }
 })();
 
@@ -111,7 +111,7 @@ if (USE_HTTPS) {
     }
 
 } else {
-  app.listen(API_PORT, "0.0.0.0", () => {
-      console.log(`API server is listening on port ${API_PORT} on all network interfaces (HTTP only)`);
+  app.listen(HTTP_PORT, "0.0.0.0", () => {
+      console.log(`API server is listening on port ${HTTP_PORT} on all network interfaces (HTTP only)`);
   });
 }

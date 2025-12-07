@@ -11,13 +11,15 @@ if (process.env.USE_NGROK === 'true') {
   }
 }
 
-// Use a fallback value for API_URL if USE_NGROK is true and the variable isn't set, or if USE_NGROK is false
+// Use old URL if connecting over plain http
+const ORACLE_URL = USE_HTTP ? "http://129.80.33.141" : "https://skybound-api.xyz"
+
 export default ({ config }) => ({
   ...config,
   owner: "ejd5757",
   extra: {
     ...config.extra,        // keep everything from app.json
-    API_URL: process.env.NGROK_URL || 'http://129.80.33.141:4000',
+    API_URL: process.env.NGROK_URL || ORACLE_URL,
   },
   plugins: [
     "expo-web-browser",
