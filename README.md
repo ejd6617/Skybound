@@ -1,111 +1,69 @@
-# Running Skybound
+# Prerequisites
 
-## 1. Clone the git repo
+## Install dependencies
+
+- Ensure that git and node/npm are installed and available in PATH
+
+## Clone the repository
 
 ```powershell
 git clone "https://github.com/ejd6617/Skybound"
 ```
 
-## 2. Start the API Backend
+# Running Skybound (using our public server)
 
-### 2.1. Docker Desktop
+## 1. Start the app
+
+```powershell
+cd .\Skybound\
+npm install
+npm start
+```
+
+## 2. View the app on your mobile device
+
+There will be a QR code output to the terminal by the running expo app. Scan it to connect to the tunnel.
+
+# Running Skybound (using a local container for our backend)
+
+## 1. Start the API Backend
+
+### 1.1. Docker Desktop
 
 - Ensure docker desktop is installed and running (should be preinstalled in VMs)
 
-### 2.2. ngrok (for connection tunneling)
+### 1.2. Credentials
 
-- Create an ngrok account [here](https://dashboard.ngrok.com/signup). I just used my GitHub account to sign up.
+- Obtain the following files from us and drop them in the root of the project (.\Skybound\)
 
-- Find your authtoken [here](https://dashboard.ngrok.com/get-started/your-authtoken)
-
-- Create file `.env.ngrok.local` in the project root (Skybound/.env.ngrok.local) with the following contents:
-
-```ini
-NGROK_AUTHTOKEN="yourTokenHere"
+```
+Skybound
+├── .env
+├── .env.amadeus.local
+├── .env.firebase-backend.local
+├── .env.ngrok.local
+└── .env.test.local
 ```
 
-### 2.3. Amadeus API
+### 1.3. Ensure that the container is configured to forward connections with ngrok
 
-- Create file `.env.amadeus.local` in the project root (Skybound/.env.amadeus.local) with the following contents:
+Uncomment `- USE_NGROK=true` in docker-compose.yml
 
-```ini
-AMADEUS_KEY="yourKeyHere"
-AMADEUS_SECRET="yourSecretHere"
-```
-
-> [!NOTE]
-> I don't think we all need a separate account for this one, so you can use the credentials I emailed you. If it starts to hit you with weird rate limits etc, you can try making your own developer account with Amadeus.
-
-### 2.4. Start the docker container
+### 1.4. Start the backend's docker container
 
 ```powershell
 cd .\Skybound\
 docker compose up --build
 ```
 
-## 3. Start the app
+## 2. Start the app (using ngrok)
 
 ```powershell
-cd .\Skybound\mobile\expo
+cd .\Skybound\ # (If not already in this directory)
 npm install
-npm start
+USE_NGROK=true npm start # IMPORTANT: Notice we're passing an environment variable
 ```
 
-## 4. View the app on your mobile device
+## 3. View the app on your mobile device
 
 There will be a QR code output to the terminal by the running expo app. Scan it to connect to the tunnel.
-
-<br>
-
----
-
-# Default Expo README (for reference)
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
