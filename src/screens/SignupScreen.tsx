@@ -161,9 +161,12 @@ export default function SignupScreen() {
       setIsLoading(false);
       return;
     }
-    
 
-    navigation.navigate("App");
+
+    navigation.reset({
+      index: 0,
+      routes: [{ name: "App" }],
+    });
     setIsLoading(false);
   } catch (error: any) {
     setSignUpError(error.message);
@@ -185,7 +188,10 @@ export default function SignupScreen() {
         return;
       }
 
-      navigation.navigate('App');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'App' }],
+      });
       //renable the register button
       setIsLoading(false);
     }catch(error : any)

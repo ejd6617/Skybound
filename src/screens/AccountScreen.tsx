@@ -32,6 +32,7 @@ export default  function AccountScreen() {
   const isDark = colors.background !== '#FFFFFF';
   const insets = useSafeAreaInsets();
   const user = auth.currentUser;
+  const rootNavigation = navigation.getParent()?.getParent();
 
   //load the user data through auth
   const [userData, setUserData] = useState<any>(null);
@@ -55,7 +56,7 @@ export default  function AccountScreen() {
     return unsubscribe;
   }, [user]);
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [signOutStatus, setSignOutStatus] = useState<'idle' | 'signing' | 'done'>('idle');
 
   // const functionsInstance = getFunctions();
   // const createPortalLink = httpsCallable(functionsInstance, 'ext-firestore-stripe-subscriptions-createPortalLink');
@@ -129,12 +130,18 @@ export default  function AccountScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: !isLoading, 
+      headerShown: signOutStatus === 'idle' && !loadingUser,
     });
-  }, [navigation, isLoading]);
+  }, [navigation, signOutStatus, loadingUser]);
 
-  if (isLoading) {
-    return <LoadingScreen />;
+  if (loadingUser || signOutStatus !== 'idle') {
+    const signingOut = signOutStatus !== 'idle';
+    return (
+      <LoadingScreen
+        message={signingOut ? (signOutStatus === 'done' ? 'Signed out successfully' : 'Signing you out...') : 'Loading your account...'}
+        status={signOutStatus === 'done' ? 'success' : 'loading'}
+      />
+    );
   }
 
   return (
@@ -176,10 +183,10 @@ export default  function AccountScreen() {
 
               <View style={styles.userInfoText}>
                 <SkyboundText variant="primaryBold" size={20} accessabilityLabel="User name">
-                  {user.displayName}
+                  {user?.displayName || userData?.fullName || 'User'}
                 </SkyboundText>
                 <SkyboundText variant="primary" size={12} accessabilityLabel="User email" style={{ marginTop: 4 }}>
-                  {user.email}
+                  {user?.email || ""}
                 </SkyboundText>
                 <Pressable onPress={() => {}} style={pressableStyle}>
                   <SkyboundText
@@ -379,18 +386,25 @@ export default  function AccountScreen() {
 
             <Pressable
               accessibilityRole="button"
-               onPress={async () => {
-                setIsLoading(true);
+              onPress={async () => {
+                if (signOutStatus !== 'idle') return;
+
+                setSignOutStatus('signing');
                 try {
                   await signOut(auth);
                   console.log('User Signed out successfully!');
-                  navigation.navigate('Login');
-                }
-                catch(error : any)
-                {
+                  setSignOutStatus('done');
+                  setTimeout(() => {
+                    rootNavigation?.reset({
+                      index: 0,
+                      routes: [{ name: 'Login' }],
+                    });
+                    setSignOutStatus('idle');
+                  }, 650);
+                } catch (error: any) {
                   console.error('Error Signing out: ' + error.message);
+                  setSignOutStatus('idle');
                 }
-                setIsLoading(false);
               }}
               style={({ pressed }) => [
                 styles.signOutButton,

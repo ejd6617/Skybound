@@ -67,11 +67,14 @@ export default function LoginScreen() {
         //convert the Google crediantial to a Firebase credential
         const credential = GoogleAuthProvider.credential(idToken)
   
-        //Sign in with Firebase using crediential 
+        //Sign in with Firebase using crediential
         signInWithCredential(auth, credential)
         .then(userCredential => {
             console.log('Google sign in successful: ', userCredential.user.email);
-            navigation.navigate('App');
+            navigation.reset({
+              index: 0,
+              routes: [{ name: 'App' }],
+            });
         })
         .catch(error => {
             console.error("Failed sign in with Google: ", error.message);
@@ -101,10 +104,10 @@ export default function LoginScreen() {
       console.log("Attempting Sign in...");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log('sign in successful!');
-      navigation.navigate('App');
-      setIsLoading(false);
-      
-      navigation.navigate('App');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'App' }],
+      });
       setIsLoading(false);
 
       updateUserData(userCredential.user.uid, {LastLogIn: serverTimestamp()});

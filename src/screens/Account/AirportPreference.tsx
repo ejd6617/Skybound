@@ -51,6 +51,8 @@ const AirportPreference: React.FC = () => {
   // --- State ---
   const [departures, setDepartures] = useState<AirportChip[]>([]);
   const [arrivals, setArrivals] = useState<AirportChip[]>([]);
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const [hasUserEdited, setHasUserEdited] = useState(false);
   
   // Modal State
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -70,6 +72,7 @@ const AirportPreference: React.FC = () => {
         setDepartures(data.departures || []);
         setArrivals(data.arrivals || []);
       }
+      setPrefsLoaded(true);
     }
     loadPrefs();
   }, []);
@@ -86,20 +89,24 @@ const AirportPreference: React.FC = () => {
           arrivals,
           updatedAt: new Date(),
         });
+        Alert.alert("Preferences saved", "Airport preference updated successfully");
+        setHasUserEdited(false);
       } catch (error) {
         console.log(error);
+        Alert.alert("Save failed", "We could not save your airport preference. Please try again.");
       }
     }
 
-    if (departures.length > 0 || arrivals.length > 0) {
+    if (prefsLoaded && hasUserEdited) {
       savePrefs();
     }
-  }, [departures, arrivals]);
+  }, [departures, arrivals, prefsLoaded, hasUserEdited]);
 
   // --- Actions ---
 
   const removeChip = (list: AirportChip[], setter: (chips: AirportChip[]) => void, code: string) => {
     setter(list.filter((chip) => chip.code !== code));
+    setHasUserEdited(true);
   };
 
   const openSearchModal = (type: 'departures' | 'arrivals') => {
@@ -117,6 +124,7 @@ const AirportPreference: React.FC = () => {
       // Prevent duplicates
       if (!departures.find(d => d.code === newChip.code)) {
         setDepartures(prev => [...prev, newChip]);
+        setHasUserEdited(true);
       } else {
         Alert.alert("Already added", `${newChip.code} is already in your list.`);
       }
@@ -124,6 +132,7 @@ const AirportPreference: React.FC = () => {
       // Prevent duplicates
       if (!arrivals.find(a => a.code === newChip.code)) {
         setArrivals(prev => [...prev, newChip]);
+        setHasUserEdited(true);
       } else {
         Alert.alert("Already added", `${newChip.code} is already in your list.`);
       }

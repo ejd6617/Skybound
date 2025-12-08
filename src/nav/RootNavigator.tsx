@@ -40,6 +40,7 @@ import LoginScreen from "@src/screens/LoginScreen";
 import NotificationsScreen from "@src/screens/NotificationsScreen";
 import PaymentScreen from "@src/screens/PaymentScreen";
 import SignupScreen from "@src/screens/SignupScreen";
+import LoadingScreen from "@src/screens/LoadingScreen";
 
 // Login listener
 import SkyboundNavBar from "@/components/ui/SkyboundNavBar";
@@ -60,7 +61,7 @@ export type AuthSwitchNavigatorParamList = {
 
 export type FlightStackParamList = {
   Dashboard: undefined;
-  FlashDeals: undefined;
+  FlashDeals: { deals?: Flight[] } | undefined;
   FilterScreen: { filters?: FlightFilters } | undefined;
   FlightConfirmation: { itinerary: ItineraryPayload };
   FlightResults: {
@@ -137,15 +138,16 @@ function GenerateFlightStack() {
   return (
     <FlightStack.Navigator
       initialRouteName="Dashboard"
+      screenOptions={{ gestureEnabled: true }}
     >
       <FlightStack.Screen name="ComponentTest" component={ComponentTestScreen} options={
         GenerateSkyboundHeaderOptions("Component Test", { ...flightSearchHeaderOptions})
       } />
       <FlightStack.Screen name="Dashboard" component={DashboardScreen} options={
-        GenerateSkyboundHeaderOptions("Dashboard")
+        GenerateSkyboundHeaderOptions("Dashboard", { showLogo: true })
       } />
       <FlightStack.Screen name="FlashDeals" component={FlashDealsScreen} options={
-        GenerateSkyboundHeaderOptions("Flash Deals")
+        GenerateSkyboundHeaderOptions("Flash Deals", { useBackNavigation: true })
       } />
       <FlightStack.Screen name="FilterScreen" component={FilterScreen} options={{
         presentation: 'modal',
@@ -173,63 +175,70 @@ function GenerateFlightStack() {
 
 // Stack for account details
 function GenerateAccountStack() {
+  const accountHeaderOptions = (title: string, useBackNavigation = true) =>
+    GenerateSkyboundHeaderOptions(title, {
+      useBackNavigation,
+      showNotifications: false,
+      showUserProfile: false,
+    });
   return (
     <AccountStack.Navigator
       initialRouteName="Account"
+      screenOptions={{ gestureEnabled: true }}
     >
       <AccountStack.Screen name="Account" component={AccountScreen} options={
-        GenerateSkyboundHeaderOptions("Account")
+        accountHeaderOptions("Account", false)
       } />
       <AccountStack.Screen name="AirportInfo" component={AirportInfo} options={
-        GenerateSkyboundHeaderOptions("Airport Info")
+        accountHeaderOptions("Airport Info")
       } />
       <AccountStack.Screen name="AirportPreference" component={AirportPreference} options={
-        GenerateSkyboundHeaderOptions("Airport Preference")
+        accountHeaderOptions("Airport Preference")
       } />
       <AccountStack.Screen name="BillingHistory" component={BillingHistory} options={
-        GenerateSkyboundHeaderOptions("Billing History")
+        accountHeaderOptions("Billing History")
       } />
       <AccountStack.Screen name="Chat" component={ChatScreen} options={
-        GenerateSkyboundHeaderOptions("Chat")
+        accountHeaderOptions("Chat")
       } />
       <AccountStack.Screen name="Contact" component={ContactScreen} options={
-        GenerateSkyboundHeaderOptions("Contact")
+        accountHeaderOptions("Contact")
       } />
       <AccountStack.Screen name="Currency" component={CurrencyScreen} options={
-        GenerateSkyboundHeaderOptions("Currency")
+        accountHeaderOptions("Currency")
       } />
       <AccountStack.Screen name="EditTraveler" component={EditTraveler} options={
-        GenerateSkyboundHeaderOptions("Edit Traveler")
+        accountHeaderOptions("Edit Traveler")
       } />
       <AccountStack.Screen name="FAQ" component={FAQscreen} options={
-        GenerateSkyboundHeaderOptions("FAQ")
+        accountHeaderOptions("FAQ")
       } />
       <AccountStack.Screen name="FlightInfo" component={FlightInfo} options={
-        GenerateSkyboundHeaderOptions("Flight Info")
+        accountHeaderOptions("Flight Info")
       } />
       <AccountStack.Screen name="GetHelp" component={GetHelp} options={
-        GenerateSkyboundHeaderOptions("Get Help")
+        accountHeaderOptions("Get Help")
       } />
       <AccountStack.Screen name="Language" component={LanguageModal} options={
-        { presentation: 'transparentModal', animation: 'fade', ...GenerateSkyboundHeaderOptions("Change Language") }
+        { presentation: 'transparentModal', animation: 'fade', ...accountHeaderOptions("Change Language") }
       }  />
       <AccountStack.Screen name="ManageSubscription" component={ManageSubscription} options={
-        GenerateSkyboundHeaderOptions("Manage Subscription")
+        accountHeaderOptions("Manage Subscription")
       } />
       <AccountStack.Screen name="PaymentDetails" component={PaymentDetails} options={
-        GenerateSkyboundHeaderOptions("Payment Details")
+        accountHeaderOptions("Payment Details")
       } />
       <AccountStack.Screen name="PaymentMethod" component={PaymentMethodScreen} options={
-        GenerateSkyboundHeaderOptions("Payment Methods")
+        accountHeaderOptions("Payment Methods")
       } />
       <AccountStack.Screen name="TravelerDetails" component={TravelerDetails} options={
-        GenerateSkyboundHeaderOptions("Traveler Details")
+        accountHeaderOptions("Traveler Details")
       } />
       <AccountStack.Screen name="Trips" component={Trips} options={
-        GenerateSkyboundHeaderOptions("Trips")
+        accountHeaderOptions("Trips")
       } />
       <AccountStack.Screen name="ChoosePaymentMethod" component={ChoosePaymentMethod} options={
-        GenerateSkyboundHeaderOptions("Select Payment Method")
+        accountHeaderOptions("Select Payment Method")
       } />
     </AccountStack.Navigator>
   );
@@ -254,7 +263,7 @@ function GenerateDrawerRoot() {
   return (
     <Drawer.Navigator screenOptions={{
       headerShown: false,
-      swipeEnabled: false,
+      swipeEnabled: true,
 
       drawerStyle: {
         backgroundColor: colors.card
@@ -268,9 +277,15 @@ function GenerateDrawerRoot() {
       },
     }}>
       <Drawer.Screen
-        name="Flights"
+        name="Home"
         component={GenerateFlightStack}
-        options={{ title: 'Flights' }}
+        options={{ title: 'Home' }}
+        listeners={({ navigation }) => ({
+          drawerItemPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('Home', { screen: 'Dashboard' });
+          },
+        })}
       />
 
       <Drawer.Screen
@@ -301,13 +316,13 @@ export default function RootNavigator(): React.JSX.Element
     });
     return () => unsub();
   }, []);
- 
-  if (!initialRoute) return null;
+
+  if (!initialRoute) return <LoadingScreen message="Loading Skybound..." />;
 
   return (
     <NavContainer>
       <AuthSwitchStack.Navigator
-        screenOptions={{ headerShown: false }}
+        screenOptions={{ headerShown: false, gestureEnabled: false }}
         initialRouteName={initialRoute!}
       >
         { /* Screens that are only accessible in the flow when a user has not yet logged in */ }
@@ -319,7 +334,7 @@ export default function RootNavigator(): React.JSX.Element
         <AuthSwitchStack.Screen
           name="App"
           component={GenerateDrawerRoot}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, gestureEnabled: false }}
         />
       </AuthSwitchStack.Navigator>
     </NavContainer>

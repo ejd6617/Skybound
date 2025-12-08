@@ -1,14 +1,15 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Image, RefreshControl, StyleSheet, View } from "react-native";
+import { FlatList, Image, RefreshControl, StyleSheet, View } from "react-native";
 import SkyboundFlashDeal from "@/components/ui/SkyboundFlashDeal";
 import { useColors } from "@/constants/theme";
 import { reviveDates, skyboundRequest } from "@/src/api/SkyboundUtils";
 import { Flight, FlightLeg, OneWayQueryParams } from "@/skyboundTypes/SkyboundAPI";
 import type { UIFlight } from "@/src/screens/FlightResultsScreen";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
 import SkyboundText from "@/components/ui/SkyboundText";
+import LoadingScreen from "@/src/screens/LoadingScreen";
 
 const normalizeDateValue = (value?: Date | string | null) => {
   if (!value) return null;
@@ -57,11 +58,13 @@ function mapFlightToUIFlight(flight: Flight, index: number): UIFlight {
 
 export default function FlashDealsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, "FlashDeals">>();
   const colors = useColors();
   const [flashDeals, setFlashDeals] = useState<Flight[]>([]);
   const [uiDeals, setUiDeals] = useState<UIFlight[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const seededDeals = route.params?.deals ?? [];
 
   const fetchDeals = useCallback(async () => {
     try {
@@ -74,8 +77,9 @@ export default function FlashDealsScreen() {
       };
       const responseData = await skyboundRequest("searchFlightsOneWay", params);
       const revivedData: Flight[] = reviveDates(responseData);
-      setFlashDeals(revivedData);
-      setUiDeals(revivedData.map(mapFlightToUIFlight));
+      const sortedDeals = [...revivedData].sort((a, b) => a.price - b.price);
+      setFlashDeals(sortedDeals);
+      setUiDeals(sortedDeals.map(mapFlightToUIFlight));
     } catch (err) {
       console.error('Failed to fetch flash deals', err);
       setFlashDeals([]);
@@ -84,9 +88,28 @@ export default function FlashDealsScreen() {
   }, []);
 
   useEffect(() => {
-    setLoading(true);
-    fetchDeals().finally(() => setLoading(false));
-  }, [fetchDeals]);
+    let isMounted = true;
+    const hydrateDeals = async () => {
+      if (seededDeals.length > 0) {
+        const sortedSeededDeals = [...seededDeals].sort((a, b) => a.price - b.price);
+        setFlashDeals(sortedSeededDeals);
+        setUiDeals(sortedSeededDeals.map(mapFlightToUIFlight));
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      await fetchDeals();
+      if (isMounted) {
+        setLoading(false);
+      }
+    };
+
+    hydrateDeals();
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchDeals, seededDeals]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -112,9 +135,7 @@ export default function FlashDealsScreen() {
   return (
     <View style={{ flex: 1, paddingVertical: 12 }}>
       {loading ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={colors.link} />
-        </View>
+        <LoadingScreen message="Loading flash deals..." />
       ) : (
         <FlatList
           data={flashDeals}

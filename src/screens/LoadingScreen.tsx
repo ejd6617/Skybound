@@ -2,8 +2,15 @@ import { useColors } from '@constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
+import { Ionicons } from "@expo/vector-icons";
+import SkyboundText from "@components/ui/SkyboundText";
 
-export default function LoadingScreen() {
+interface LoadingScreenProps {
+  message?: string;
+  status?: "loading" | "success";
+}
+
+export default function LoadingScreen({ message = "Loading...", status = "loading" }: LoadingScreenProps) {
   const colors = useColors();
   const isDark = colors.background !== '#FFFFFF';
 
@@ -23,11 +30,27 @@ export default function LoadingScreen() {
   const Content = (
     <>
       <Image source={require('@assets/images/skybound-logo-white.png')} style={styles.logo} resizeMode="contain" />
-      <Animated.View style={[styles.spinnerContainer, { transform: [{ rotate: spin }] }]}>
-        <View style={styles.spinner}>
-          <View style={styles.spinnerArc} />
+      {status === "loading" ? (
+        <Animated.View style={[styles.spinnerContainer, { transform: [{ rotate: spin }] }]}>
+          <View style={styles.spinner}>
+            <View style={styles.spinnerArc} />
+          </View>
+        </Animated.View>
+      ) : (
+        <View style={styles.successContainer}>
+          <View style={styles.successBadge}>
+            <Ionicons name="checkmark" size={22} color="#0B1725" />
+          </View>
         </View>
-      </Animated.View>
+      )}
+      <SkyboundText
+        variant="primary"
+        size={15}
+        style={{ color: '#FFFFFF', marginTop: 16, textAlign: 'center', paddingHorizontal: 20 }}
+        accessabilityLabel={message}
+      >
+        {message}
+      </SkyboundText>
     </>
   );
 
@@ -68,5 +91,24 @@ const getStyles = () =>
       position: 'absolute', top: -4, left: -4, width: 40, height: 40,
       borderRadius: 20, borderWidth: 4, borderColor: 'transparent',
       borderTopColor: '#FFFFFF', borderLeftColor: '#FFFFFF',
+    },
+    successContainer: {
+      width: 40,
+      height: 40,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    successBadge: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: '#FFFFFF',
+      justifyContent: 'center',
+      alignItems: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.2,
+      shadowRadius: 6,
+      elevation: 4,
     },
   });
