@@ -1,5 +1,5 @@
-import { Flight, FlightLeg, TravelClass } from "@/skyboundTypes/SkyboundAPI";
 import DisplayMap from "@/components/ui/DisplayMap";
+import { Flight, FlightLeg, TravelClass } from "@/skyboundTypes/SkyboundAPI";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -166,6 +166,8 @@ function toUIFlights(data: Flight[]): UIFlight[] {
 
         return mostCommonClass;
     }
+
+    const travelClass: TravelClass | undefined = findMostCommonTravelClass(flight.outbound);
     
     // Return the formatted flight object
     return {
@@ -174,9 +176,8 @@ function toUIFlights(data: Flight[]): UIFlight[] {
       airlineCode: flight.airline.iata,
       airlineColor,
       price: flight.price,
-      cabinClass: ,
-      cabinClass: findMostCommonTravelClass(flight.outbound),
-      cabinClassCode: findMostCommonTravelClass(flight.outbound),
+      cabinClass: travelClass,
+      cabinClassCode: travelClass,
       departureTime: formatTime(firstOutbound.departureTime),
       arrivalTime: formatTime(lastOutbound.arrivalTime),
       departureDate: formatDate(firstOutbound.departureTime),

@@ -20,6 +20,6 @@ services:
       - 7070:7070 # HTTPS
     environment:
       # - USE_HTTP=true
-      # - AMADEUS_PROD=true
       # - USE_NGROK=true
+      - AMADEUS_PROD=true
     command: ["npm", "start"]
