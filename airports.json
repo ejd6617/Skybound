@@ -64,14 +64,6 @@
     "lon": -50.7116031647
   },
   {
-    "name": "Thule Air Base",
-    "code": "THU",
-    "city": "Thule",
-    "country": "Greenland",
-    "lat": 76.5311965942,
-    "lon": -68.7032012939
-  },
-  {
     "name": "Akureyri Airport",
     "code": "AEY",
     "city": "Akureyri",
@@ -190,14 +182,6 @@
     "country": "Canada",
     "lat": 49.13249969482422,
     "lon": -68.20439910888672
-  },
-  {
-    "name": "CFB Bagotville",
-    "code": "YBG",
-    "city": "Bagotville",
-    "country": "Canada",
-    "lat": 48.33060073852539,
-    "lon": -70.99639892578125
   },
   {
     "name": "Baker Lake Airport",
@@ -744,14 +728,6 @@
     "lon": -139.83900451660156
   },
   {
-    "name": "CFB Cold Lake",
-    "code": "YOD",
-    "city": "Cold Lake",
-    "country": "Canada",
-    "lat": 54.404998779296875,
-    "lon": -110.27899932861328
-  },
-  {
     "name": "High Level Airport",
     "code": "YOJ",
     "city": "High Level",
@@ -1078,14 +1054,6 @@
     "country": "Canada",
     "lat": 55.80110168457031,
     "lon": -97.86419677734375
-  },
-  {
-    "name": "CFB Trenton",
-    "code": "YTR",
-    "city": "Trenton",
-    "country": "Canada",
-    "lat": 44.118900299072266,
-    "lon": -77.5280990600586
   },
   {
     "name": "Timmins/Victor M. Power",
@@ -1574,14 +1542,6 @@
     "country": "Canada",
     "lat": 60.17279815673828,
     "lon": -132.7429962158203
-  },
-  {
-    "name": "CFB Greenwood",
-    "code": "YZX",
-    "city": "Greenwood",
-    "country": "Canada",
-    "lat": 44.98440170288086,
-    "lon": -64.91690063476562
   },
   {
     "name": "Faro Airport",
@@ -2280,14 +2240,6 @@
     "lon": 2.8622200489
   },
   {
-    "name": "Zoersel (Oostmalle) Airfield",
-    "code": "OBL",
-    "city": "Zoersel",
-    "country": "Belgium",
-    "lat": 51.264702,
-    "lon": 4.75333
-  },
-  {
     "name": "Altenburg-Nobitz Airport",
     "code": "AOC",
     "city": "Altenburg",
@@ -2808,14 +2760,6 @@
     "lon": 24.963300704956
   },
   {
-    "name": "Hyvinkää Airfield",
-    "code": "HYV",
-    "city": "Hyvinkaa",
-    "country": "Finland",
-    "lat": 60.6543998718,
-    "lon": 24.8810997009
-  },
-  {
     "name": "Kitee Airport",
     "code": "KTQ",
     "city": "Kitee",
@@ -3000,14 +2944,6 @@
     "lon": 22.262800216675
   },
   {
-    "name": "Utti Air Base",
-    "code": "UTI",
-    "city": "Utti",
-    "country": "Finland",
-    "lat": 60.89640045166,
-    "lon": 26.938400268555
-  },
-  {
     "name": "Vaasa Airport",
     "code": "VAA",
     "city": "Vaasa",
@@ -3022,14 +2958,6 @@
     "country": "Finland",
     "lat": 62.171100616455,
     "lon": 27.868600845337
-  },
-  {
-    "name": "Ylivieska Airfield",
-    "code": "YLI",
-    "city": "Ylivieska-raudaskyla",
-    "country": "Finland",
-    "lat": 64.0547222,
-    "lon": 24.7252778
   },
   {
     "name": "Belfast International Airport",
@@ -3110,22 +3038,6 @@
     "country": "United Kingdom",
     "lat": 50.44060134887695,
     "lon": -4.995409965515137
-  },
-  {
-    "name": "RAF Lyneham",
-    "code": "LYE",
-    "city": "Lyneham",
-    "country": "United Kingdom",
-    "lat": 51.5051,
-    "lon": -1.99343
-  },
-  {
-    "name": "RNAS Yeovilton",
-    "code": "YEO",
-    "city": "Yeovilton",
-    "country": "United Kingdom",
-    "lat": 51.0093994140625,
-    "lon": -2.638819932937622
   },
   {
     "name": "Haverfordwest Airport",
@@ -3512,22 +3424,6 @@
     "lon": -6.869170188903809
   },
   {
-    "name": "RAF Leuchars",
-    "code": "ADX",
-    "city": "Leuchars",
-    "country": "United Kingdom",
-    "lat": 56.37289810180664,
-    "lon": -2.8684399127960205
-  },
-  {
-    "name": "RAF Lossiemouth",
-    "code": "LMO",
-    "city": "Lossiemouth",
-    "country": "United Kingdom",
-    "lat": 57.7052001953125,
-    "lon": -3.339169979095459
-  },
-  {
     "name": "Cambridge Airport",
     "code": "CBG",
     "city": "Cambridge",
@@ -3576,118 +3472,6 @@
     "lon": -1.32000005245
   },
   {
-    "name": "RAF Benson",
-    "code": "BEX",
-    "city": "Benson",
-    "country": "United Kingdom",
-    "lat": 51.616401672399995,
-    "lon": -1.09582996368
-  },
-  {
-    "name": "RAF Lakenheath",
-    "code": "LKZ",
-    "city": "Lakenheath",
-    "country": "United Kingdom",
-    "lat": 52.409301757799994,
-    "lon": 0.56099998951
-  },
-  {
-    "name": "RAF Mildenhall",
-    "code": "MHZ",
-    "city": "Mildenhall",
-    "country": "United Kingdom",
-    "lat": 52.361900329589844,
-    "lon": 0.48640599846839905
-  },
-  {
-    "name": "RAF Wyton",
-    "code": "QUY",
-    "city": "Wyton",
-    "country": "United Kingdom",
-    "lat": 52.3572006226,
-    "lon": -0.107832998037
-  },
-  {
-    "name": "RAF Fairford",
-    "code": "FFD",
-    "city": "Fairford",
-    "country": "United Kingdom",
-    "lat": 51.6822013855,
-    "lon": -1.7900300025900002
-  },
-  {
-    "name": "RAF Brize Norton",
-    "code": "BZZ",
-    "city": "Brize Norton",
-    "country": "United Kingdom",
-    "lat": 51.75,
-    "lon": -1.58362
-  },
-  {
-    "name": "RAF Odiham",
-    "code": "ODH",
-    "city": "Odiham",
-    "country": "United Kingdom",
-    "lat": 51.2341003418,
-    "lon": -0.94282501936
-  },
-  {
-    "name": "RAF Northolt",
-    "code": "NHT",
-    "city": "Northolt",
-    "country": "United Kingdom",
-    "lat": 51.553001403799996,
-    "lon": -0.418166995049
-  },
-  {
-    "name": "RAF Coningsby",
-    "code": "QCY",
-    "city": "Coningsby",
-    "country": "United Kingdom",
-    "lat": 53.0929985046,
-    "lon": -0.166014000773
-  },
-  {
-    "name": "RAF Honington",
-    "code": "BEQ",
-    "city": "Honington",
-    "country": "United Kingdom",
-    "lat": 52.34260177612305,
-    "lon": 0.7729390263557434
-  },
-  {
-    "name": "RAF Scampton",
-    "code": "SQZ",
-    "city": "Scampton",
-    "country": "United Kingdom",
-    "lat": 53.307800293,
-    "lon": -0.550832986832
-  },
-  {
-    "name": "RAF Linton-On-Ouse",
-    "code": "HRT",
-    "city": "Linton-on-ouse",
-    "country": "United Kingdom",
-    "lat": 54.0489006042,
-    "lon": -1.2527500391
-  },
-  {
-    "name": "RAF Waddington",
-    "code": "WTN",
-    "city": "Waddington",
-    "country": "United Kingdom",
-    "lat": 53.1661987305,
-    "lon": -0.523810982704
-  },
-  {
-    "name": "RAF Marham",
-    "code": "KNF",
-    "city": "Marham",
-    "country": "United Kingdom",
-    "lat": 52.648395,
-    "lon": 0.550692
-  },
-  {
     "name": "Mount Pleasant Airport",
     "code": "MPN",
     "city": "Mount Pleasant",
@@ -3728,14 +3512,6 @@
     "lon": 6.57944011688
   },
   {
-    "name": "Gilze Rijen Air Base",
-    "code": "GLZ",
-    "city": "Gilze-rijen",
-    "country": "Netherlands",
-    "lat": 51.56740188598633,
-    "lon": 4.931829929351807
-  },
-  {
     "name": "De Kooy Airport",
     "code": "DHR",
     "city": "De Kooy",
@@ -3752,14 +3528,6 @@
     "lon": 5.52722
   },
   {
-    "name": "Leeuwarden Air Base",
-    "code": "LWR",
-    "city": "Leeuwarden",
-    "country": "Netherlands",
-    "lat": 53.228599548339844,
-    "lon": 5.760560035705566
-  },
-  {
     "name": "Rotterdam The Hague Airport",
     "code": "RTM",
     "city": "Rotterdam",
@@ -3768,36 +3536,12 @@
     "lon": 4.43722
   },
   {
-    "name": "Soesterberg Air Base",
-    "code": "UTC",
-    "city": "Soesterberg",
-    "country": "Netherlands",
-    "lat": 52.1273002625,
-    "lon": 5.27618980408
-  },
-  {
     "name": "Twente Airport",
     "code": "ENS",
     "city": "Enschede",
     "country": "Netherlands",
     "lat": 52.275833,
     "lon": 6.889167
-  },
-  {
-    "name": "Valkenburg Naval Air Base",
-    "code": "LID",
-    "city": "Valkenburg",
-    "country": "Netherlands",
-    "lat": 52.166099548300004,
-    "lon": 4.41794013977
-  },
-  {
-    "name": "Woensdrecht Air Base",
-    "code": "WOE",
-    "city": "Woensdrecht",
-    "country": "Netherlands",
-    "lat": 51.4491,
-    "lon": 4.34203
   },
   {
     "name": "Cork Airport",
@@ -3950,14 +3694,6 @@
     "country": "Denmark",
     "lat": 54.96440124511719,
     "lon": 9.791729927062988
-  },
-  {
-    "name": "Skrydstrup Air Base",
-    "code": "SKS",
-    "city": "Skrydstrup",
-    "country": "Denmark",
-    "lat": 55.221048,
-    "lon": 9.26702
   },
   {
     "name": "Skive Airport",
@@ -4328,14 +4064,6 @@
     "lon": 14.902199745199999
   },
   {
-    "name": "Redzikowo Air Base",
-    "code": "OSP",
-    "city": "Slupsk",
-    "country": "Poland",
-    "lat": 54.47890090942383,
-    "lon": 17.107500076293945
-  },
-  {
     "name": "Warsaw Chopin Airport",
     "code": "WAW",
     "city": "Warsaw",
@@ -4680,30 +4408,6 @@
     "lon": 18.346200942993
   },
   {
-    "name": "Spangdahlem Air Base",
-    "code": "SPM",
-    "city": "Spangdahlem",
-    "country": "Germany",
-    "lat": 49.9726982117,
-    "lon": 6.69250011444
-  },
-  {
-    "name": "Ramstein Air Base",
-    "code": "RMS",
-    "city": "Ramstein",
-    "country": "Germany",
-    "lat": 49.4369010925293,
-    "lon": 7.600279808044434
-  },
-  {
-    "name": "[Duplicate] Giebelstadt Army Air Field",
-    "code": "GHF",
-    "city": "Giebelstadt",
-    "country": "Germany",
-    "lat": 49.648101806599996,
-    "lon": 9.966489791870002
-  },
-  {
     "name": "Celle Airport",
     "code": "ZCN",
     "city": "Celle",
@@ -4720,36 +4424,12 @@
     "lon": 9.286
   },
   {
-    "name": "Hanau Army Air Field",
-    "code": "ZNF",
-    "city": "Hanau",
-    "country": "Germany",
-    "lat": 50.169201,
-    "lon": 8.96159
-  },
-  {
     "name": "Flugplatz Kitzingen",
     "code": "KZG",
     "city": "Kitzingen",
     "country": "Germany",
     "lat": 49.743099,
     "lon": 10.2006
-  },
-  {
-    "name": "Nordholz Naval Airbase",
-    "code": "FCN",
-    "city": "Nordholz",
-    "country": "Germany",
-    "lat": 53.7677001953,
-    "lon": 8.658499717709999
-  },
-  {
-    "name": "Geilenkirchen Air Base",
-    "code": "GKE",
-    "city": "Geilenkirchen",
-    "country": "Germany",
-    "lat": 50.9608,
-    "lon": 6.04242
   },
   {
     "name": "Rostock-Laage Airport",
@@ -4760,44 +4440,12 @@
     "lon": 12.278300285299999
   },
   {
-    "name": "Schleswig Air Base",
-    "code": "WBG",
-    "city": "Schleswig",
-    "country": "Germany",
-    "lat": 54.459301,
-    "lon": 9.51633
-  },
-  {
-    "name": "Wiesbaden Army Airfield",
-    "code": "WIE",
-    "city": "Wiesbaden",
-    "country": "Germany",
-    "lat": 50.049800872802734,
-    "lon": 8.325400352478027
-  },
-  {
-    "name": "Fürstenfeldbruck Air Base",
-    "code": "FEL",
-    "city": "Fuerstenfeldbruck",
-    "country": "Germany",
-    "lat": 48.205555,
-    "lon": 11.266944
-  },
-  {
     "name": "Ingolstadt Manching Airport",
     "code": "IGS",
     "city": "Ingolstadt",
     "country": "Germany",
     "lat": 48.7156982421875,
     "lon": 11.534000396728516
-  },
-  {
-    "name": "Gütersloh Air Base",
-    "code": "GUT",
-    "city": "Guetersloh",
-    "country": "Germany",
-    "lat": 51.922798,
-    "lon": 8.30633
   },
   {
     "name": "Alexander Bay Airport",
@@ -4886,14 +4534,6 @@
     "country": "South Africa",
     "lat": -28.23509979248047,
     "lon": 29.106199264526367
-  },
-  {
-    "name": "Hoedspruit Air Force Base Airport",
-    "code": "HDS",
-    "city": "Hoedspruit",
-    "country": "South Africa",
-    "lat": -24.368600845299998,
-    "lon": 31.0487003326
   },
   {
     "name": "OR Tambo International Airport",
@@ -5192,14 +4832,6 @@
     "lon": 28.224199
   },
   {
-    "name": "Waterkloof Air Force Base",
-    "code": "WKF",
-    "city": "Waterkloof",
-    "country": "South Africa",
-    "lat": -25.829999923699997,
-    "lon": 28.222499847399998
-  },
-  {
     "name": "Francistown Airport",
     "code": "FRW",
     "city": "Francistown",
@@ -5320,14 +4952,6 @@
     "lon": 8.708720207214355
   },
   {
-    "name": "RAF Ascension Island",
-    "code": "ASI",
-    "city": "Wide Awake",
-    "country": "Saint Helena",
-    "lat": -7.9696,
-    "lon": -14.3937
-  },
-  {
     "name": "Sir Seewoosagur Ramgoolam International Airport",
     "code": "MRU",
     "city": "Plaisance",
@@ -5342,14 +4966,6 @@
     "country": "Mauritius",
     "lat": -19.7577,
     "lon": 63.361
-  },
-  {
-    "name": "Diego Garcia Naval Support Facility",
-    "code": "NKW",
-    "city": "Diego Garcia Island",
-    "country": "British Indian Ocean Territory",
-    "lat": -7.31327,
-    "lon": 72.411102
   },
   {
     "name": "Tiko Airport",
@@ -6166,14 +5782,6 @@
     "country": "Zimbabwe",
     "lat": -20.055299758911133,
     "lon": 30.859100341796875
-  },
-  {
-    "name": "Thornhill Air Base",
-    "code": "GWE",
-    "city": "Gwert",
-    "country": "Zimbabwe",
-    "lat": -19.436399459838867,
-    "lon": 29.861900329589844
   },
   {
     "name": "Hwange National Park Airport",
@@ -7496,14 +7104,6 @@
     "lon": 32.48569869995117
   },
   {
-    "name": "RAF Akrotiri",
-    "code": "AKT",
-    "city": "Akrotiri",
-    "country": "Cyprus",
-    "lat": 34.590401,
-    "lon": 32.9879
-  },
-  {
     "name": "Dubrovnik Airport",
     "code": "DBV",
     "city": "Dubrovnik",
@@ -7696,36 +7296,12 @@
     "lon": 4.218649864196777
   },
   {
-    "name": "Moron Air Base",
-    "code": "OZP",
-    "city": "Sevilla",
-    "country": "Spain",
-    "lat": 37.17490005493164,
-    "lon": -5.615940093994141
-  },
-  {
     "name": "Pamplona Airport",
     "code": "PNA",
     "city": "Pamplona",
     "country": "Spain",
     "lat": 42.77000045776367,
     "lon": -1.6463299989700317
-  },
-  {
-    "name": "Reus Air Base",
-    "code": "REU",
-    "city": "Reus",
-    "country": "Spain",
-    "lat": 41.14739990234375,
-    "lon": 1.1671700477600098
-  },
-  {
-    "name": "Rota Naval Station Airport",
-    "code": "ROZ",
-    "city": "Rota",
-    "country": "Spain",
-    "lat": 36.645198822,
-    "lon": -6.34946012497
   },
   {
     "name": "Salamanca Airport",
@@ -7808,14 +7384,6 @@
     "lon": -3.82000994682312
   },
   {
-    "name": "Zaragoza Air Base",
-    "code": "ZAZ",
-    "city": "Zaragoza",
-    "country": "Spain",
-    "lat": 41.66619873046875,
-    "lon": -1.0415500402450562
-  },
-  {
     "name": "Sevilla Airport",
     "code": "SVQ",
     "city": "Sevilla",
@@ -7878,14 +7446,6 @@
     "country": "France",
     "lat": 44.82529830932617,
     "lon": 0.5186110138893127
-  },
-  {
-    "name": "Cognac-Châteaubernard (BA 709) Air Base",
-    "code": "CNG",
-    "city": "Cognac",
-    "country": "France",
-    "lat": 45.65829849243164,
-    "lon": -0.3174999952316284
   },
   {
     "name": "Poitiers-Biard Airport",
@@ -8112,14 +7672,6 @@
     "lon": 8.889749526977539
   },
   {
-    "name": "Solenzara (BA 126) Air Base",
-    "code": "SOZ",
-    "city": "Solenzara",
-    "country": "France",
-    "lat": 41.924400329589844,
-    "lon": 9.406000137329102
-  },
-  {
     "name": "Auxerre-Branches Airport",
     "code": "AUF",
     "city": "Auxerre",
@@ -8280,14 +7832,6 @@
     "lon": 7.215869903560001
   },
   {
-    "name": "Orange-Caritat (BA 115) Air Base",
-    "code": "XOG",
-    "city": "Orange",
-    "country": "France",
-    "lat": 44.140499114990234,
-    "lon": 4.866720199584961
-  },
-  {
     "name": "Perpignan-Rivesaltes (Llabanère) Airport",
     "code": "PGF",
     "city": "Perpignan",
@@ -8328,28 +7872,12 @@
     "lon": 4.901830196380615
   },
   {
-    "name": "Mende-Brenoux Airfield",
-    "code": "MEN",
-    "city": "Mende",
-    "country": "France",
-    "lat": 44.502102,
-    "lon": 3.53282
-  },
-  {
     "name": "Paris Beauvais Tillé Airport",
     "code": "BVA",
     "city": "Beauvais",
     "country": "France",
     "lat": 49.45439910888672,
     "lon": 2.1127800941467285
-  },
-  {
-    "name": "Évreux-Fauville (BA 105) Air Base",
-    "code": "EVX",
-    "city": "Evreux",
-    "country": "France",
-    "lat": 49.02870178222656,
-    "lon": 1.2198599576950073
   },
   {
     "name": "Le Havre Octeville Airport",
@@ -8366,14 +7894,6 @@
     "country": "France",
     "lat": 50.143501,
     "lon": 1.831891
-  },
-  {
-    "name": "Orléans-Bricy (BA 123) Air Base",
-    "code": "ORE",
-    "city": "Orleans",
-    "country": "France",
-    "lat": 47.9878005981,
-    "lon": 1.7605600357100002
   },
   {
     "name": "Châlons-Vatry Airport",
@@ -8424,14 +7944,6 @@
     "lon": 2.441390037536621
   },
   {
-    "name": "Creil Air Base",
-    "code": "CSF",
-    "city": "Creil",
-    "country": "France",
-    "lat": 49.253501892089844,
-    "lon": 2.5191400051116943
-  },
-  {
     "name": "Charles de Gaulle International Airport",
     "code": "CDG",
     "city": "Paris",
@@ -8462,14 +7974,6 @@
     "country": "France",
     "lat": 49.096667,
     "lon": 2.040833
-  },
-  {
-    "name": "Villacoublay-Vélizy (BA 107) Air Base",
-    "code": "VIY",
-    "city": "Villacoublay",
-    "country": "France",
-    "lat": 48.7741667,
-    "lon": 2.1916667
   },
   {
     "name": "Nevers-Fourchambault Airport",
@@ -8576,14 +8080,6 @@
     "lon": -1.3786300420761108
   },
   {
-    "name": "Landivisiau Air Base",
-    "code": "LDV",
-    "city": "Landivisiau",
-    "country": "France",
-    "lat": 48.53030014038086,
-    "lon": -4.151639938354492
-  },
-  {
     "name": "Caen-Carpiquet Airport",
     "code": "CFR",
     "city": "Caen",
@@ -8680,14 +8176,6 @@
     "lon": 5.09
   },
   {
-    "name": "Metz-Frescaty (BA 128) Air Base",
-    "code": "MZM",
-    "city": "Metz",
-    "country": "France",
-    "lat": 49.07170104980469,
-    "lon": 6.131669998168945
-  },
-  {
     "name": "Épinal-Mirecourt Airport",
     "code": "EPL",
     "city": "Epinal",
@@ -8702,14 +8190,6 @@
     "country": "France",
     "lat": 48.692100524902344,
     "lon": 6.230460166931152
-  },
-  {
-    "name": "Reims-Champagne (BA 112) Air Base",
-    "code": "RHE",
-    "city": "Reims",
-    "country": "France",
-    "lat": 49.310001,
-    "lon": 4.05
   },
   {
     "name": "Strasbourg Airport",
@@ -8750,22 +8230,6 @@
     "country": "Saint Pierre and Miquelon",
     "lat": 46.762901306152344,
     "lon": -56.173099517822266
-  },
-  {
-    "name": "Andravida Air Base",
-    "code": "PYR",
-    "city": "Andravida",
-    "country": "Greece",
-    "lat": 37.9207,
-    "lon": 21.292601
-  },
-  {
-    "name": "Agrinion Air Base",
-    "code": "AGQ",
-    "city": "Agrinion",
-    "country": "Greece",
-    "lat": 38.602001,
-    "lon": 21.3512001
   },
   {
     "name": "Dimokritos Airport",
@@ -9072,14 +8536,6 @@
     "lon": 17.4032
   },
   {
-    "name": "Lecce Galatina Air Base",
-    "code": "LCC",
-    "city": "Lecce",
-    "country": "Italy",
-    "lat": 40.239201,
-    "lon": 18.133301
-  },
-  {
     "name": "Pescara International Airport",
     "code": "PSR",
     "city": "Pescara",
@@ -9152,28 +8608,12 @@
     "lon": 12.488
   },
   {
-    "name": "Sigonella Navy Air Base",
-    "code": "NSY",
-    "city": "Sigonella",
-    "country": "Italy",
-    "lat": 37.401699,
-    "lon": 14.9224
-  },
-  {
     "name": "Alghero-Fertilia Airport",
     "code": "AHO",
     "city": "Alghero",
     "country": "Italy",
     "lat": 40.632099,
     "lon": 8.29077
-  },
-  {
-    "name": "Decimomannu Air Base",
-    "code": "DCI",
-    "city": "Decimomannu",
-    "country": "Italy",
-    "lat": 39.354198,
-    "lon": 8.97248
   },
   {
     "name": "Cagliari Elmas Airport",
@@ -9262,14 +8702,6 @@
     "country": "Italy",
     "lat": 44.547001,
     "lon": 7.62322
-  },
-  {
-    "name": "Aviano Air Base",
-    "code": "AVB",
-    "city": "Aviano",
-    "country": "Italy",
-    "lat": 46.031898,
-    "lon": 12.596503
   },
   {
     "name": "Bolzano Airport",
@@ -9392,14 +8824,6 @@
     "lon": 10.2394
   },
   {
-    "name": "Latina Air Base",
-    "code": "QLT",
-    "city": "Latina",
-    "country": "Italy",
-    "lat": 41.5424,
-    "lon": 12.909
-  },
-  {
     "name": "Naples International Airport",
     "code": "NAP",
     "city": "Naples",
@@ -9422,14 +8846,6 @@
     "country": "Italy",
     "lat": 43.810001,
     "lon": 11.2051
-  },
-  {
-    "name": "Grosseto Air Base",
-    "code": "GRS",
-    "city": "Grosseto",
-    "country": "Italy",
-    "lat": 42.759701,
-    "lon": 11.0719
   },
   {
     "name": "Perugia San Francesco d'Assisi – Umbria International Airport",
@@ -9496,14 +8912,6 @@
     "lon": 15.73859977722168
   },
   {
-    "name": "Přerov Air Base",
-    "code": "PRV",
-    "city": "Prerov",
-    "country": "Czech Republic",
-    "lat": 49.42580032348633,
-    "lon": 17.404699325561523
-  },
-  {
     "name": "Václav Havel Airport Prague",
     "code": "PRG",
     "city": "Prague",
@@ -9552,14 +8960,6 @@
     "lon": 34.96009826660156
   },
   {
-    "name": "Ein Yahav Airfield",
-    "code": "EIY",
-    "city": "Eyn-yahav",
-    "country": "Israel",
-    "lat": 30.621700286865234,
-    "lon": 35.20330047607422
-  },
-  {
     "name": "Haifa International Airport",
     "code": "HFA",
     "city": "Haifa",
@@ -9576,36 +8976,12 @@
     "lon": 35.5718994140625
   },
   {
-    "name": "Bar Yehuda Airfield",
-    "code": "MTZ",
-    "city": "Metzada",
-    "country": "Israel",
-    "lat": 31.32819938659668,
-    "lon": 35.38859939575195
-  },
-  {
-    "name": "Nevatim Air Base",
-    "code": "VTM",
-    "city": "Nevatim",
-    "country": "Israel",
-    "lat": 31.208299636799996,
-    "lon": 35.012298584
-  },
-  {
     "name": "Ovda International Airport",
     "code": "VDA",
     "city": "Ovda",
     "country": "Israel",
     "lat": 29.94029998779297,
     "lon": 34.93579864501953
-  },
-  {
-    "name": "Ramon Air Base",
-    "code": "MIP",
-    "city": "Ramon",
-    "country": "Israel",
-    "lat": 30.776100158691406,
-    "lon": 34.66669845581055
   },
   {
     "name": "Sde Dov Airport",
@@ -9662,14 +9038,6 @@
     "country": "Austria",
     "lat": 48.110298156738,
     "lon": 16.569700241089
-  },
-  {
-    "name": "Alverca Air Base",
-    "code": "AVR",
-    "city": "Alverca",
-    "country": "Portugal",
-    "lat": 38.883301,
-    "lon": -9.0301
   },
   {
     "name": "Santa Maria Airport",
@@ -9750,14 +9118,6 @@
     "country": "Portugal",
     "lat": 38.761799,
     "lon": -27.090799
-  },
-  {
-    "name": "Monte Real Air Base",
-    "code": "QLR",
-    "city": "Monte Real",
-    "country": "Portugal",
-    "lat": 39.828335,
-    "lon": -8.8875
   },
   {
     "name": "João Paulo II Airport",
@@ -10000,14 +9360,6 @@
     "lon": 7.326759815220001
   },
   {
-    "name": "Emmen Air Base",
-    "code": "EML",
-    "city": "Emmen",
-    "country": "Switzerland",
-    "lat": 47.092444,
-    "lon": 8.305184
-  },
-  {
     "name": "Lugano Airport",
     "code": "LUG",
     "city": "Lugano",
@@ -10064,28 +9416,12 @@
     "lon": 32.995098114
   },
   {
-    "name": "Etimesgut Air Base",
-    "code": "ANK",
-    "city": "Ankara",
-    "country": "Turkey",
-    "lat": 39.949798584,
-    "lon": 32.6885986328
-  },
-  {
     "name": "Adana Airport",
     "code": "ADA",
     "city": "Adana",
     "country": "Turkey",
     "lat": 36.9822006226,
     "lon": 35.280399322499996
-  },
-  {
-    "name": "İncirlik Air Base",
-    "code": "UAB",
-    "city": "Adana",
-    "country": "Turkey",
-    "lat": 37.002101898199996,
-    "lon": 35.4258995056
   },
   {
     "name": "Afyon Airport",
@@ -10190,14 +9526,6 @@
     "country": "Turkey",
     "lat": 40.31800079345703,
     "lon": 27.977699279785156
-  },
-  {
-    "name": "Eskişehir Air Base",
-    "code": "ESK",
-    "city": "Eskisehir",
-    "country": "Turkey",
-    "lat": 39.7840995789,
-    "lon": 30.582099914599997
   },
   {
     "name": "Adnan Menderes International Airport",
@@ -12232,14 +11560,6 @@
     "lon": 170.1280059814453
   },
   {
-    "name": "Hokitika Airfield",
-    "code": "HKK",
-    "city": "Hokitika",
-    "country": "New Zealand",
-    "lat": -42.713600158691406,
-    "lon": 170.98500061035156
-  },
-  {
     "name": "Hamilton International Airport",
     "code": "HLZ",
     "city": "Hamilton",
@@ -12566,14 +11886,6 @@
     "country": "Saudi Arabia",
     "lat": 26.471200942993164,
     "lon": 49.79790115356445
-  },
-  {
-    "name": "King Abdulaziz Air Base",
-    "code": "DHA",
-    "city": "Dhahran",
-    "country": "Saudi Arabia",
-    "lat": 26.265399932900003,
-    "lon": 50.152000427199994
   },
   {
     "name": "Jizan Regional Airport",
@@ -13152,14 +12464,6 @@
     "lon": 35.488399505615234
   },
   {
-    "name": "Rene Mouawad Air Base",
-    "code": "KYE",
-    "city": "Kleiat",
-    "country": "Lebanon",
-    "lat": 34.589298248291016,
-    "lon": 36.01129913330078
-  },
-  {
     "name": "Abu Dhabi International Airport",
     "code": "AUH",
     "city": "Abu Dhabi",
@@ -13174,14 +12478,6 @@
     "country": "United Arab Emirates",
     "lat": 24.428300857543945,
     "lon": 54.458099365234375
-  },
-  {
-    "name": "Al Dhafra Air Base",
-    "code": "DHF",
-    "city": "Abu Dhabi",
-    "country": "United Arab Emirates",
-    "lat": 24.248199462900004,
-    "lon": 54.547698974599996
   },
   {
     "name": "Dubai International Airport",
@@ -13216,22 +12512,6 @@
     "lon": 55.5172004699707
   },
   {
-    "name": "Khasab Air Base",
-    "code": "KHS",
-    "city": "Khasab",
-    "country": "Oman",
-    "lat": 26.17099952697754,
-    "lon": 56.2406005859375
-  },
-  {
-    "name": "Masirah Air Base",
-    "code": "MSH",
-    "city": "Masirah",
-    "country": "Oman",
-    "lat": 20.675399780273438,
-    "lon": 58.890499114990234
-  },
-  {
     "name": "Muscat International Airport",
     "code": "MCT",
     "city": "Muscat",
@@ -13246,14 +12526,6 @@
     "country": "Oman",
     "lat": 17.038700103759766,
     "lon": 54.09130096435547
-  },
-  {
-    "name": "Thumrait Air Base",
-    "code": "TTH",
-    "city": "Thumrait",
-    "country": "Oman",
-    "lat": 17.666000366210938,
-    "lon": 54.024600982666016
   },
   {
     "name": "Bhagatanwala Airport",
@@ -13288,14 +12560,6 @@
     "lon": 74.33360290527344
   },
   {
-    "name": "Shahbaz Air Base",
-    "code": "JAG",
-    "city": "Jacobsbad",
-    "country": "Pakistan",
-    "lat": 28.28420066833496,
-    "lon": 68.44969940185547
-  },
-  {
     "name": "Jinnah International Airport",
     "code": "KHI",
     "city": "Karachi",
@@ -13326,14 +12590,6 @@
     "country": "Pakistan",
     "lat": 34.3390007019043,
     "lon": 73.50859832763672
-  },
-  {
-    "name": "Mianwali Air Base",
-    "code": "MWD",
-    "city": "Mianwali",
-    "country": "Pakistan",
-    "lat": 32.5630989074707,
-    "lon": 71.5707015991211
   },
   {
     "name": "Moenjodaro Airport",
@@ -13480,14 +12736,6 @@
     "lon": 36.51559829711914
   },
   {
-    "name": "Deir ez-Zor Air Base",
-    "code": "DEZ",
-    "city": "Deire Zor",
-    "country": "Syria",
-    "lat": 35.2854,
-    "lon": 40.175999
-  },
-  {
     "name": "Bassel Al-Assad International Airport",
     "code": "LTK",
     "city": "Latakia",
@@ -13536,14 +12784,6 @@
     "lon": 145.729004
   },
   {
-    "name": "Andersen Air Force Base",
-    "code": "UAM",
-    "city": "Andersen",
-    "country": "Guam",
-    "lat": 13.584,
-    "lon": 144.929998
-  },
-  {
     "name": "Antonio B. Won Pat International Airport",
     "code": "GUM",
     "city": "Agana",
@@ -13566,14 +12806,6 @@
     "country": "Marshall Islands",
     "lat": 7.064760208129883,
     "lon": 171.27200317382812
-  },
-  {
-    "name": "Bucholz Army Air Field",
-    "code": "KWA",
-    "city": "Kwajalein",
-    "country": "Marshall Islands",
-    "lat": 8.720120429992676,
-    "lon": 167.73199462890625
   },
   {
     "name": "Cassidy International Airport",
@@ -13694,14 +12926,6 @@
     "country": "Taiwan",
     "lat": 22.95039939880371,
     "lon": 120.20600128173828
-  },
-  {
-    "name": "Hsinchu Air Base",
-    "code": "HSZ",
-    "city": "Hsinchu",
-    "country": "Taiwan",
-    "lat": 24.8180007935,
-    "lon": 120.939002991
   },
   {
     "name": "Makung Airport",
@@ -14112,14 +13336,6 @@
     "lon": 134.167007446
   },
   {
-    "name": "Tokushima Airport/JMSDF Air Base",
-    "code": "TKS",
-    "city": "Tokushima",
-    "country": "Japan",
-    "lat": 34.132801,
-    "lon": 134.606995
-  },
-  {
     "name": "Takamatsu Airport",
     "code": "TAK",
     "city": "Takamatsu",
@@ -14176,28 +13392,12 @@
     "lon": 140.218994140625
   },
   {
-    "name": "Misawa Air Base",
-    "code": "MSJ",
-    "city": "Misawa",
-    "country": "Japan",
-    "lat": 40.703201293899994,
-    "lon": 141.367996216
-  },
-  {
     "name": "Sendai Airport",
     "code": "SDJ",
     "city": "Sendai",
     "country": "Japan",
     "lat": 38.1397018433,
     "lon": 140.917007446
-  },
-  {
-    "name": "Atsugi Naval Air Facility",
-    "code": "NJA",
-    "city": "Atsugi",
-    "country": "Japan",
-    "lat": 35.4546012878418,
-    "lon": 139.4499969482422
   },
   {
     "name": "Hachijojima Airport",
@@ -14222,14 +13422,6 @@
     "country": "Japan",
     "lat": 35.552299,
     "lon": 139.779999
-  },
-  {
-    "name": "Yokota Air Base",
-    "code": "OKO",
-    "city": "Yokota",
-    "country": "Japan",
-    "lat": 35.74850082397461,
-    "lon": 139.34800720214844
   },
   {
     "name": "Gwangju Airport",
@@ -14296,22 +13488,6 @@
     "lon": 129.352005005
   },
   {
-    "name": "Seoul Air Base (K-16)",
-    "code": "SSN",
-    "city": "Seoul East",
-    "country": "South Korea",
-    "lat": 37.444744,
-    "lon": 127.112718
-  },
-  {
-    "name": "Osan Air Base",
-    "code": "OSN",
-    "city": "Osan",
-    "country": "South Korea",
-    "lat": 37.090599,
-    "lon": 127.029999
-  },
-  {
     "name": "Gimpo International Airport",
     "code": "GMP",
     "city": "Seoul",
@@ -14358,14 +13534,6 @@
     "country": "Japan",
     "lat": 26.1958007812,
     "lon": 127.646003723
-  },
-  {
-    "name": "Kadena Air Base",
-    "code": "DNA",
-    "city": "Kadena",
-    "country": "Japan",
-    "lat": 26.3556,
-    "lon": 127.767998
   },
   {
     "name": "New Ishigaki Airport",
@@ -15758,14 +14926,6 @@
     "country": "Brazil",
     "lat": -21.136388778686523,
     "lon": -47.776668548583984
-  },
-  {
-    "name": "Santa Cruz Air Force Base",
-    "code": "SNZ",
-    "city": "Rio De Janeiro",
-    "country": "Brazil",
-    "lat": -22.9324,
-    "lon": -43.719101
   },
   {
     "name": "Professor Urbano Ernesto Stumpf Airport",
@@ -18232,14 +17392,6 @@
     "lon": 37.4146
   },
   {
-    "name": "Migalovo Air Base",
-    "code": "KLD",
-    "city": "Tver",
-    "country": "Russia",
-    "lat": 56.82469940185547,
-    "lon": 35.7577018737793
-  },
-  {
     "name": "Voronezh International Airport",
     "code": "VOZ",
     "city": "Voronezh",
@@ -18534,14 +17686,6 @@
     "country": "Sri Lanka",
     "lat": 7.180759906768799,
     "lon": 79.88410186767578
-  },
-  {
-    "name": "Anuradhapura Air Force Base",
-    "code": "ACJ",
-    "city": "Anuradhapura",
-    "country": "Sri Lanka",
-    "lat": 8.30148983002,
-    "lon": 80.42790222170001
   },
   {
     "name": "Batticaloa Airport",
@@ -19304,14 +18448,6 @@
     "lon": 78.06559753418
   },
   {
-    "name": "Tanjore Air Force Base",
-    "code": "TJV",
-    "city": "Tanjore",
-    "country": "India",
-    "lat": 10.722399711608887,
-    "lon": 79.10160064697266
-  },
-  {
     "name": "Tirupati Airport",
     "code": "TIR",
     "city": "Tirupeti",
@@ -19534,14 +18670,6 @@
     "country": "Vietnam",
     "lat": 21.221200942993164,
     "lon": 105.80699920654297
-  },
-  {
-    "name": "Nha Trang Air Base",
-    "code": "NHA",
-    "city": "Nhatrang",
-    "country": "Vietnam",
-    "lat": 12.2275,
-    "lon": 109.192001
   },
   {
     "name": "Phu Bai Airport",
@@ -20024,14 +19152,6 @@
     "lon": 100.280998
   },
   {
-    "name": "Soewondo Air Force Base",
-    "code": "MES",
-    "city": "Medan",
-    "country": "Indonesia",
-    "lat": 3.559167,
-    "lon": 98.671111
-  },
-  {
     "name": "Dr Ferdinand Lumban Tobing Airport",
     "code": "FLZ",
     "city": "Sibolga",
@@ -20230,22 +19350,6 @@
     "country": "East Timor",
     "lat": -8.489029884339999,
     "lon": 126.401000977
-  },
-  {
-    "name": "Paya Lebar Air Base",
-    "code": "QPG",
-    "city": "Paya Lebar",
-    "country": "Singapore",
-    "lat": 1.3604199886322021,
-    "lon": 103.91000366210938
-  },
-  {
-    "name": "Tengah Air Base",
-    "code": "TGA",
-    "city": "Tengah",
-    "country": "Singapore",
-    "lat": 1.38725996017,
-    "lon": 103.708999634
   },
   {
     "name": "Seletar Airport",
@@ -20494,14 +19598,6 @@
     "country": "Australia",
     "lat": -31.94029998779297,
     "lon": 115.96700286865234
-  },
-  {
-    "name": "Woomera Airfield",
-    "code": "UMR",
-    "city": "Woomera",
-    "country": "Australia",
-    "lat": -31.14419937133789,
-    "lon": 136.81700134277344
   },
   {
     "name": "Christmas Island Airport",
@@ -21104,14 +20200,6 @@
     "lon": -121.2979965
   },
   {
-    "name": "Bicycle Lake Army Air Field",
-    "code": "BYS",
-    "city": "Fort Irwin",
-    "country": "United States",
-    "lat": 35.2804985046,
-    "lon": -116.629997253
-  },
-  {
     "name": "Fort Smith Regional Airport",
     "code": "FSM",
     "city": "Fort Smith",
@@ -21144,14 +20232,6 @@
     "lon": -97.09980011
   },
   {
-    "name": "Hunter Army Air Field",
-    "code": "SVN",
-    "city": "Hunter Aaf",
-    "country": "United States",
-    "lat": 32.00999832,
-    "lon": -81.14569855
-  },
-  {
     "name": "Grand Forks International Airport",
     "code": "GFK",
     "city": "Grand Forks",
@@ -21166,14 +20246,6 @@
     "country": "United States",
     "lat": 34.1731,
     "lon": -91.9356
-  },
-  {
-    "name": "Whiting Field Naval Air Station - North",
-    "code": "NSE",
-    "city": "Milton",
-    "country": "United States",
-    "lat": 30.7241993,
-    "lon": -87.02189636
   },
   {
     "name": "Hana Airport",
@@ -21208,14 +20280,6 @@
     "lon": -71.00520325
   },
   {
-    "name": "Travis Air Force Base",
-    "code": "SUU",
-    "city": "Fairfield",
-    "country": "United States",
-    "lat": 38.262699127197,
-    "lon": -121.92700195312
-  },
-  {
     "name": "Griffiss International Airport",
     "code": "RME",
     "city": "Rome",
@@ -21246,14 +20310,6 @@
     "country": "United States",
     "lat": 37.721298,
     "lon": -122.221001
-  },
-  {
-    "name": "Eppley Airfield",
-    "code": "OMA",
-    "city": "Omaha",
-    "country": "United States",
-    "lat": 41.3032,
-    "lon": -95.894096
   },
   {
     "name": "Kahului Airport",
@@ -21408,14 +20464,6 @@
     "lon": -109.603996277
   },
   {
-    "name": "Allen Army Airfield",
-    "code": "BIG",
-    "city": "Delta Junction",
-    "country": "United States",
-    "lat": 63.9944992065,
-    "lon": -145.722000122
-  },
-  {
     "name": "TSTC Waco Airport",
     "code": "CNW",
     "city": "Waco",
@@ -21438,22 +20486,6 @@
     "country": "United States",
     "lat": 46.871498107899995,
     "lon": -68.0178985596
-  },
-  {
-    "name": "Little Rock Air Force Base",
-    "code": "LRF",
-    "city": "Jacksonville",
-    "country": "United States",
-    "lat": 34.916900634799994,
-    "lon": -92.14969635010002
-  },
-  {
-    "name": "Redstone Army Air Field",
-    "code": "HUA",
-    "city": "Redstone",
-    "country": "United States",
-    "lat": 34.67869949,
-    "lon": -86.68479919
   },
   {
     "name": "Pope Field",
@@ -21502,14 +20534,6 @@
     "country": "United States",
     "lat": 41.4117012024,
     "lon": -81.8498001099
-  },
-  {
-    "name": "Dover Air Force Base",
-    "code": "DOV",
-    "city": "Dover",
-    "country": "United States",
-    "lat": 39.12950134,
-    "lon": -75.46600342
   },
   {
     "name": "Cincinnati Northern Kentucky International Airport",
@@ -21568,14 +20592,6 @@
     "lon": -116.223
   },
   {
-    "name": "Creech Air Force Base",
-    "code": "INS",
-    "city": "Indian Springs",
-    "country": "United States",
-    "lat": 36.587200164799995,
-    "lon": -115.672996521
-  },
-  {
     "name": "Garden City Regional Airport",
     "code": "GCK",
     "city": "Garden City",
@@ -21590,22 +20606,6 @@
     "country": "United States",
     "lat": 48.2593994140625,
     "lon": -101.27999877929688
-  },
-  {
-    "name": "Wheeler Army Airfield",
-    "code": "HHI",
-    "city": "Wahiawa",
-    "country": "United States",
-    "lat": 21.48349953,
-    "lon": -158.0399933
-  },
-  {
-    "name": "Maxwell Air Force Base",
-    "code": "MXF",
-    "city": "Montgomery",
-    "country": "United States",
-    "lat": 32.3829,
-    "lon": -86.365799
   },
   {
     "name": "Dallas Love Field",
@@ -21640,14 +20640,6 @@
     "lon": -117.1429977
   },
   {
-    "name": "Luke Air Force Base",
-    "code": "LUF",
-    "city": "Phoenix",
-    "country": "United States",
-    "lat": 33.534999847399995,
-    "lon": -112.383003235
-  },
-  {
     "name": "Jack Northrop Field Hawthorne Municipal Airport",
     "code": "HHR",
     "city": "Hawthorne",
@@ -21662,30 +20654,6 @@
     "country": "United States",
     "lat": 46.1231002808,
     "lon": -67.792098999
-  },
-  {
-    "name": "Vance Air Force Base",
-    "code": "END",
-    "city": "Enid",
-    "country": "United States",
-    "lat": 36.339199066199996,
-    "lon": -97.9164962769
-  },
-  {
-    "name": "Point Mugu Naval Air Station (Naval Base Ventura Co)",
-    "code": "NTD",
-    "city": "Point Mugu",
-    "country": "United States",
-    "lat": 34.120300293,
-    "lon": -119.121002197
-  },
-  {
-    "name": "Edwards Air Force Base",
-    "code": "EDW",
-    "city": "Edwards Afb",
-    "country": "United States",
-    "lat": 34.905399,
-    "lon": -117.884003
   },
   {
     "name": "Lake Charles Regional Airport",
@@ -21712,28 +20680,12 @@
     "lon": -78.9282989502
   },
   {
-    "name": "Lemoore Naval Air Station (Reeves Field) Airport",
-    "code": "NLC",
-    "city": "Lemoore",
-    "country": "United States",
-    "lat": 36.33300018,
-    "lon": -119.9520035
-  },
-  {
     "name": "Nantucket Memorial Airport",
     "code": "ACK",
     "city": "Nantucket",
     "country": "United States",
     "lat": 41.25310135,
     "lon": -70.06020355
-  },
-  {
-    "name": "Felker Army Air Field",
-    "code": "FAF",
-    "city": "Fort Eustis",
-    "country": "United States",
-    "lat": 37.132499694799996,
-    "lon": -76.60880279540001
   },
   {
     "name": "Campbell AAF (Fort Campbell) Air Field",
@@ -21750,14 +20702,6 @@
     "country": "United States",
     "lat": 38.8521,
     "lon": -77.037697
-  },
-  {
-    "name": "Patuxent River Naval Air Station (Trapnell Field)",
-    "code": "NHK",
-    "city": "Patuxent River",
-    "country": "United States",
-    "lat": 38.285999,
-    "lon": -76.411797
   },
   {
     "name": "Palacios Municipal Airport",
@@ -21784,14 +20728,6 @@
     "lon": -74.57720184326172
   },
   {
-    "name": "Tinker Air Force Base",
-    "code": "TIK",
-    "city": "Oklahoma City",
-    "country": "United States",
-    "lat": 35.414699554443,
-    "lon": -97.386596679688
-  },
-  {
     "name": "Elizabeth City Regional Airport & Coast Guard Air Station",
     "code": "ECG",
     "city": "Elizabeth City",
@@ -21814,14 +20750,6 @@
     "country": "United States",
     "lat": 46.68899918,
     "lon": -68.0447998
-  },
-  {
-    "name": "Gray Army Air Field",
-    "code": "GRF",
-    "city": "Fort Lewis",
-    "country": "United States",
-    "lat": 47.07920074,
-    "lon": -122.5810013
   },
   {
     "name": "Kodiak Airport",
@@ -21870,38 +20798,6 @@
     "country": "United States",
     "lat": 34.4337997437,
     "lon": -100.288002014
-  },
-  {
-    "name": "Keesler Air Force Base",
-    "code": "BIX",
-    "city": "Biloxi",
-    "country": "United States",
-    "lat": 30.4104003906,
-    "lon": -88.92440032959999
-  },
-  {
-    "name": "Lawson Army Air Field (Fort Benning)",
-    "code": "LSF",
-    "city": "Fort Benning",
-    "country": "United States",
-    "lat": 32.337299346900004,
-    "lon": -84.9913024902
-  },
-  {
-    "name": "Kingsville Naval Air Station",
-    "code": "NQI",
-    "city": "Kingsville",
-    "country": "United States",
-    "lat": 27.5072002411,
-    "lon": -97.8097000122
-  },
-  {
-    "name": "Marshall Army Air Field",
-    "code": "FRI",
-    "city": "Fort Riley",
-    "country": "United States",
-    "lat": 39.05530167,
-    "lon": -96.76450348
   },
   {
     "name": "Harrisburg International Airport",
@@ -22048,22 +20944,6 @@
     "lon": -81.11949920654297
   },
   {
-    "name": "Davis Monthan Air Force Base",
-    "code": "DMA",
-    "city": "Tucson",
-    "country": "United States",
-    "lat": 32.1665000916,
-    "lon": -110.883003235
-  },
-  {
-    "name": "Pensacola Naval Air Station/Forrest Sherman Field",
-    "code": "NPA",
-    "city": "Pensacola",
-    "country": "United States",
-    "lat": 30.35269928,
-    "lon": -87.31860352
-  },
-  {
     "name": "Pensacola Regional Airport",
     "code": "PNS",
     "city": "Pensacola",
@@ -22072,28 +20952,12 @@
     "lon": -87.186599731445
   },
   {
-    "name": "Grand Forks Air Force Base",
-    "code": "RDR",
-    "city": "Red River",
-    "country": "United States",
-    "lat": 47.961101532,
-    "lon": -97.4011993408
-  },
-  {
     "name": "William P Hobby Airport",
     "code": "HOU",
     "city": "Houston",
     "country": "United States",
     "lat": 29.64539909,
     "lon": -95.27890015
-  },
-  {
-    "name": "Buckley Air Force Base",
-    "code": "BFK",
-    "city": "Buckley",
-    "country": "United States",
-    "lat": 39.701698303200004,
-    "lon": -104.751998901
   },
   {
     "name": "Northway Airport",
@@ -22136,28 +21000,12 @@
     "lon": -95.1587982178
   },
   {
-    "name": "Whidbey Island Naval Air Station (Ault Field)",
-    "code": "NUW",
-    "city": "Whidbey Island",
-    "country": "United States",
-    "lat": 48.351799,
-    "lon": -122.655998
-  },
-  {
     "name": "Alice International Airport",
     "code": "ALI",
     "city": "Alice",
     "country": "United States",
     "lat": 27.740900039699998,
     "lon": -98.02690124510002
-  },
-  {
-    "name": "Moody Air Force Base",
-    "code": "VAD",
-    "city": "Valdosta",
-    "country": "United States",
-    "lat": 30.9678001404,
-    "lon": -83.1930007935
   },
   {
     "name": "Miami International Airport",
@@ -22216,14 +21064,6 @@
     "lon": -118.1520004
   },
   {
-    "name": "Dillingham Airfield",
-    "code": "HDH",
-    "city": "Dillingham",
-    "country": "United States",
-    "lat": 21.5795001984,
-    "lon": -158.197006226
-  },
-  {
     "name": "Williamsport Regional Airport",
     "code": "IPT",
     "city": "Williamsport",
@@ -22238,14 +21078,6 @@
     "country": "United States",
     "lat": 39.7173,
     "lon": -86.294403
-  },
-  {
-    "name": "Whiteman Air Force Base",
-    "code": "SZL",
-    "city": "Knobnoster",
-    "country": "United States",
-    "lat": 38.73030090332,
-    "lon": -93.547897338867
   },
   {
     "name": "Akron Fulton International Airport",
@@ -22304,22 +21136,6 @@
     "lon": -80.08509827
   },
   {
-    "name": "North Island Naval Air Station-Halsey Field",
-    "code": "NZY",
-    "city": "San Diego",
-    "country": "United States",
-    "lat": 32.69919968,
-    "lon": -117.2149963
-  },
-  {
-    "name": "Biggs Army Air Field (Fort Bliss)",
-    "code": "BIF",
-    "city": "El Paso",
-    "country": "United States",
-    "lat": 31.84950066,
-    "lon": -106.3799973
-  },
-  {
     "name": "Yuma MCAS/Yuma International Airport",
     "code": "YUM",
     "city": "Yuma",
@@ -22358,14 +21174,6 @@
     "country": "United States",
     "lat": 38.2280006409,
     "lon": -85.6636962891
-  },
-  {
-    "name": "Sierra Vista Municipal Libby Army Air Field",
-    "code": "FHU",
-    "city": "Fort Huachuca",
-    "country": "United States",
-    "lat": 31.588499069213867,
-    "lon": -110.34400177001953
   },
   {
     "name": "Lihue Airport",
@@ -22456,14 +21264,6 @@
     "lon": -81.20210266
   },
   {
-    "name": "Hill Air Force Base",
-    "code": "HIF",
-    "city": "Ogden",
-    "country": "United States",
-    "lat": 41.12403,
-    "lon": -111.973086
-  },
-  {
     "name": "Nome Airport",
     "code": "OME",
     "city": "Nome",
@@ -22520,28 +21320,12 @@
     "lon": -77.67240142822266
   },
   {
-    "name": "Patrick Air Force Base",
-    "code": "COF",
-    "city": "Coco Beach",
-    "country": "United States",
-    "lat": 28.2348995209,
-    "lon": -80.6100997925
-  },
-  {
     "name": "Teterboro Airport",
     "code": "TEB",
     "city": "Teterboro",
     "country": "United States",
     "lat": 40.85010147089999,
     "lon": -74.060798645
-  },
-  {
-    "name": "Ellsworth Air Force Base",
-    "code": "RCA",
-    "city": "Rapid City",
-    "country": "United States",
-    "lat": 44.14500046,
-    "lon": -103.1039963
   },
   {
     "name": "Raleigh Durham International Airport",
@@ -22616,14 +21400,6 @@
     "lon": -92.2957992554
   },
   {
-    "name": "Altus Air Force Base",
-    "code": "LTS",
-    "city": "Altus",
-    "country": "United States",
-    "lat": 34.667098999,
-    "lon": -99.2667007446
-  },
-  {
     "name": "Tucson International Airport",
     "code": "TUS",
     "city": "Tucson",
@@ -22632,36 +21408,12 @@
     "lon": -110.94100189208984
   },
   {
-    "name": "Minot Air Force Base",
-    "code": "MIB",
-    "city": "Minot",
-    "country": "United States",
-    "lat": 48.4156,
-    "lon": -101.358002
-  },
-  {
-    "name": "Beale Air Force Base",
-    "code": "BAB",
-    "city": "Marysville",
-    "country": "United States",
-    "lat": 39.136100769,
-    "lon": -121.43699646
-  },
-  {
     "name": "Greater Kankakee Airport",
     "code": "IKK",
     "city": "Kankakee",
     "country": "United States",
     "lat": 41.07139968869999,
     "lon": -87.8462982178
-  },
-  {
-    "name": "Seymour Johnson Air Force Base",
-    "code": "GSB",
-    "city": "Goldsboro",
-    "country": "United States",
-    "lat": 35.33940125,
-    "lon": -77.96060181
   },
   {
     "name": "Theodore Francis Green State Airport",
@@ -22712,22 +21464,6 @@
     "lon": -97.2407989502
   },
   {
-    "name": "Polk Army Air Field",
-    "code": "POE",
-    "city": "Fort Polk",
-    "country": "United States",
-    "lat": 31.0447998,
-    "lon": -93.1917038
-  },
-  {
-    "name": "Eielson Air Force Base",
-    "code": "EIL",
-    "city": "Fairbanks",
-    "country": "United States",
-    "lat": 64.66570282,
-    "lon": -147.102005
-  },
-  {
     "name": "Range Regional Airport",
     "code": "HIB",
     "city": "Hibbing",
@@ -22766,14 +21502,6 @@
     "country": "United States",
     "lat": 34.30301,
     "lon": -97.0196342
-  },
-  {
-    "name": "Mc Guire Air Force Base",
-    "code": "WRI",
-    "city": "Wrightstown",
-    "country": "United States",
-    "lat": 40.0155983,
-    "lon": -74.59169769
   },
   {
     "name": "Augusta Regional At Bush Field",
@@ -22848,28 +21576,12 @@
     "lon": -84.51629639
   },
   {
-    "name": "Fairchild Air Force Base",
-    "code": "SKA",
-    "city": "Spokane",
-    "country": "United States",
-    "lat": 47.6151008606,
-    "lon": -117.65599823
-  },
-  {
     "name": "Roscommon County - Blodgett Memorial Airport",
     "code": "HTL",
     "city": "Houghton Lake",
     "country": "United States",
     "lat": 44.359798,
     "lon": -84.671095
-  },
-  {
-    "name": "Tyndall Air Force Base",
-    "code": "PAM",
-    "city": "Panama City",
-    "country": "United States",
-    "lat": 30.0695991516,
-    "lon": -85.57540130619999
   },
   {
     "name": "Dallas Fort Worth International Airport",
@@ -22886,14 +21598,6 @@
     "country": "United States",
     "lat": 28.102800369262695,
     "lon": -80.64530181884766
-  },
-  {
-    "name": "McChord Air Force Base",
-    "code": "TCM",
-    "city": "Tacoma",
-    "country": "United States",
-    "lat": 47.1376991272,
-    "lon": -122.475997925
   },
   {
     "name": "Austin Bergstrom International Airport",
@@ -22928,14 +21632,6 @@
     "lon": -83.9940033
   },
   {
-    "name": "Hood Army Air Field",
-    "code": "HLR",
-    "city": "Fort Hood",
-    "country": "United States",
-    "lat": 31.138700485199998,
-    "lon": -97.71450042720001
-  },
-  {
     "name": "St Louis Lambert International Airport",
     "code": "STL",
     "city": "St. Louis",
@@ -22950,14 +21646,6 @@
     "country": "United States",
     "lat": 39.367802,
     "lon": -75.072197
-  },
-  {
-    "name": "Sheppard Air Force Base-Wichita Falls Municipal Airport",
-    "code": "SPS",
-    "city": "Wichita Falls",
-    "country": "United States",
-    "lat": 33.9888,
-    "lon": -98.491898
   },
   {
     "name": "Cincinnati Municipal Airport Lunken Field",
@@ -22982,14 +21670,6 @@
     "country": "United States",
     "lat": 37.38050079,
     "lon": -120.5680008
-  },
-  {
-    "name": "Mc Clellan Airfield",
-    "code": "MCC",
-    "city": "Sacramento",
-    "country": "United States",
-    "lat": 38.66759872,
-    "lon": -121.401001
   },
   {
     "name": "Gerald R. Ford International Airport",
@@ -23048,14 +21728,6 @@
     "lon": -99.46160125732422
   },
   {
-    "name": "Elmendorf Air Force Base",
-    "code": "EDF",
-    "city": "Anchorage",
-    "country": "United States",
-    "lat": 61.250999450683594,
-    "lon": -149.8070068359375
-  },
-  {
     "name": "Ralph Wien Memorial Airport",
     "code": "OTZ",
     "city": "Kotzebue",
@@ -23070,14 +21742,6 @@
     "country": "United States",
     "lat": 40.29639816,
     "lon": -78.31999969
-  },
-  {
-    "name": "Dyess Air Force Base",
-    "code": "DYS",
-    "city": "Abilene",
-    "country": "United States",
-    "lat": 32.4207992554,
-    "lon": -99.854598999
   },
   {
     "name": "South Arkansas Regional At Goodwin Field",
@@ -23128,14 +21792,6 @@
     "lon": -69.7973022461
   },
   {
-    "name": "Jacksonville Naval Air Station (Towers Field)",
-    "code": "NIP",
-    "city": "Jacksonville",
-    "country": "United States",
-    "lat": 30.2358,
-    "lon": -81.680603
-  },
-  {
     "name": "McKellar-Sipes Regional Airport",
     "code": "MKL",
     "city": "Jackson",
@@ -23150,14 +21806,6 @@
     "country": "United States",
     "lat": 21.15290069580078,
     "lon": -157.0959930419922
-  },
-  {
-    "name": "Godman Army Air Field",
-    "code": "FTK",
-    "city": "Fort Knox",
-    "country": "United States",
-    "lat": 37.907100677500004,
-    "lon": -85.9720993042
   },
   {
     "name": "San Angelo Regional Mathis Field",
@@ -23312,14 +21960,6 @@
     "lon": -122.302001953125
   },
   {
-    "name": "Lackland Air Force Base",
-    "code": "SKF",
-    "city": "San Antonio",
-    "country": "United States",
-    "lat": 29.38419914,
-    "lon": -98.58110046
-  },
-  {
     "name": "Daniel K Inouye International Airport",
     "code": "HNL",
     "city": "Honolulu",
@@ -23358,14 +21998,6 @@
     "country": "United States",
     "lat": 32.51089859008789,
     "lon": -92.0376968383789
-  },
-  {
-    "name": "Shaw Air Force Base",
-    "code": "SSC",
-    "city": "Sumter",
-    "country": "United States",
-    "lat": 33.97269821,
-    "lon": -80.47059631
   },
   {
     "name": "Ontario International Airport",
@@ -23424,14 +22056,6 @@
     "lon": -74.9083023071
   },
   {
-    "name": "Fallon Naval Air Station",
-    "code": "NFL",
-    "city": "Fallon",
-    "country": "United States",
-    "lat": 39.41659927,
-    "lon": -118.7009964
-  },
-  {
     "name": "Selfridge Air National Guard Base Airport",
     "code": "MTC",
     "city": "Mount Clemens",
@@ -23462,14 +22086,6 @@
     "country": "United States",
     "lat": 43.11119842529297,
     "lon": -76.1063003540039
-  },
-  {
-    "name": "Naval Air Station Key West/Boca Chica Field",
-    "code": "NQX",
-    "city": "Key West",
-    "country": "United States",
-    "lat": 24.57579994,
-    "lon": -81.68890381
   },
   {
     "name": "Chicago Midway International Airport",
@@ -23552,14 +22168,6 @@
     "lon": -118.0849991
   },
   {
-    "name": "Randolph Air Force Base",
-    "code": "RND",
-    "city": "San Antonio",
-    "country": "United States",
-    "lat": 29.52969933,
-    "lon": -98.27890015
-  },
-  {
     "name": "El Centro NAF Airport (Vraciu Field)",
     "code": "NJK",
     "city": "El Centro",
@@ -23584,22 +22192,6 @@
     "lon": -94.17009735107422
   },
   {
-    "name": "Henry Post Army Air Field (Fort Sill)",
-    "code": "FSI",
-    "city": "Fort Sill",
-    "country": "United States",
-    "lat": 34.64979935,
-    "lon": -98.40219879
-  },
-  {
-    "name": "Wright-Patterson Air Force Base",
-    "code": "FFO",
-    "city": "Dayton",
-    "country": "United States",
-    "lat": 39.8260993958,
-    "lon": -84.0483016968
-  },
-  {
     "name": "Edward G. Pitka Sr Airport",
     "code": "GAL",
     "city": "Galena",
@@ -23614,14 +22206,6 @@
     "country": "United States",
     "lat": 32.7816009521,
     "lon": -98.0602035522
-  },
-  {
-    "name": "Mc Connell Air Force Base",
-    "code": "IAB",
-    "city": "Wichita",
-    "country": "United States",
-    "lat": 37.62189865,
-    "lon": -97.26820374
   },
   {
     "name": "New Orleans NAS JRB/Alvin Callender Field",
@@ -23656,14 +22240,6 @@
     "lon": -73.46810150146484
   },
   {
-    "name": "Phillips Army Air Field",
-    "code": "APG",
-    "city": "Aberdeen",
-    "country": "United States",
-    "lat": 39.466202,
-    "lon": -76.1688
-  },
-  {
     "name": "Tucumcari Municipal Airport",
     "code": "TCC",
     "city": "Tucumcari",
@@ -23678,14 +22254,6 @@
     "country": "United States",
     "lat": 61.174400329589844,
     "lon": -149.99600219726562
-  },
-  {
-    "name": "Robert Gray  Army Air Field Airport",
-    "code": "GRK",
-    "city": "Killeen",
-    "country": "United States",
-    "lat": 31.067199707,
-    "lon": -97.82890319820001
   },
   {
     "name": "Bellingham International Airport",
@@ -23736,14 +22304,6 @@
     "lon": -88.242797851562
   },
   {
-    "name": "Moffett Federal Airfield",
-    "code": "NUQ",
-    "city": "Mountain View",
-    "country": "United States",
-    "lat": 37.4161,
-    "lon": -122.049004
-  },
-  {
     "name": "Santa Fe Municipal Airport",
     "code": "SAF",
     "city": "Santa Fe",
@@ -23768,28 +22328,12 @@
     "lon": -93.33989715579999
   },
   {
-    "name": "Bradshaw Army Airfield",
-    "code": "BSF",
-    "city": "Bradshaw Field",
-    "country": "United States",
-    "lat": 19.760099411,
-    "lon": -155.554000854
-  },
-  {
     "name": "Nogales International Airport",
     "code": "OLS",
     "city": "Nogales",
     "country": "United States",
     "lat": 31.4177,
     "lon": -110.848
-  },
-  {
-    "name": "Mac Dill Air Force Base",
-    "code": "MCF",
-    "city": "Tampa",
-    "country": "United States",
-    "lat": 27.84930038,
-    "lon": -82.52120209
   },
   {
     "name": "Scott AFB/Midamerica Airport",
@@ -23832,14 +22376,6 @@
     "lon": -156.6490021
   },
   {
-    "name": "Muir Army Air Field (Fort Indiantown Gap) Airport",
-    "code": "MUI",
-    "city": "Muir",
-    "country": "United States",
-    "lat": 40.434799,
-    "lon": -76.569397
-  },
-  {
     "name": "Kapalua Airport",
     "code": "JHM",
     "city": "Lahania-kapalua",
@@ -23872,36 +22408,12 @@
     "lon": -117.4449997
   },
   {
-    "name": "Sherman Army Air Field",
-    "code": "FLV",
-    "city": "Fort Leavenworth",
-    "country": "United States",
-    "lat": 39.3683013916,
-    "lon": -94.9147033691
-  },
-  {
     "name": "Wallops Flight Facility Airport",
     "code": "WAL",
     "city": "Wallops Island",
     "country": "United States",
     "lat": 37.9402008057,
     "lon": -75.4664001465
-  },
-  {
-    "name": "Holloman Air Force Base",
-    "code": "HMN",
-    "city": "Alamogordo",
-    "country": "United States",
-    "lat": 32.8525009155,
-    "lon": -106.107002258
-  },
-  {
-    "name": "Willow Grove Naval Air Station/Joint Reserve Base",
-    "code": "NXX",
-    "city": "Willow Grove",
-    "country": "United States",
-    "lat": 40.19979858,
-    "lon": -75.14820099
   },
   {
     "name": "Cheyenne Regional Jerry Olson Field",
@@ -23918,14 +22430,6 @@
     "country": "United States",
     "lat": 37.894199371338,
     "lon": -121.2379989624
-  },
-  {
-    "name": "Charleston Air Force Base-International Airport",
-    "code": "CHS",
-    "city": "Charleston",
-    "country": "United States",
-    "lat": 32.89860153,
-    "lon": -80.04049683
   },
   {
     "name": "Reno Tahoe International Airport",
@@ -23952,14 +22456,6 @@
     "lon": -83.53040314
   },
   {
-    "name": "Vandenberg Air Force Base",
-    "code": "VBG",
-    "city": "Lompoc",
-    "country": "United States",
-    "lat": 34.7373008728,
-    "lon": -120.583999634
-  },
-  {
     "name": "Birmingham-Shuttlesworth International Airport",
     "code": "BHM",
     "city": "Birmingham",
@@ -23982,14 +22478,6 @@
     "country": "United States",
     "lat": 52.71229935,
     "lon": 174.1139984
-  },
-  {
-    "name": "Nellis Air Force Base",
-    "code": "LSV",
-    "city": "Las Vegas",
-    "country": "United States",
-    "lat": 36.2361984253,
-    "lon": -115.033996582
   },
   {
     "name": "March ARB Airport",
@@ -24056,14 +22544,6 @@
     "lon": -122.2819977
   },
   {
-    "name": "Mountain Home Air Force Base",
-    "code": "MUO",
-    "city": "Mountain Home",
-    "country": "United States",
-    "lat": 43.043598,
-    "lon": -115.872002
-  },
-  {
     "name": "Cedar City Regional Airport",
     "code": "CDC",
     "city": "Cedar City",
@@ -24086,14 +22566,6 @@
     "country": "United States",
     "lat": 26.17580032,
     "lon": -98.23860168
-  },
-  {
-    "name": "Norfolk Naval Station (Chambers Field)",
-    "code": "NGU",
-    "city": "Norfolk",
-    "country": "United States",
-    "lat": 36.937599,
-    "lon": -76.289299
   },
   {
     "name": "Westover ARB/Metropolitan Airport",
@@ -24136,28 +22608,12 @@
     "lon": -147.8560028
   },
   {
-    "name": "Cannon Air Force Base",
-    "code": "CVS",
-    "city": "Clovis",
-    "country": "United States",
-    "lat": 34.3828010559,
-    "lon": -103.321998596
-  },
-  {
     "name": "Kaneohe Bay MCAS (Marion E. Carl Field) Airport",
     "code": "NGF",
     "city": "Kaneohe Bay",
     "country": "United States",
     "lat": 21.4505004883,
     "lon": -157.768005371
-  },
-  {
-    "name": "Offutt Air Force Base",
-    "code": "OFF",
-    "city": "Omaha",
-    "country": "United States",
-    "lat": 41.118301391602,
-    "lon": -95.912498474121
   },
   {
     "name": "Gulkana Airport",
@@ -24198,14 +22654,6 @@
     "country": "United States",
     "lat": 42.55149841,
     "lon": -94.19259644
-  },
-  {
-    "name": "Barksdale Air Force Base",
-    "code": "BAD",
-    "city": "Shreveport",
-    "country": "United States",
-    "lat": 32.5018005371,
-    "lon": -93.6626968384
   },
   {
     "name": "Topeka Regional Airport - Forbes Field",
@@ -24278,14 +22726,6 @@
     "country": "United States",
     "lat": 31.32740020751953,
     "lon": -92.54979705810547
-  },
-  {
-    "name": "Condron Army Air Field",
-    "code": "WSD",
-    "city": "White Sands",
-    "country": "United States",
-    "lat": 32.34149933,
-    "lon": -106.4029999
   },
   {
     "name": "Cold Bay Airport",
@@ -24384,14 +22824,6 @@
     "lon": -146.2480011
   },
   {
-    "name": "Langley Air Force Base",
-    "code": "LFI",
-    "city": "Hampton",
-    "country": "United States",
-    "lat": 37.082901001,
-    "lon": -76.360496521
-  },
-  {
     "name": "John Wayne Airport-Orange County Airport",
     "code": "SNA",
     "city": "Santa Ana",
@@ -24400,28 +22832,12 @@
     "lon": -117.8679962
   },
   {
-    "name": "Columbus Air Force Base",
-    "code": "CBM",
-    "city": "Colombus",
-    "country": "United States",
-    "lat": 33.6437988281,
-    "lon": -88.44380187990001
-  },
-  {
     "name": "Kendall-Tamiami Executive Airport",
     "code": "TMB",
     "city": "Kendall-tamiami",
     "country": "United States",
     "lat": 25.6478996277,
     "lon": -80.432800293
-  },
-  {
-    "name": "Oceana Naval Air Station",
-    "code": "NTU",
-    "city": "Oceana",
-    "country": "United States",
-    "lat": 36.820702,
-    "lon": -76.033501
   },
   {
     "name": "Grissom Air Reserve Base",
@@ -24510,22 +22926,6 @@
     "country": "United States",
     "lat": 41.26070023,
     "lon": -80.67910004
-  },
-  {
-    "name": "Ladd AAF Airfield",
-    "code": "FBK",
-    "city": "Fort Wainwright",
-    "country": "United States",
-    "lat": 64.83750153,
-    "lon": -147.6139984
-  },
-  {
-    "name": "Robins Air Force Base",
-    "code": "WRB",
-    "city": "Macon",
-    "country": "United States",
-    "lat": 32.6400985718,
-    "lon": -83.5919036865
   },
   {
     "name": "Suvarnabhumi Airport",
@@ -24630,14 +23030,6 @@
     "country": "Indonesia",
     "lat": -7.645060062410001,
     "lon": 109.033996582
-  },
-  {
-    "name": "Pondok Cabe Air Base",
-    "code": "PCB",
-    "city": "Jakarta",
-    "country": "Indonesia",
-    "lat": -6.3369598388671875,
-    "lon": 106.76499938964844
   },
   {
     "name": "Achmad Yani Airport",
@@ -25046,14 +23438,6 @@
     "country": "Lithuania",
     "lat": 54.634102,
     "lon": 25.285801
-  },
-  {
-    "name": "Panevėžys Air Base",
-    "code": "PNV",
-    "city": "Panevezys",
-    "country": "Lithuania",
-    "lat": 55.729400634765625,
-    "lon": 24.460800170898438
   },
   {
     "name": "Zvartnots International Airport",
@@ -25960,14 +24344,6 @@
     "lon": 176.869995
   },
   {
-    "name": "Levuka Airfield",
-    "code": "LEV",
-    "city": "Levuka",
-    "country": "Fiji",
-    "lat": -17.7110996246,
-    "lon": 178.759002686
-  },
-  {
     "name": "Lhasa Gonggar Airport",
     "code": "LXA",
     "city": "Lhasa",
@@ -26238,22 +24614,6 @@
     "country": "United States",
     "lat": 33.6192016602,
     "lon": -114.717002869
-  },
-  {
-    "name": "Al Asad Air Base",
-    "code": "IQA",
-    "city": "Al Asad",
-    "country": "Iraq",
-    "lat": 33.7855987549,
-    "lon": 42.4412002563
-  },
-  {
-    "name": "Al Taqaddum Air Base",
-    "code": "TQD",
-    "city": "Al Taqaddum",
-    "country": "Iraq",
-    "lat": 33.33810043335,
-    "lon": 43.597099304199
   },
   {
     "name": "Joint Base Balad",
@@ -27342,14 +25702,6 @@
     "country": "Egypt",
     "lat": 29.587799072299998,
     "lon": 34.7780990601
-  },
-  {
-    "name": "Edward Bodden Airfield",
-    "code": "LYB",
-    "city": "Little Cayman",
-    "country": "Cayman Islands",
-    "lat": 19.660161,
-    "lon": -80.088826
   },
   {
     "name": "Milas Bodrum International Airport",
@@ -32016,14 +30368,6 @@
     "lon": 139.559997559
   },
   {
-    "name": "Kunsan Air Base",
-    "code": "KUV",
-    "city": "Kunsan",
-    "country": "South Korea",
-    "lat": 35.90380096435547,
-    "lon": 126.61599731445312
-  },
-  {
     "name": "Mokpo Heliport",
     "code": "MPK",
     "city": "Mokpo",
@@ -32032,36 +30376,12 @@
     "lon": 126.379997253
   },
   {
-    "name": "Wonju/Hoengseong Air Base (K-38/K-46)",
-    "code": "WJU",
-    "city": "Wonju",
-    "country": "South Korea",
-    "lat": 37.441201,
-    "lon": 127.963858
-  },
-  {
     "name": "Yangyang International Airport",
     "code": "YNY",
     "city": "Sokcho / Gangneung",
     "country": "South Korea",
     "lat": 38.061298,
     "lon": 128.669006
-  },
-  {
-    "name": "Sacheon Air Base/Airport",
-    "code": "HIN",
-    "city": "Sacheon",
-    "country": "South Korea",
-    "lat": 35.088591,
-    "lon": 128.071747
-  },
-  {
-    "name": "Cheongju International Airport/Cheongju Air Base (K-59/G-513)",
-    "code": "CJJ",
-    "city": "Chongju",
-    "country": "South Korea",
-    "lat": 36.717008,
-    "lon": 127.498741
   },
   {
     "name": "Subic Bay International Airport",
@@ -36184,22 +34504,6 @@
     "lon": -117.35399627686
   },
   {
-    "name": "Kirkuk Air Base",
-    "code": "KIK",
-    "city": "Kirkuk",
-    "country": "Iraq",
-    "lat": 35.46950149536133,
-    "lon": 44.348899841308594
-  },
-  {
-    "name": "Al Udeid Air Base",
-    "code": "XJD",
-    "city": "Doha",
-    "country": "Qatar",
-    "lat": 25.1173000336,
-    "lon": 51.3149986267
-  },
-  {
     "name": "Great Barrier Aerodrome",
     "code": "GBZ",
     "city": "Claris",
@@ -36550,14 +34854,6 @@
     "country": "Costa Rica",
     "lat": 8.71889019012,
     "lon": -83.6417007446
-  },
-  {
-    "name": "Altay Air Base",
-    "code": "AAT",
-    "city": "Altay",
-    "country": "China",
-    "lat": 47.7498855591,
-    "lon": 88.08580780030002
   },
   {
     "name": "Tuzla International Airport",
@@ -36936,14 +35232,6 @@
     "lon": -118.1520004
   },
   {
-    "name": "Interlaken Air Base",
-    "code": "ZIN",
-    "city": "Interlaken",
-    "country": "Switzerland",
-    "lat": 46.6766014,
-    "lon": 7.8790798
-  },
-  {
     "name": "Inisheer Aerodrome",
     "code": "INQ",
     "city": "Inisheer",
@@ -36966,22 +35254,6 @@
     "country": "United States",
     "lat": 38.0654983521,
     "lon": -97.86060333250002
-  },
-  {
-    "name": "Bagram Air Base",
-    "code": "OAI",
-    "city": "Kabul",
-    "country": "Afghanistan",
-    "lat": 34.9460983276,
-    "lon": 69.26499938959999
-  },
-  {
-    "name": "Prince Sultan Air Base",
-    "code": "AKH",
-    "city": "Al Kharj",
-    "country": "Saudi Arabia",
-    "lat": 24.062700271606445,
-    "lon": 47.580501556396484
   },
   {
     "name": "Rosecrans Memorial Airport",
@@ -39176,14 +37448,6 @@
     "lon": -75.67130279540001
   },
   {
-    "name": "Lintsang Airfield",
-    "code": "LNJ",
-    "city": "Lincang",
-    "country": "China",
-    "lat": 23.738100051900002,
-    "lon": 100.025001526
-  },
-  {
     "name": "Carajás Airport",
     "code": "CKS",
     "city": "Parauapebas",
@@ -39824,14 +38088,6 @@
     "lon": -36.01350021362305
   },
   {
-    "name": "Wake Island Airfield",
-    "code": "AWK",
-    "city": "Wake island",
-    "country": "Wake Island",
-    "lat": 19.282100677490234,
-    "lon": 166.63600158691406
-  },
-  {
     "name": "Aeroclube Airport",
     "code": "QNV",
     "city": "Nova Iguacu",
@@ -40032,14 +38288,6 @@
     "lon": -103.78299713135
   },
   {
-    "name": "Oksywie Military Air Base",
-    "code": "QYD",
-    "city": "Gdynia",
-    "country": "Poland",
-    "lat": 54.57970047,
-    "lon": 18.51720047
-  },
-  {
     "name": "Olive Branch Airport",
     "code": "OLV",
     "city": "Olive Branch",
@@ -40144,14 +38392,6 @@
     "lon": -95.984596252441
   },
   {
-    "name": "Al Minhad Air Base",
-    "code": "NHD",
-    "city": "Minhad AB",
-    "country": "United Arab Emirates",
-    "lat": 25.0268001556,
-    "lon": 55.3661994934
-  },
-  {
     "name": "Kirovograd Airport",
     "code": "KGO",
     "city": "Kirovograd",
@@ -40174,14 +38414,6 @@
     "country": "United States",
     "lat": 37.706401825,
     "lon": -112.144996643
-  },
-  {
-    "name": "Chkalovskiy Air Base",
-    "code": "CKL",
-    "city": "Shchyolkovo",
-    "country": "Russia",
-    "lat": 55.8783,
-    "lon": 38.061699
   },
   {
     "name": "Tengchong Tuofeng Airport",
@@ -41264,14 +39496,6 @@
     "lon": 32.300598
   },
   {
-    "name": "Shank Air Base",
-    "code": "OAA",
-    "city": "Shank",
-    "country": "Afghanistan",
-    "lat": 33.9225,
-    "lon": 69.07722222219999
-  },
-  {
     "name": "St Lucie County International Airport",
     "code": "FPR",
     "city": "Fort Pierce",
@@ -41712,14 +39936,6 @@
     "lon": -84.08489990230001
   },
   {
-    "name": "Simmons Army Air Field",
-    "code": "FBG",
-    "city": "Fredericksburg",
-    "country": "United States",
-    "lat": 35.13180161,
-    "lon": -78.93669891
-  },
-  {
     "name": "Modlin Airport",
     "code": "WMI",
     "city": "Warsaw",
@@ -41774,14 +39990,6 @@
     "country": "Philippines",
     "lat": 10.81874,
     "lon": 119.507697
-  },
-  {
-    "name": "Shigatse Air Base",
-    "code": "RKZ",
-    "city": "Shigatse",
-    "country": "China",
-    "lat": 29.3519,
-    "lon": 89.311401
   },
   {
     "name": "Tacoma Narrows Airport",
@@ -43152,14 +41360,6 @@
     "lon": 149.27000427246094
   },
   {
-    "name": "Alameda Naval Air Station",
-    "code": "NGZ",
-    "city": "Alameda",
-    "country": "United States",
-    "lat": 37.78889846801758,
-    "lon": -122.31999969482422
-  },
-  {
     "name": "Cochrane Airport",
     "code": "YCN",
     "city": "Cochrane",
@@ -43448,14 +41648,6 @@
     "lon": -94.73760223
   },
   {
-    "name": "Sigiriya Air Force Base",
-    "code": "GIU",
-    "city": "Sigiriya",
-    "country": "Sri Lanka",
-    "lat": 7.956669807430001,
-    "lon": 80.7285003662
-  },
-  {
     "name": "Neumünster Airport",
     "code": "EUM",
     "city": "Neumuenster",
@@ -43686,14 +41878,6 @@
     "country": "Australia",
     "lat": -37.88750076293945,
     "lon": 147.5679931640625
-  },
-  {
-    "name": "Taszár Air Base",
-    "code": "TZR",
-    "city": "Columbus",
-    "country": "United States",
-    "lat": 46.39310073852539,
-    "lon": 17.917499542236328
   },
   {
     "name": "Fort Bridger Airport",
@@ -44104,14 +42288,6 @@
     "lon": 117.6856
   },
   {
-    "name": "Anshan Air Base",
-    "code": "AOG",
-    "city": "Anshan",
-    "country": "China",
-    "lat": 41.105301,
-    "lon": 122.853996
-  },
-  {
     "name": "Saertu Airport",
     "code": "DQA",
     "city": "Daqing",
@@ -44328,14 +42504,6 @@
     "lon": -84.68800354
   },
   {
-    "name": "Seosan Air Base",
-    "code": "HMY",
-    "city": "Seosan",
-    "country": "South Korea",
-    "lat": 36.703999,
-    "lon": 126.486
-  },
-  {
     "name": "San Gabriel Valley Airport",
     "code": "EMT",
     "city": "El Monte",
@@ -44366,14 +42534,6 @@
     "country": "Ukraine",
     "lat": 48.70560073852539,
     "lon": 37.62889862060547
-  },
-  {
-    "name": "Kautokeino Air Base",
-    "code": "QKX",
-    "city": "Kautokeino",
-    "country": "Norway",
-    "lat": 69.04029846191406,
-    "lon": 23.034000396728516
   },
   {
     "name": "Stinson Municipal Airport",
@@ -44606,14 +42766,6 @@
     "country": "China",
     "lat": 24.805,
     "lon": 107.6997
-  },
-  {
-    "name": "General WM J Fox Airfield",
-    "code": "WJF",
-    "city": "Lancaster",
-    "country": "United States",
-    "lat": 34.74110031,
-    "lon": -118.2190018
   },
   {
     "name": "Coondewanna Airport",
@@ -45824,22 +43976,6 @@
     "lon": 13.306
   },
   {
-    "name": "RAF Kinloss",
-    "code": "FSS",
-    "city": "Kinloss",
-    "country": "United Kingdom",
-    "lat": 57.6493988037,
-    "lon": -3.56064009666
-  },
-  {
-    "name": "Biała Podlaska Airfield",
-    "code": "BXP",
-    "city": "Biała Podlaska",
-    "country": "Poland",
-    "lat": 52.00078,
-    "lon": 23.1325278
-  },
-  {
     "name": "Daugavpils Intrenational Airport",
     "code": "DGP",
     "city": "Daugavpils",
@@ -46008,14 +44144,6 @@
     "lon": -85.08499908450001
   },
   {
-    "name": "Davison Army Air Field",
-    "code": "DAA",
-    "city": "Fort Belvoir",
-    "country": "United States",
-    "lat": 38.715000152600005,
-    "lon": -77.1809997559
-  },
-  {
     "name": "Barstow Daggett Airport",
     "code": "DAG",
     "city": "Daggett",
@@ -46126,14 +44254,6 @@
     "country": "United States",
     "lat": 43.89220047,
     "lon": -69.93859863
-  },
-  {
-    "name": "Naval Station Mayport (Admiral David L. Mcdonald Field)",
-    "code": "NRB",
-    "city": "Mayport",
-    "country": "United States",
-    "lat": 30.39109993,
-    "lon": -81.42469788
   },
   {
     "name": "Orangeburg Municipal Airport",
@@ -46288,36 +44408,12 @@
     "lon": -1.2183
   },
   {
-    "name": "Sarzana-Luni Air Base",
-    "code": "QLP",
-    "city": "Sarzana (SP)",
-    "country": "Italy",
-    "lat": 44.088001,
-    "lon": 9.98795
-  },
-  {
-    "name": "Batajnica Air Base",
-    "code": "BJY",
-    "city": "Batajnica",
-    "country": "Serbia",
-    "lat": 44.935299,
-    "lon": 20.2575
-  },
-  {
     "name": "Rubelsanto Airport",
     "code": "RUV",
     "city": "Rubelsanto",
     "country": "Guatemala",
     "lat": 15.991999626159668,
     "lon": -90.44529724121094
-  },
-  {
-    "name": "Coronel Enrique Soto Cano Air Base",
-    "code": "XPL",
-    "city": "Comayagua",
-    "country": "Honduras",
-    "lat": 14.3824,
-    "lon": -87.621201
   },
   {
     "name": "Upala Airport",
@@ -46336,36 +44432,12 @@
     "lon": -81.9208984375
   },
   {
-    "name": "San Julian Air Base",
-    "code": "SNJ",
-    "city": "Pinar Del Rio",
-    "country": "Cuba",
-    "lat": 22.095300674438477,
-    "lon": -84.1520004272461
-  },
-  {
     "name": "King Salman Abdulaziz Airport",
     "code": "DWD",
     "city": "",
     "country": "Saudi Arabia",
     "lat": 24.4499,
     "lon": 44.121201
-  },
-  {
-    "name": "King Khaled Air Base",
-    "code": "KMX",
-    "city": "",
-    "country": "Saudi Arabia",
-    "lat": 18.297300338745117,
-    "lon": 42.80350112915039
-  },
-  {
-    "name": "Riyadh Air Base",
-    "code": "XXN",
-    "city": "Riyadh",
-    "country": "Saudi Arabia",
-    "lat": 24.709800720214844,
-    "lon": 46.72520065307617
   },
   {
     "name": "Jam Airport",
@@ -46382,30 +44454,6 @@
     "country": "Iran",
     "lat": 35.776100158691,
     "lon": 50.826698303223
-  },
-  {
-    "name": "Ahmed Al Jaber Air Base",
-    "code": "XIJ",
-    "city": "Ahmed Al Jaber AB",
-    "country": "Kuwait",
-    "lat": 28.9347991943,
-    "lon": 47.791900634799994
-  },
-  {
-    "name": "Minhas Air Base",
-    "code": "ATG",
-    "city": "Kamra",
-    "country": "Pakistan",
-    "lat": 33.8690986633,
-    "lon": 72.4009017944
-  },
-  {
-    "name": "Mushaf Air Base",
-    "code": "SGI",
-    "city": "Sargodha",
-    "country": "Pakistan",
-    "lat": 32.04859924316406,
-    "lon": 72.66500091552734
   },
   {
     "name": "Qayyarah West Airport",
@@ -46528,14 +44576,6 @@
     "lon": -70.37590026855469
   },
   {
-    "name": "Gomez Nino Apiay Air Base",
-    "code": "API",
-    "city": "Apiay",
-    "country": "Colombia",
-    "lat": 4.07607,
-    "lon": -73.5627
-  },
-  {
     "name": "Coveñas Airport",
     "code": "CVE",
     "city": "Coveñas",
@@ -46544,28 +44584,12 @@
     "lon": -75.6913
   },
   {
-    "name": "German Olano Air Base",
-    "code": "PAL",
-    "city": "La Dorada",
-    "country": "Colombia",
-    "lat": 5.48361,
-    "lon": -74.6574
-  },
-  {
     "name": "Paz De Ariporo Airport",
     "code": "PZA",
     "city": "Paz De Ariporo",
     "country": "Colombia",
     "lat": 5.87615,
     "lon": -71.8866
-  },
-  {
-    "name": "Tres Esquinas Air Base",
-    "code": "TQS",
-    "city": "Tres Esquinas",
-    "country": "Colombia",
-    "lat": 0.7459,
-    "lon": -75.234
   },
   {
     "name": "Juan Simons Vela Airport",
@@ -46654,14 +44678,6 @@
     "country": "India",
     "lat": 17.013599,
     "lon": 73.327797
-  },
-  {
-    "name": "Hingurakgoda Air Force Base",
-    "code": "HIM",
-    "city": "Polonnaruwa Town",
-    "country": "Sri Lanka",
-    "lat": 8.04981,
-    "lon": 80.9814
   },
   {
     "name": "Kazi Nazrul Islam Airport",
@@ -46976,14 +44992,6 @@
     "lon": 148.2480010986328
   },
   {
-    "name": "Guangzhou MR Air Base",
-    "code": "LHK",
-    "city": "Guanghua",
-    "country": "China",
-    "lat": 32.389400482177734,
-    "lon": 111.69499969482422
-  },
-  {
     "name": "Shiyan Wudangshan Airport",
     "code": "WDS",
     "city": "Shiyan",
@@ -47014,22 +45022,6 @@
     "country": "China",
     "lat": 32.8477333333,
     "lon": 117.320244444
-  },
-  {
-    "name": "Rugao Air Base",
-    "code": "RUG",
-    "city": "Rugao",
-    "country": "China",
-    "lat": 32.25788497924805,
-    "lon": 120.50165557861328
-  },
-  {
-    "name": "Wuhu Air Base",
-    "code": "WHU",
-    "city": "Wuhu",
-    "country": "China",
-    "lat": 31.3906,
-    "lon": 118.408997
   },
   {
     "name": "Shanshan Airport",
@@ -48486,30 +46478,6 @@
     "country": "Azerbaijan",
     "lat": 40.4955422161,
     "lon": 49.9768066406
-  },
-  {
-    "name": "Bezmer Air Base",
-    "code": "JAM",
-    "city": "Yambol",
-    "country": "Bulgaria",
-    "lat": 42.4548988342,
-    "lon": 26.3521995544
-  },
-  {
-    "name": "Yuanmou Air Base",
-    "code": "YUA",
-    "city": "Yuanmou",
-    "country": "China",
-    "lat": 25.737499237061,
-    "lon": 101.88200378418
-  },
-  {
-    "name": "Xingcheng Air Base",
-    "code": "XEN",
-    "city": "",
-    "country": "China",
-    "lat": 40.580299377399996,
-    "lon": 120.697998047
   },
   {
     "name": "Lefkoniko Airport",
