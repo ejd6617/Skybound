@@ -13,9 +13,7 @@ services:
       - ./.env.firebase-backend.local:/.env.firebase-backend.local # Base64-encoded admin service account credentials for authenticating user session tokens on the backend
 
       # Certs that live on the oracle cloud server and need to be made available to docker (for HTTPS)
-      - /etc/letsencrypt/live/skybound-api.xyz:/certs:ro
-      - /etc/letsencrypt/archive/skybound-api.xyz:/certs/archive:ro
-      - /etc/letsencrypt/renewal/skybound-api.xyz.conf:/certs/renewal.conf:ro
+      - /etc/letsencrypt:/certs:ro
     ports:
       # - 5050:5050 # Extra
       - 6060:6060 # HTTP

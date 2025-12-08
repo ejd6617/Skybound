@@ -19,8 +19,8 @@ const USE_NGROK = process.env.USE_NGROK === 'true';
 const USE_HTTP = process.env.USE_HTTP === 'true';
 const DOMAIN = 'skybound-api.xyz';
 
-const privateKeyPath = `/cert/privkey.pem`;
-const fullChainPath = `/cert/fullchain.pem`;
+const privateKeyPath = `/certs/live/skybound-api.xyz/privkey.pem`;
+const fullChainPath = `/certs/live/skybound-api.xyz/fullchain.pem`;
 
 const shortCache = createCacheMiddleware(120);
 const longCache = createCacheMiddleware(600);
