@@ -1,13 +1,15 @@
 import { Flight, FlightLeg, TravelClass } from "@/skyboundTypes/SkyboundAPI";
+import DisplayMap from "@/components/ui/DisplayMap";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { StackActions, useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { getURL, reviveDates } from "@src/api/SkyboundUtils";
-import { type RootStackParamList } from "@src/nav/RootNavigator";
+import { getURL, reviveDates, skyboundRequest } from "@src/api/SkyboundUtils";
+import type { RootStackParamList } from "@src/nav/RootNavigator";
+import LoadingScreen from "@src/screens/LoadingScreen";
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -28,6 +30,23 @@ export interface SearchDetails {
   returnDate?: Date | string | null;
   legsCount?: number;
   legsDates?: (Date | string | null)[];
+  silentTransition?: boolean;
+}
+
+export interface FlightFilters {
+  stops?: 'nonstop' | '1-stop' | '2plus';
+  maxPrice?: number;
+  departureTimes?: string[];
+  arrivalTimes?: string[];
+  cabinClass?: string;
+  maxDurationHours?: number;
+  airlines?: string[];
+}
+
+export interface PlannedLeg {
+  fromCode?: string;
+  toCode?: string;
+  date?: Date | string | null;
 }
 
 export interface ItineraryPayload {
@@ -57,6 +76,7 @@ export interface UIFlight {
   category?: 'best' | 'cheapest' | 'fastest';
   price: number;
   cabinClass: string;
+  cabinClassCode?: string;
   departureTime: string;
   arrivalTime: string;
   departureDate: string;
@@ -64,6 +84,9 @@ export interface UIFlight {
   departureCode: string;
   arrivalCode: string;
   duration: string;
+  totalDurationMinutes?: number;
+  rawDepartureTime?: Date;
+  rawArrivalTime?: Date;
   stops: string;
   hasBaggage?: boolean;
   legs?: FlightLeg[];
@@ -89,6 +112,20 @@ function formatDuration(duration: number): string {
   const hours = Math.floor(duration / 60);
   const minutes = duration % 60;
   return `${hours}h ${minutes}m`;
+}
+
+function matchesTimeSlot(date: Date | undefined, slots: string[] | undefined) {
+  if (!date || !slots || slots.length === 0) return true;
+  const hour = date.getHours();
+  const slotForHour = () => {
+    if (hour < 6) return 'early-morning';
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    if (hour < 21) return 'evening';
+    return 'night';
+  };
+  const bucket = slotForHour();
+  return slots.includes(bucket);
 }
 
 // output example: 1 stop ATL
@@ -137,7 +174,9 @@ function toUIFlights(data: Flight[]): UIFlight[] {
       airlineCode: flight.airline.iata,
       airlineColor,
       price: flight.price,
+      cabinClass: ,
       cabinClass: findMostCommonTravelClass(flight.outbound),
+      cabinClassCode: findMostCommonTravelClass(flight.outbound),
       departureTime: formatTime(firstOutbound.departureTime),
       arrivalTime: formatTime(lastOutbound.arrivalTime),
       departureDate: formatDate(firstOutbound.departureTime),
@@ -145,6 +184,9 @@ function toUIFlights(data: Flight[]): UIFlight[] {
       departureCode: firstOutbound.from.iata,
       arrivalCode: lastOutbound.to.iata,
       duration: formatDuration(totalDuration),
+      totalDurationMinutes: totalDuration,
+      rawDepartureTime: firstOutbound.departureTime,
+      rawArrivalTime: lastOutbound.arrivalTime,
       stops: formatStops(flight.outbound),
       hasBaggage: flight.freeBaggage,
       legs: flight.outbound,
@@ -160,6 +202,107 @@ function toUIFlights(data: Flight[]): UIFlight[] {
   return flights;
 };
 
+function applyFilters(list: UIFlight[], filters: FlightFilters): UIFlight[] {
+  return list.filter(flight => {
+    if (filters.maxPrice && flight.price > filters.maxPrice) return false;
+    if (filters.stops) {
+      const stopCount = flight.stops.toLowerCase().includes('non')
+        ? 0
+        : parseInt(flight.stops) || (flight.stops.toLowerCase().includes('1 stop') ? 1 : 2);
+
+      if (filters.stops === 'nonstop' && stopCount !== 0) return false;
+      if (filters.stops === '1-stop' && stopCount !== 1) return false;
+      if (filters.stops === '2plus' && stopCount < 2) return false;
+    }
+    if (filters.cabinClass && flight.cabinClassCode && flight.cabinClassCode.toLowerCase() !== filters.cabinClass.toLowerCase()) return false;
+    if (filters.maxDurationHours && flight.totalDurationMinutes && flight.totalDurationMinutes > filters.maxDurationHours * 60) return false;
+    if (!matchesTimeSlot(flight.rawDepartureTime, filters.departureTimes)) return false;
+    if (!matchesTimeSlot(flight.rawArrivalTime, filters.arrivalTimes)) return false;
+    if (filters.airlines?.length && !filters.airlines.includes(flight.airlineCode)) return false;
+    return true;
+  });
+}
+
+function sortFlights(list: UIFlight[], criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') {
+  const sorted = [...list].sort((a, b) => {
+    let cmp = 0;
+    if (criteria === 'recommended' || criteria === 'price') {
+      cmp = a.price - b.price;
+    } else if (criteria === 'duration') {
+      const m = (s:string)=>{const [h,m]=s.replace('h','').replace('m','').split(' ').map(n=>parseInt(n));return h*60+m;};
+      cmp = m(a.duration) - m(b.duration);
+    } else if (criteria === 'stops') {
+      const n = (s:string)=> s.includes('Nonstop') ? 0 : parseInt(s) || 1;
+      cmp = n(a.stops) - n(b.stops);
+    }
+    return direction === 'asc' ? cmp : -cmp;
+  });
+  return sorted;
+}
+
+const MOCK_FLIGHTS: UIFlight[] = [
+  {
+    id: '1',
+    airline: 'American Airlines',
+    airlineCode: 'AA',
+    airlineColor: '#DC2626',
+    category: 'best',
+    price: 428,
+    cabinClass: 'Main Basic',
+    departureTime: '7:20 AM',
+    arrivalTime: '1:05 PM',
+    departureCode: 'CLE',
+    arrivalCode: 'LAX',
+    duration: '5h 45m',
+    stops: '1 stop DFW',
+    hasBaggage: true,
+  },
+  {
+    id: '2',
+    airline: 'Southwest Airlines',
+    airlineCode: 'SW',
+    airlineColor: '#EAB308',
+    category: 'cheapest',
+    price: 384,
+    cabinClass: 'Wanna Get Away',
+    departureTime: '6:15 AM',
+    arrivalTime: '11:35 AM',
+    departureCode: 'CLE',
+    arrivalCode: 'LAX',
+    duration: '7h 20m',
+    stops: '1 stop PHX',
+  },
+  {
+    id: '3',
+    airline: 'United Airlines',
+    airlineCode: 'UA',
+    airlineColor: '#1E40AF',
+    category: 'fastest',
+    price: 512,
+    cabinClass: 'Basic Economy',
+    departureTime: '2:45 PM',
+    arrivalTime: '5:20 PM',
+    departureCode: 'CLE',
+    arrivalCode: 'LAX',
+    duration: '4h 35m',
+    stops: 'Nonstop',
+  },
+  {
+    id: '4',
+    airline: 'Delta Airlines',
+    airlineCode: 'DL',
+    airlineColor: '#9333EA',
+    price: 467,
+    cabinClass: 'Main Cabin',
+    departureTime: '10:30 AM',
+    arrivalTime: '2:45 PM',
+    departureCode: 'CLE',
+    arrivalCode: 'LAX',
+    duration: '6h 15m',
+    stops: '1 stop ATL',
+  },
+];
+
 export default function FlightResultsScreen() {
   const route = useRoute();
   const {
@@ -171,22 +314,43 @@ export default function FlightResultsScreen() {
     returnDate,
     legsCount,
     legsDates,
-  } = route.params as SearchDetails & { searchResults: Flight[] };
-  
+    searchLegs,
+    legIndex = 0,
+    selections = [],
+    filters: incomingFilters,
+    silentTransition,
+  } = route.params as SearchDetails & { searchResults: Flight[]; searchLegs?: PlannedLeg[]; legIndex?: number; selections?: UIFlight[]; filters?: FlightFilters };
+
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [flights, setFlights] = useState<UIFlight[]>(toUIFlights(reviveDates(searchResults)));
+  const [baseFlights, setBaseFlights] = useState<UIFlight[]>(toUIFlights(reviveDates(searchResults)));
   const [visibleCount, setVisibleCount] = useState(3);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<'recommended'|'price'|'duration'|'stops'>('recommended');
   const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const canLoadMore = visibleCount < flights.length;
+  const [appliedFilters, setAppliedFilters] = useState<FlightFilters>(incomingFilters ?? {} as FlightFilters);
   const [activeFlightId, setActiveFlightId] = useState<string | null>(null);
-  
-  // Filter states
-  const [maxStops, setMaxStops] = useState(2);
-  const [maxDuration, setMaxDuration] = useState(10);
+  const [advancingLeg, setAdvancingLeg] = useState<PlannedLeg | null>(null);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({ animation: silentTransition ? 'none' : 'default' });
+  }, [navigation, silentTransition]);
+
+  useEffect(() => {
+    setBaseFlights(toUIFlights(reviveDates(searchResults)));
+    setVisibleCount(3);
+  }, [searchResults]);
+
+  useEffect(() => {
+    if (incomingFilters) {
+      setAppliedFilters(incomingFilters);
+    }
+  }, [incomingFilters]);
+
+  const filteredFlights = useMemo(() => applyFilters(baseFlights, appliedFilters), [appliedFilters, baseFlights]);
+  const sortedFlights = useMemo(() => sortFlights(filteredFlights, sortBy, sortDirection), [filteredFlights, sortBy, sortDirection]);
+  const flights = sortedFlights;
+  const canLoadMore = visibleCount < flights.length;
 
   const overlayOp = React.useRef(new Animated.Value(0)).current;
   const sheetY = React.useRef(new Animated.Value(40)).current;
@@ -208,6 +372,16 @@ export default function FlightResultsScreen() {
 
   const screenWidth = Dimensions.get('window').width;
 
+  const selectedFlight = flights.find(f => f.id === activeFlightId) ?? flights[0];
+  const waypointCodes = useMemo(() => {
+    if (selectedFlight?.legs?.length) {
+      const orderedStops = [selectedFlight.legs[0].from.iata, ...selectedFlight.legs.map(l => l.to.iata)];
+      return orderedStops;
+    }
+    const codes = [fromCode, toCode].filter(Boolean) as string[];
+    return codes.length >= 2 ? codes : undefined;
+  }, [fromCode, selectedFlight?.legs, toCode]);
+
   const getCategoryBadge = (category?: string) => {
     switch (category) {
       case 'best':
@@ -226,6 +400,32 @@ export default function FlightResultsScreen() {
       ? "No flights found"
       : `Outbound: ${flights[0].departureCode} to ${flights[0].arrivalCode}`;
   }
+  const formattedDateRange = useMemo<string>(() => {
+    const formatDate = (value?: Date | string | null) => {
+      if (!value) return '';
+      const dateObj = typeof value === 'string' ? new Date(value) : value;
+      return dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    };
+
+    const start = formatDate(departureDate);
+    const end = tripType === 'round-trip' ? formatDate(returnDate) : '';
+
+    if (start && end) {
+      return `${start} - ${end}`;
+    }
+
+    return start;
+  }, [departureDate, returnDate, tripType]);
+
+  const currentLegLabel = useMemo(() => {
+    if (searchLegs?.[legIndex]) {
+      return `${searchLegs[legIndex].fromCode ?? ''} → ${searchLegs[legIndex].toCode ?? ''}`.trim();
+    }
+    if (fromCode && toCode) {
+      return `${fromCode} → ${toCode}`;
+    }
+    return '';
+  }, [fromCode, legIndex, searchLegs, toCode]);
 
   const normalizeDateValue = (value?: Date | string | null) => {
     if (!value) return null;
@@ -260,11 +460,11 @@ export default function FlightResultsScreen() {
     </View>
   };
   
-  const sortFlights = (criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') => {
-    const sorted = [...flights].sort((a, b) => {
+  function sortFlights(list: UIFlight[], criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') {
+    const sorted = [...list].sort((a, b) => {
       let cmp = 0;
       if (criteria === 'recommended' || criteria === 'price') {
-        cmp = a.price - b.price;                       // default “recommended”: price asc
+        cmp = a.price - b.price;
       } else if (criteria === 'duration') {
         const m = (s:string)=>{const [h,m]=s.replace('h','').replace('m','').split(' ').map(n=>parseInt(n));return h*60+m;};
         cmp = m(a.duration) - m(b.duration);
@@ -274,7 +474,10 @@ export default function FlightResultsScreen() {
       }
       return direction === 'asc' ? cmp : -cmp;
     });
-    setFlights(sorted);
+    return sorted;
+  }
+
+  const updateSort = (criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') => {
     setSortBy(criteria);
     setSortDirection(direction);
   };
@@ -318,17 +521,52 @@ export default function FlightResultsScreen() {
       setActiveFlightId(prev => prev === flight.id ? null : flight.id);
     };
 
-    const handleChooseFlight = () => {
+    const handleChooseFlight = async () => {
+      const nextSelections = [...selections, flight];
+      const legsPlan = searchLegs ?? [];
+
+      if (legsPlan.length > 0 && legIndex < legsPlan.length - 1) {
+        const nextLeg = legsPlan[legIndex + 1];
+        setAdvancingLeg(nextLeg);
+        try {
+          const nextResults = await skyboundRequest('searchFlightsOneWay', {
+            originAirportIATA: nextLeg.fromCode,
+            destinationAirportIATA: nextLeg.toCode,
+            date: nextLeg.date,
+          });
+
+          navigation.dispatch(StackActions.replace('FlightResults', {
+            searchResults: nextResults,
+            tripType,
+            fromCode: nextLeg.fromCode,
+            toCode: nextLeg.toCode,
+            departureDate: legsPlan[0]?.date ?? departureDate,
+            returnDate: legsPlan[legsPlan.length - 1]?.date ?? returnDate,
+            legsCount: legsPlan.length,
+            legsDates: legsPlan.map(l => l.date ?? null),
+            searchLegs: legsPlan,
+            legIndex: legIndex + 1,
+            selections: nextSelections,
+            filters: appliedFilters,
+            silentTransition: true,
+          }));
+        } catch (error) {
+          setAdvancingLeg(null);
+          throw error;
+        }
+        return;
+      }
+
       const itinerary: ItineraryPayload = {
-        flights: [flight],
+        flights: nextSelections,
         searchDetails: {
           tripType,
-          fromCode: fromCode ?? flight.departureCode,
-          toCode: toCode ?? flight.arrivalCode,
-          departureDate: normalizeDateValue(departureDate),
-          returnDate: normalizeDateValue(returnDate),
-          legsCount,
-          legsDates: legsDates?.map(normalizeDateValue),
+          fromCode: legsPlan[0]?.fromCode ?? fromCode ?? flight.departureCode,
+          toCode: legsPlan[legsPlan.length - 1]?.toCode ?? toCode ?? flight.arrivalCode,
+          departureDate: normalizeDateValue(legsPlan[0]?.date ?? departureDate ?? null),
+          returnDate: normalizeDateValue(legsPlan[legsPlan.length - 1]?.date ?? returnDate ?? null),
+          legsCount: legsPlan.length || legsCount,
+          legsDates: (legsPlan.length ? legsPlan.map(l => normalizeDateValue(l.date ?? null)) : legsDates?.map(normalizeDateValue)),
         },
       };
       navigation.navigate('FlightSummary', { itinerary });
@@ -470,16 +708,47 @@ export default function FlightResultsScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.container, { backgroundColor: colors.background }]}>
-        
-        {generateDateRangeHeader()}
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          {generateDateRangeHeader()}
+          <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
+            <View style={{ paddingBottom: 8 }}>
+              <SkyboundText
+                variant="secondary"
+                size={14}
+                accessabilityLabel={formattedDateRange}
+                style={{ textAlign: 'center' }}
+              >
+                {formattedDateRange}
+              </SkyboundText>
+              {currentLegLabel ? (
+                <SkyboundText
+                  variant="primaryBold"
+                  size={16}
+                  style={{ textAlign: 'center', marginTop: 4 }}
+                >
+                  {currentLegLabel}
+                </SkyboundText>
+              ) : null}
+              {searchLegs?.length && searchLegs.length > 1 && (
+                <SkyboundText
+                  variant="secondary"
+                  size={12}
+                  style={{ textAlign: 'center', marginTop: 4 }}
+                >
+                  Selecting leg {Math.min(legIndex + 1, searchLegs.length)} of {searchLegs.length}
+                </SkyboundText>
+              )}
+          </View>
+        </View>
 
-        {/* Map Placeholder */}
         <View style={[styles.mapContainer, { backgroundColor: colors.surfaceMuted }]}>
-          {generateFlightOverview()}
-          <SkyboundText variant="secondary" size={12} accessabilityLabel="Map integration" style={{ textAlign: 'center', marginTop: 40, marginBottom: -10 }}>
-            Google Maps integration would display route here
-          </SkyboundText>
+          <DisplayMap
+            sourceAirportCode={waypointCodes?.[0]}
+            destAirportCode={waypointCodes ? waypointCodes[waypointCodes.length - 1] : undefined}
+            waypointCodes={waypointCodes?.slice(1, -1)}
+            mapHeight={200}
+            mapWidth={screenWidth - 32}
+          />
         </View>
 
         <View style={styles.resultsWrapper}>
@@ -518,6 +787,22 @@ export default function FlightResultsScreen() {
           </ScrollView>
         </View>
 
+        {advancingLeg && (
+          <Modal visible transparent={false} animationType="fade">
+            <View style={{ flex: 1 }}>
+              <LoadingScreen />
+              <View style={styles.loadingMeta}>
+                <SkyboundText variant="primaryBold" size={18} style={{ marginBottom: 6, textAlign: 'center' }}>
+                  Loading next flight
+                </SkyboundText>
+                <SkyboundText variant="secondary" size={14} style={{ textAlign: 'center' }}>
+                  Preparing {advancingLeg.fromCode} → {advancingLeg.toCode}
+                </SkyboundText>
+              </View>
+            </View>
+          </Modal>
+        )}
+
         {/* Filter Modal */}
         <Modal visible={sortModalVisible} transparent animationType="none">
           <Animated.View style={[styles.animatedOverlay, { opacity: overlayOp }]}>
@@ -535,7 +820,7 @@ export default function FlightResultsScreen() {
 
               <Pressable
                 style={styles.sortOption}
-                onPress={() => { setSortBy('recommended'); setSortDirection('asc'); sortFlights('recommended','asc'); }}
+                onPress={() => { setSortBy('recommended'); setSortDirection('asc'); updateSort('recommended','asc'); }}
               >
                 <SkyboundText size={16}>Recommended</SkyboundText>
               </Pressable>
@@ -546,7 +831,7 @@ export default function FlightResultsScreen() {
                   style={styles.sortOption}
                   onPress={() => { 
                     const dir = (sortBy === crit) ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
-                    sortFlights(crit, dir);
+                    updateSort(crit, dir);
                   }}
                 >
                   <SkyboundText size={16} style={{ textTransform:'capitalize' }}>{crit}</SkyboundText>
@@ -571,7 +856,6 @@ const styles = StyleSheet.create({
   },
 
   mapContainer: {
-    height: 160,
     margin: 16,
     borderRadius: 16,
     padding: 16,
@@ -579,18 +863,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     overflow: 'hidden', // lets the fade overlay hug edges nicely
   },
-
-  routeInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 12,
-    borderRadius: 12,
-    width: '100%',
-  },
-  routePoint: { alignItems: 'center', gap: 4 },
-  routeCenter: { flex: 1, alignItems: 'center', gap: 4, paddingHorizontal: 16 },
-  routeLine: { height: 1, width: '100%' },
 
   fadeUnderMap: {
     position: 'absolute',
@@ -620,13 +892,13 @@ const styles = StyleSheet.create({
   flightCard: {
     borderRadius: 12,
     marginBottom: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
+    borderWidth: 0,
+    backgroundColor: '#FFFFFF',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    elevation: 8,
   },
   categoryBadge: {
     paddingVertical: 6,
@@ -760,8 +1032,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   animatedOverlay: {
-  ...StyleSheet.absoluteFillObject,
-  backgroundColor: 'rgba(19, 3, 3, 0.5)',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(19, 3, 3, 0.5)',
   },
   animatedSheetWrap: {
     position: 'absolute',
@@ -772,4 +1044,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
   },
   sheet: { },
+  loadingMeta: {
+    position: 'absolute',
+    bottom: 80,
+    left: 24,
+    right: 24,
+  }
 });

@@ -1,19 +1,19 @@
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import type { RouteProp } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type { ItineraryPayload, UIFlight } from "@src/screens/FlightResultsScreen";
-import type { RootStackParamList } from "@src/nav/RootNavigator";
-import type { TravelerProfile } from "@src/types/travelers";
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useCallback, useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { db } from "@src/firebase";
 import { getTravelerDetails } from "@src/firestoreFunctions";
+import type { RootStackParamList } from "@src/nav/RootNavigator";
+import type { ItineraryPayload, UIFlight } from "@src/screens/FlightResultsScreen";
+import type { TravelerProfile } from "@src/types/travelers";
+import { LinearGradient } from 'expo-linear-gradient';
 import { getAuth } from 'firebase/auth';
 import { collection, getDocs } from 'firebase/firestore';
+import React, { useCallback, useEffect, useState } from "react";
+import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 export default function FlightSummaryScreen() {
   const colors = useColors();
@@ -84,6 +84,12 @@ export default function FlightSummaryScreen() {
   const taxesAndFees = Math.round(totalPrice * 0.12);
   const baseFare = Math.max(totalPrice - taxesAndFees, 0);
 
+  const formatCurrency = useCallback((value?: number | null) => {
+    const numeric = Number(value ?? 0);
+    if (!Number.isFinite(numeric)) return '$0.00';
+    return `$${numeric.toFixed(2)}`;
+  }, []);
+
   const formatDateLabel = useCallback((date?: Date | string | null) => {
     if (!date) return 'Date TBA';
     const parsed = typeof date === 'string' ? new Date(date) : date;
@@ -132,7 +138,7 @@ export default function FlightSummaryScreen() {
             </View>
             <View style={{ alignItems: 'flex-end' }}>
               <SkyboundText variant="primary" size={24} style={{ fontWeight: '600' }}>
-                ${totalPrice || flights[0]?.price || 428}
+                {formatCurrency(totalPrice || flights[0]?.price || 428)}
               </SkyboundText>
               <SkyboundText variant="secondary" size={14}>round trip</SkyboundText>
             </View>
@@ -398,15 +404,15 @@ export default function FlightSummaryScreen() {
           <View style={{ gap: 12 }}>
             <View style={styles.priceRow}>
               <SkyboundText variant="secondary" size={14}>Base fare</SkyboundText>
-              <SkyboundText variant="primary" size={14}>${baseFare || totalPrice || 0}</SkyboundText>
+              <SkyboundText variant="primary" size={14}>{formatCurrency(baseFare || totalPrice || 0)}</SkyboundText>
             </View>
             <View style={styles.priceRow}>
               <SkyboundText variant="secondary" size={14}>Taxes & fees</SkyboundText>
-              <SkyboundText variant="primary" size={14}>${taxesAndFees}</SkyboundText>
+              <SkyboundText variant="primary" size={14}>{formatCurrency(taxesAndFees)}</SkyboundText>
             </View>
             <View style={[styles.priceRow, styles.totalRow]}>
               <SkyboundText variant="primaryBold" size={16}>Total</SkyboundText>
-              <SkyboundText variant="primaryBold" size={20}>${totalPrice || 428}</SkyboundText>
+              <SkyboundText variant="primaryBold" size={20}>{formatCurrency(totalPrice || 428)}</SkyboundText>
             </View>
           </View>
         </View>

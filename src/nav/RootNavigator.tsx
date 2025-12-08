@@ -26,10 +26,12 @@ import AccountScreen from "@src/screens/AccountScreen";
 import ComponentTestScreen from "@src/screens/ComponentTestScreen";
 import DashboardScreen from "@src/screens/DashboardScreen";
 import FilterScreen from "@src/screens/FilterScreen";
+import FlashDealsScreen from "@src/screens/FlashDealsScreen";
 import FlightConfirmationScreen from "@src/screens/FlightConfirmationScreen";
 import FlightResultsScreen, {
   FlightFilters,
   ItineraryPayload,
+  PlannedLeg,
   SearchDetails,
 } from "@src/screens/FlightResultsScreen";
 import FlightSearchScreen from "@src/screens/FlightSearchScreen";
@@ -58,6 +60,7 @@ export type AuthSwitchNavigatorParamList = {
 
 export type FlightStackParamList = {
   Dashboard: undefined;
+  FlashDeals: undefined;
   FilterScreen: { filters?: FlightFilters } | undefined;
   FlightConfirmation: { itinerary: ItineraryPayload };
   FlightResults: {
@@ -66,8 +69,10 @@ export type FlightStackParamList = {
     legIndex?: number;
     selections?: ItineraryPayload["flights"];
     filters?: FlightFilters;
+    searchLegs?: PlannedLeg[];
+    silentTransition?: boolean;
   } | undefined;
-  FlightSearch: {searchResults: Flight[]};
+  FlightSearch: {searchResults?: Flight[]; prefillDestinationCode?: string} | undefined;
   FlightSummary: { itinerary: ItineraryPayload };
 };
 
@@ -139,9 +144,13 @@ function GenerateFlightStack() {
       <FlightStack.Screen name="Dashboard" component={DashboardScreen} options={
         GenerateSkyboundHeaderOptions("Dashboard")
       } />
-      <FlightStack.Screen name="FilterScreen" component={FilterScreen} options={
-        { presentation: 'modal', ...GenerateSkyboundHeaderOptions("Filter Flights", { ...flightSearchHeaderOptions}) }
+      <FlightStack.Screen name="FlashDeals" component={FlashDealsScreen} options={
+        GenerateSkyboundHeaderOptions("Flash Deals")
       } />
+      <FlightStack.Screen name="FilterScreen" component={FilterScreen} options={{
+        presentation: 'modal',
+        headerShown: false,
+      }} />
       <FlightStack.Screen name="FlightConfirmation" component={FlightConfirmationScreen} options={
         GenerateSkyboundHeaderOptions("Flight Confirmation", { ...flightSearchHeaderOptions})
       } />
