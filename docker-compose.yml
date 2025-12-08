@@ -17,9 +17,9 @@ services:
       # - /etc/letsencrypt/archive/skybound-api.xyz:/certs/archive:ro
       # - /etc/letsencrypt/renewal/skybound-api.xyz.conf:/certs/renewal.conf:ro
     ports:
-      # - 4000:5050
-      - 80:6060
-      - 443:7070
+      # - 5050:5050 # Extra
+      - 6060:6060 # HTTP
+      - 7070:7070 # HTTPS
     environment:
       # - USE_HTTP=true
       # - AMADEUS_PROD=true

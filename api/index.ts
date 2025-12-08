@@ -12,9 +12,9 @@ import * as https from 'https';
 const app = express();
 const api: SkyboundAPI = new AmadeusAPI();
 
-const HTTP_PORT = Number(process.env.HTTP_PORT) || 80;
-const HTTPS_PORT = Number(process.env.HTTPS_PORT) || 443;
-const NGROK_PORT = 4000;
+const NGROK_PORT = 5050;
+const HTTP_PORT = Number(process.env.HTTP_PORT) || 6060;
+const HTTPS_PORT = Number(process.env.HTTPS_PORT) || 7070;
 const USE_NGROK = process.env.USE_NGROK === 'true';
 const USE_HTTP = process.env.USE_HTTP === 'true';
 const DOMAIN = 'skybound-api.xyz';
