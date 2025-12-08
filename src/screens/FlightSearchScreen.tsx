@@ -1,7 +1,7 @@
 import { NATIONALITIES_TO_ISO } from '@/assets/data/nationalitiesToISO';
 import InteractiveMap, { LatLng } from '@/components/ui/InteractiveMap';
 import SkyboundItemHolder from '@/components/ui/SkyboundItemHolder';
-import { Airport, FlightLeg, Traveler, TravelerType } from '@/skyboundTypes/SkyboundAPI';
+import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams, Traveler, TravelerType } from '@/skyboundTypes/SkyboundAPI';
 import { db } from '@/src/firebase';
 import AirportIcon from '@assets/images/AirportIcon.svg';
 import ArrivalIcon from '@assets/images/ArrivalIcon.svg';
@@ -28,7 +28,6 @@ import React, { useCallback, useEffect, useLayoutEffect, useState } from "react"
 import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 import airports from '../../airports.json';
-import type { PlannedLeg } from "./FlightResultsScreen";
 
 import { getTravelerDetails } from '@src/firestoreFunctions';
 import { getAuth } from 'firebase/auth';
@@ -414,27 +413,58 @@ export default function FlightSearchScreen() {
     setIsLoading(true);
 
     try {
-      const legsPlan: PlannedLeg[] = (() => {
-        if (tripType === 'multi-city') {
-          return multiCityLegs.map(leg => ({ fromCode: leg.from?.iata, toCode: leg.to?.iata, date: leg.date }));
-        }
-        if (tripType === 'round-trip') {
-          return [
-            { fromCode: fromAirport?.iata, toCode: toAirport?.iata, date: departureDate },
-            { fromCode: toAirport?.iata, toCode: fromAirport?.iata, date: returnDate },
-          ];
-        }
-        return [{ fromCode: fromAirport?.iata, toCode: toAirport?.iata, date: departureDate }];
-      })();
+      const searchResults = await (async () => {
+        switch (tripType) {
+          case 'one-way': {
+            const endpoint = "searchFlightsOneWay"
+            const jsonBody: OneWayQueryParams = {
+              originAirportIATA: fromAirport?.iata,
+              destinationAirportIATA: toAirport?.iata,
+              date: departureDate,
+              flexibleDates,
+              flexibleAirports: flexibleAirports.map(airport => airport.code),
+              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              currencyCode: "USD",
+            }
+            return await skyboundRequest(endpoint, jsonBody);
+          }
 
-      const firstLeg = legsPlan[0];
-      const searchResults = await skyboundRequest("searchFlightsOneWay", {
-        originAirportIATA: firstLeg.fromCode,
-        destinationAirportIATA: firstLeg.toCode,
-        date: firstLeg.date,
-        flexibleDates,
-        flexibleAirports: flexibleAirports.map(airport => airport.code),
-      });
+          case 'round-trip': {
+            const endpoint = "searchFlightsRoundTrip"
+            const jsonBody: RoundTripQueryParams = {
+              originAirportIATA: fromAirport?.iata,
+              destinationAirportIATA: toAirport?.iata,
+              startDate: departureDate,
+              endDate: returnDate,
+              flexibleDates,
+              flexibleAirports: flexibleAirports.map(airport => airport.code),
+              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              currencyCode: "USD",
+            }
+            return await skyboundRequest(endpoint, jsonBody);
+          }
+
+          case 'multi-city': {
+            const endpoint = "searchFlightsMultiCity"
+            const jsonBody: MultiCityQueryParams = {
+              flexibleDates,
+              legs: multiCityLegs.map((leg): QueryLeg => ({
+                originAirportIATA: leg.from?.iata,
+                destinationAirportIATA: leg.to?.iata,
+                date: leg.date,
+              })), 
+              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              currencyCode: "USD",
+            }
+            return await skyboundRequest(endpoint, jsonBody);
+          }
+          
+          default: {
+            throw new Error(`Invalid flight search type "${tripType}"`)          
+          }
+
+        }
+      })();
 
       setIsLoading(false);
       const normalizeDateValue = (value?: Date | string | null) => {
@@ -446,17 +476,13 @@ export default function FlightSearchScreen() {
       navigation.navigate('FlightResults', {
         searchResults: searchResults,
         tripType: tripType,
-        fromCode: firstLeg.fromCode,
-        toCode: firstLeg.toCode,
-        departureDate: normalizeDateValue(firstLeg.date),
+        fromCode: fromAirport?.iata,
+        toCode: toAirport?.iata,
+        departureDate: normalizeDateValue(departureDate),
         returnDate: normalizeDateValue(returnDate),
-        legsCount: legsPlan.length,
-        legsDates: legsPlan.map(l => normalizeDateValue(l.date ?? null)),
-        searchLegs: legsPlan,
-        legIndex: 0,
-        selections: [],
+        legsCount: tripType === 'multi-city' ? multiCityLegs.length : (tripType === 'round-trip' ? 2 : 1),
+        legsDates: tripType === 'multi-city' ? multiCityLegs.map(l => normalizeDateValue(l.date)) : undefined,
       });
-      persistRecentSearch();
     } catch (err) {
       console.error('API call failed', err);
       setIsLoading(false);
