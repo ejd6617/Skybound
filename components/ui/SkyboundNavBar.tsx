@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackHeaderProps } from "@react-navigation/native-stack";
 import React from 'react';
 import { Dimensions, Image, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
@@ -28,8 +28,9 @@ const SkyboundNavBar: React.FC<SkyboundNavBarProps> = ({
     showUserProfile = true,
     showFilter = false,
     showShare = false,
-}) => { 
+}) => {
     const navigation = useNavigation<DrawerNavProps>();
+    const route = useRoute<any>();
     const {width, height} = Dimensions.get('window')
     const colorScheme = useColorScheme();
     
@@ -83,7 +84,7 @@ const SkyboundNavBar: React.FC<SkyboundNavBarProps> = ({
                     
                     { showFilter
                         && <TouchableOpacity onPress={() => {
-                                navigation.navigate("FilterScreen")
+                                navigation.navigate("FilterScreen", { filters: route.params?.filters })
                             }}>
                             <Ionicons name="filter" size={iconSize} color={skyboundBlue} />
                         </TouchableOpacity>

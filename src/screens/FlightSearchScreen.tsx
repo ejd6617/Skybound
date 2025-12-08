@@ -1,6 +1,7 @@
 import InteractiveMap, { LatLng } from '@/components/ui/InteractiveMap';
 import SkyboundItemHolder from '@/components/ui/SkyboundItemHolder';
-import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams } from '@/skyboundTypes/SkyboundAPI';
+import { Airport, FlightLeg } from '@/skyboundTypes/SkyboundAPI';
+import { auth, db } from '@/src/firebase';
 import AirportIcon from '@assets/images/AirportIcon.svg';
 import ArrivalIcon from '@assets/images/ArrivalIcon.svg';
 import CalandarIcon from '@assets/images/CalandarIcon.svg';
@@ -14,16 +15,19 @@ import SkyboundText from "@components/ui/SkyboundText";
 import TripTypeSelector, { TripType } from "@components/ui/TripTypeSelector";
 import basicStyles from '@constants/BasicComponents';
 import { useColors } from '@constants/theme';
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { NativeStackNavigationProp, RouteProp } from "@react-navigation/native-stack";
 import { skyboundRequest } from '@src/api/SkyboundUtils';
 import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
 import * as Location from 'expo-location';
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import { addDoc, collection, deleteDoc, limit as fbLimit, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore';
+import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
+import airports from '../../airports.json';
+import type { PlannedLeg } from "./FlightResultsScreen";
 
 
 interface ValidationErrors {
@@ -44,8 +48,15 @@ const AddIcon = () => (
   </Svg>
 );
 
+const normalizeDateValue = (value?: Date | string | null) => {
+  if (!value) return null;
+  if (typeof value === 'string') return value;
+  return value.toISOString();
+};
+
 export default function FlightSearchScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'FlightSearch'>>();
   const colors = useColors();
   const API_URL = Constants.expoConfig?.extra?.API_URL;
 
@@ -79,6 +90,22 @@ export default function FlightSearchScreen() {
     setFlexibleAirportCodes(flexibleAirports.map(a => a.code));
     console.log(flexibleAirportCodes);
   }, [flexibleAirports])
+
+  useEffect(() => {
+    const code = route.params?.prefillDestinationCode;
+    if (!code) return;
+    const match: any = (airports as any[]).find(a => a.code?.toUpperCase() === code.toUpperCase());
+    if (match) {
+      const destination: Airport = {
+        iata: match.code,
+        city: match.city,
+        name: match.name,
+        country: match.country ?? '',
+      };
+      setToAirport(destination);
+      setTo(destination.city || destination.name || destination.iata);
+    }
+  }, [route.params?.prefillDestinationCode]);
 
   //stores user's current location
    const [userLocation, setUserLocation] = useState<LatLng | undefined>(undefined);
@@ -275,6 +302,33 @@ export default function FlightSearchScreen() {
     return isValid;
   };
 
+  const persistRecentSearch = useCallback(async () => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+
+    try {
+      await addDoc(collection(db, "Users", userId, "recentSearches"), {
+        fromCode: fromAirport?.iata,
+        toCode: toAirport?.iata,
+        tripType,
+        departureDate: normalizeDateValue(departureDate),
+        returnDate: normalizeDateValue(returnDate),
+        createdAt: serverTimestamp(),
+      });
+
+      const q = query(
+        collection(db, "Users", userId, "recentSearches"),
+        orderBy("createdAt", "desc"),
+        fbLimit(6)
+      );
+      const snap = await getDocs(q);
+      const excess = snap.docs.slice(3);
+      await Promise.all(excess.map(doc => deleteDoc(doc.ref)));
+    } catch (err) {
+      console.warn('Unable to save recent search', err);
+    }
+  }, [fromAirport?.iata, toAirport?.iata, tripType, departureDate, returnDate]);
+
   const handleSearch = async () => {
     if (!validateForm()) {
       return;
@@ -284,52 +338,27 @@ export default function FlightSearchScreen() {
     setIsLoading(true);
 
     try {
-      const searchResults = await (async () => {
-        switch (tripType) {
-          case 'one-way': {
-            const endpoint = "searchFlightsOneWay"
-            const jsonBody: OneWayQueryParams = {
-              originAirportIATA: fromAirport?.iata,
-              destinationAirportIATA: toAirport?.iata,
-              date: departureDate,
-              flexibleDates,
-              flexibleAirports: flexibleAirports.map(airport => airport.code),
-            }
-            return await skyboundRequest(endpoint, jsonBody);
-          }
-
-          case 'round-trip': {
-            const endpoint = "searchFlightsRoundTrip"
-            const jsonBody: RoundTripQueryParams = {
-              originAirportIATA: fromAirport?.iata,
-              destinationAirportIATA: toAirport?.iata,
-              startDate: departureDate,
-              endDate: returnDate,
-              flexibleDates,
-              flexibleAirports: flexibleAirports.map(airport => airport.code),
-            }
-            return await skyboundRequest(endpoint, jsonBody);
-          }
-
-          case 'multi-city': {
-            const endpoint = "searchFlightsMultiCity"
-            const jsonBody: MultiCityQueryParams = {
-              flexibleDates,
-              legs: multiCityLegs.map((leg): QueryLeg => ({
-                originAirportIATA: leg.from?.iata,
-                destinationAirportIATA: leg.to?.iata,
-                date: leg.date,
-              })), 
-            }
-            return await skyboundRequest(endpoint, jsonBody);
-          }
-          
-          default: {
-            throw new Error(`Invalid flight search type "${tripType}"`)          
-          }
-
+      const legsPlan: PlannedLeg[] = (() => {
+        if (tripType === 'multi-city') {
+          return multiCityLegs.map(leg => ({ fromCode: leg.from?.iata, toCode: leg.to?.iata, date: leg.date }));
         }
+        if (tripType === 'round-trip') {
+          return [
+            { fromCode: fromAirport?.iata, toCode: toAirport?.iata, date: departureDate },
+            { fromCode: toAirport?.iata, toCode: fromAirport?.iata, date: returnDate },
+          ];
+        }
+        return [{ fromCode: fromAirport?.iata, toCode: toAirport?.iata, date: departureDate }];
       })();
+
+      const firstLeg = legsPlan[0];
+      const searchResults = await skyboundRequest("searchFlightsOneWay", {
+        originAirportIATA: firstLeg.fromCode,
+        destinationAirportIATA: firstLeg.toCode,
+        date: firstLeg.date,
+        flexibleDates,
+        flexibleAirports: flexibleAirports.map(airport => airport.code),
+      });
 
       setIsLoading(false);
       const normalizeDateValue = (value?: Date | string | null) => {
@@ -341,13 +370,17 @@ export default function FlightSearchScreen() {
       navigation.navigate('FlightResults', {
         searchResults: searchResults,
         tripType: tripType,
-        fromCode: fromAirport?.iata,
-        toCode: toAirport?.iata,
-        departureDate: normalizeDateValue(departureDate),
+        fromCode: firstLeg.fromCode,
+        toCode: firstLeg.toCode,
+        departureDate: normalizeDateValue(firstLeg.date),
         returnDate: normalizeDateValue(returnDate),
-        legsCount: tripType === 'multi-city' ? multiCityLegs.length : (tripType === 'round-trip' ? 2 : 1),
-        legsDates: tripType === 'multi-city' ? multiCityLegs.map(l => normalizeDateValue(l.date)) : undefined,
+        legsCount: legsPlan.length,
+        legsDates: legsPlan.map(l => normalizeDateValue(l.date ?? null)),
+        searchLegs: legsPlan,
+        legIndex: 0,
+        selections: [],
       });
+      persistRecentSearch();
     } catch (err) {
       console.error('API call failed', err);
       setIsLoading(false);

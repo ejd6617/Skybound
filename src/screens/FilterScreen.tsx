@@ -9,9 +9,9 @@ import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-const CloseIcon = () => (
+const CloseIcon = ({ color = '#000' }) => (
   <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
-    <Path d="M18 6L6 18M6 6L18 18" stroke="#000" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
+    <Path d="M18 6L6 18M6 6L18 18" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"/>
   </Svg>
 );
 
@@ -87,11 +87,7 @@ export default function FilterScreen() {
       airlines,
     };
 
-    navigation.navigate({
-      name: 'FlightResults',
-      params: { filters: applied },
-      merge: true,
-    });
+    navigation.navigate({ name: 'FlightResults', params: { filters: applied }, merge: true } as any);
     navigation.goBack();
   };
 
@@ -119,11 +115,11 @@ export default function FilterScreen() {
     <View style={[styles.container, { backgroundColor: colors.background }]}> 
       <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.divider }]}> 
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <CloseIcon />
+          <CloseIcon color={colors.primary} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Filters</Text>
+        <Text style={[styles.headerTitle, { color: colors.primary }]}>Filters</Text>
         <TouchableOpacity onPress={handleReset}>
-          <Text style={styles.resetButton}>Reset</Text>
+          <Text style={[styles.resetButton, { color: colors.primary }]}>Reset</Text>
         </TouchableOpacity>
       </View>
 
