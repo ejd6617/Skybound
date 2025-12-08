@@ -1,4 +1,3 @@
-import basicStyles from '@constants/BasicComponents';
 import { useColors } from '@constants/theme'; // to use dark/light theme
 //react native imports
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -161,13 +160,13 @@ export default function LoginScreen() {
           {/* LOGO */}
           <Image
             source={require('@assets/images/skybound-logo-white.png')}
-            style={{ width: 250, height: 70, resizeMode: 'contain', marginTop:25, marginBottom: 10 }}
+            style={{ width: 500, height: 70, resizeMode: 'contain', marginTop:25, marginBottom: 10 }}
           />
 
        
 
           {/* Subtitle */}
-          <SkyboundText variant="primary" accessabilityLabel="Skybound: Your Journey Starts Here" style={{marginBottom: 33}}> 
+          <SkyboundText variant="primary" accessabilityLabel="Skybound: Your Journey Starts Here" style={{color: '#ffffffff', marginBottom: 33, fontSize: 16}}> 
             Your Journey Starts Here
           </SkyboundText>
 
@@ -259,40 +258,40 @@ export default function LoginScreen() {
             </View>
 
             {/* Google button */}
-            <TouchableOpacity
-              onPress={ async () =>{ setIsLoading(true);
+            <View style={{ width: BTN_W, alignItems: 'center' }}>
+              <TouchableOpacity
+                onPress={async () => {
+                  setIsLoading(true);
                   await promptAsync();
-                  setIsLoading(false);}}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: c.card,
-                borderRadius: 10,
-                borderWidth: 1,           
-                borderColor: c.outline,    
-                paddingVertical: 12,
-                paddingHorizontal: 50,
-              
-              }
-            
-              
-            }
-            >
-              <Image
-                source={require('@assets/images/google.png')}
-                style={{ width: 22, height: 22, resizeMode: 'contain', marginRight: 10 }}
-              />
-              <Text
+                  setIsLoading(false);
+                }}
                 style={{
-                  fontFamily: 'Poppins_600SemiBold',
-                  color: c.text,
-                  fontSize: 15,
+                  width: '100%',              
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: c.card,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: c.outline,
+                  paddingVertical: 12,
                 }}
               >
-                Continue with Google
-              </Text>
-            </TouchableOpacity>
+                <Image
+                  source={require('@assets/images/google.png')}
+                  style={{ width: 22, height: 22, resizeMode: 'contain', marginRight: 10 }}
+                />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins_600SemiBold',
+                    color: c.text,
+                    fontSize: 15,
+                  }}
+                >
+                  Continue with Google
+                </Text>
+              </TouchableOpacity>
+            </View>
 
             {/* Sign up link */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20, marginBottom: 20 }}>
@@ -318,20 +317,11 @@ export default function LoginScreen() {
           >
             {['Privacy Policy', 'Terms of Service', 'Help'].map((label) => (
               <TouchableOpacity key={label}>
-                <Text style={{ color: c.text, fontFamily: 'Poppins_400Regular', fontSize: 12 }}>
+                <Text style={{ color: c.text, fontFamily: 'Poppins_400Regular', fontSize: 16 }}>
                   {label}
                 </Text>
               </TouchableOpacity>
             ))}
-
-            <SkyboundButton
-              onPress={() => navigation.navigate('ComponentTest')}
-              style={basicStyles.skyboundButtonPrimaryLight}
-              width={100}
-              height={50}
-            >
-              Component Test
-            </SkyboundButton>
           </View>
         </View>
       </LinearGradient>

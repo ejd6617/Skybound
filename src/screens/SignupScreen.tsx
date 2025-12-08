@@ -463,37 +463,40 @@ function toggleHidePassword1()
             </View>
 
             {/* Google button */}
-            <TouchableOpacity
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: c.card,
-                borderRadius: 10,
-                borderWidth: 1,
-                borderColor: c.outline,
-                paddingVertical: 12,
-                paddingHorizontal: 50,
-              }}
-              onPress={async () => 
-                { setIsLoading(true);
+            <View style={{ width: BTN_W, alignItems: 'center' }}>
+              <TouchableOpacity
+                onPress={async () => {
+                  setIsLoading(true);
                   await promptAsync();
-                  setIsLoading(false);}}
-            >
-              <Image
-                source={require('../../assets/images/google.png')}
-                style={{ width: 22, height: 22, resizeMode: 'contain', marginRight: 10 }}
-              />
-              <Text
+                  setIsLoading(false);
+                }}
                 style={{
-                  fontFamily: 'Poppins_600SemiBold',
-                  color: c.text,
-                  fontSize: 15,
+                  width: '100%',           
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: c.card,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: c.outline,
+                  paddingVertical: 12,
                 }}
               >
-                Continue with Google
-              </Text>
-            </TouchableOpacity>
+                <Image
+                  source={require('@assets/images/google.png')}
+                  style={{ width: 22, height: 22, resizeMode: 'contain', marginRight: 10 }}
+                />
+                <Text
+                  style={{
+                    fontFamily: 'Poppins_600SemiBold',
+                    color: c.text,
+                    fontSize: 15,
+                  }}
+                >
+                  Continue with Google
+                </Text>
+              </TouchableOpacity>
+            </View>
 
             {/* Login link */}
             <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20, marginBottom: 20 }}>
@@ -519,7 +522,7 @@ function toggleHidePassword1()
           >
             {['Privacy Policy', 'Terms of Service', 'Help'].map((label) => (
               <TouchableOpacity key={label}>
-                <Text style={{ color: c.text, fontFamily: 'Poppins_400Regular', fontSize: 12 }}>
+                <Text style={{ color: c.text, fontFamily: 'Poppins_400Regular', fontSize: 16 }}>
                   {label}
                 </Text>
               </TouchableOpacity>
