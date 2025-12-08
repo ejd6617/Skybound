@@ -177,7 +177,7 @@ function toUIFlights(data: Flight[]): UIFlight[] {
       airlineColor,
       price: flight.price,
       cabinClass: travelClass,
-      cabinClassCode: travelClass,
+      cabinClassCode: findMostCommonTravelClass(flight.outbound),
       departureTime: formatTime(firstOutbound.departureTime),
       arrivalTime: formatTime(lastOutbound.arrivalTime),
       departureDate: formatDate(firstOutbound.departureTime),
@@ -710,7 +710,6 @@ export default function FlightResultsScreen() {
   return (
     <View style={styles.container}>
         <View style={[styles.container, { backgroundColor: colors.background }]}>
-          {generateDateRangeHeader()}
           <View style={{ backgroundColor: colors.card, marginTop: 15 }}>
             <View style={{ paddingBottom: 8 }}>
               <SkyboundText
