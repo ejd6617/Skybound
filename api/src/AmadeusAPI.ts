@@ -85,20 +85,43 @@ export default class AmadeusAPI implements SkyboundAPI {
   constructor() {
     dotenv.config({ path: ENV_FILE });
 
-    const AMADEUS_KEY = process.env.AMADEUS_KEY;
-    if (!AMADEUS_KEY) {
-      throw new Error(`AMADEUS_KEY is not set in ${ENV_FILE}`);
-    }
+    // AMADEUS_PROD is not set in the env file, it's set in the docker compose
+    if (process.env.AMADEUS_PROD === "true") {
+      const AMADEUS_KEY_PROD = process.env.AMADEUS_KEY_PROD;
+      if (!AMADEUS_KEY_PROD) {
+        throw new Error(`AMADEUS_KEY_PROD is not set in ${ENV_FILE}`);
+      }
 
-    const AMADEUS_SECRET = process.env.AMADEUS_SECRET;
-    if (!AMADEUS_SECRET) {
-      throw new Error(`AMADEUS_SECRET is not set in ${ENV_FILE}`);
-    }
+      const AMADEUS_SECRET_PROD = process.env.AMADEUS_SECRET_PROD;
+      if (!AMADEUS_SECRET_PROD) {
+        throw new Error(`AMADEUS_SECRET_PROD is not set in ${ENV_FILE}`);
+      }
 
-    this.amadeus = new Amadeus({
-      clientId: AMADEUS_KEY,
-      clientSecret: AMADEUS_SECRET,
-    });
+      this.amadeus = new Amadeus({
+        clientId: AMADEUS_KEY_PROD,
+        clientSecret: AMADEUS_SECRET_PROD,
+        hostname: "production"
+      });
+    } else {
+      const AMADEUS_KEY = process.env.AMADEUS_KEY;
+      if (!AMADEUS_KEY) {
+        throw new Error(`AMADEUS_KEY is not set in ${ENV_FILE}`);
+      }
+
+      const AMADEUS_SECRET = process.env.AMADEUS_SECRET;
+      if (!AMADEUS_SECRET) {
+        throw new Error(`AMADEUS_SECRET is not set in ${ENV_FILE}`);
+      }
+
+      this.amadeus = new Amadeus({
+        clientId: AMADEUS_KEY,
+        clientSecret: AMADEUS_SECRET,
+      });
+    }
+  }
+
+  getFlightDeals(params: FlightDealsParams): Promise<Flight[]> {
+    throw new Error("Method not implemented.");
   }
   
   private extractResponseFlights(response: AmadeusResponse|undefined): Flight[] {
@@ -196,16 +219,6 @@ export default class AmadeusAPI implements SkyboundAPI {
     } catch (e) {
       console.error("Caught a value that could not be logged or stringified.");
     }
-  }
-  
-  // Flight deals/inspiration endpoint
-  // Just takes in a city and returns cheap flights
-  async getFlightDeals(params: FlightDealsParams): Promise<Flight[]> {
-    const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightDestinations.get({
-      origin : params.originAirportIATA,
-    })
-    
-    return this.extractResponseFlights(response);
   }
 
   // Round trip flight search endpoint

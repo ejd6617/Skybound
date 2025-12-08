@@ -22,5 +22,6 @@ services:
       # - 443:443
     environment:
       # - USE_HTTP=true
+      # - AMADEUS_PROD=true
       - USE_NGROK=true
     command: ["npm", "start"]
