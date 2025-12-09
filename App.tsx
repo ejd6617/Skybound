@@ -1,10 +1,11 @@
 // mobile/expo/App.tsx
+import { PortalProvider } from '@gorhom/portal';
 import RootNavigator from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import { useFonts } from "expo-font";
 import React from "react";
-import Toast from "react-native-toast-message";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Toast from "react-native-toast-message";
 
 export default function App()
 {
@@ -32,9 +33,11 @@ export default function App()
   if (!fontsLoaded) return <LoadingScreen />;
 
   return(
+    <PortalProvider>
     <GestureHandlerRootView style={{ flex: 1 }}>
       <RootNavigator />
       <Toast/>
     </GestureHandlerRootView>
+    </PortalProvider>
   );
 }

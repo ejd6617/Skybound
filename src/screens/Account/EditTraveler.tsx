@@ -136,7 +136,7 @@ const EditTraveler: React.FC = () => {
       }
   
       navigation.goBack();
-      navigation.navigate('TravelerDetails');
+      
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Something went wrong while saving the traveler.");
@@ -153,7 +153,7 @@ const EditTraveler: React.FC = () => {
       if (success) {
         Alert.alert("Traveler Deleted", `${form.firstName} has been deleted.`);
         navigation.goBack();
-        navigation.navigate('TravelerDetails');
+       
       } else {
         Alert.alert("Error", "Failed to delete traveler.");
       }
