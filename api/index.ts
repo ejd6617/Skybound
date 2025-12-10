@@ -22,8 +22,8 @@ const DOMAIN = 'skybound-api.xyz';
 const privateKeyPath = `/certs/live/skybound-api.xyz/privkey.pem`;
 const fullChainPath = `/certs/live/skybound-api.xyz/fullchain.pem`;
 
-const shortCache = createCacheMiddleware(120);
-const longCache = createCacheMiddleware(600);
+const shortCache = createCacheMiddleware(600); // 10 minutes
+const longCache = createCacheMiddleware(1200); // 20 minutes
 
 admin.initializeApp(getAdminCredential());
 app.use(express.json());
