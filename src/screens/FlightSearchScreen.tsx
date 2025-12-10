@@ -358,6 +358,9 @@ export default function FlightSearchScreen() {
       "Elderly": "SENIOR",
     };
     
+    console.log(traveler.type.type);
+    console.log(TRAVELER_TYPE_MAP[traveler.type]);
+
     if (!(traveler.type in TRAVELER_TYPE_MAP)) {
       throw new Error("Invalid traveler type " + traveler.type + " for API query");
     }
@@ -423,7 +426,7 @@ export default function FlightSearchScreen() {
               date: departureDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
-              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              travelers: [],
               currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);
@@ -438,7 +441,7 @@ export default function FlightSearchScreen() {
               endDate: returnDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
-              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              travelers: [],
               currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);
@@ -453,7 +456,7 @@ export default function FlightSearchScreen() {
                 destinationAirportIATA: leg.to?.iata,
                 date: leg.date,
               })), 
-              travelers: travelers.map(extractAPIRelevantTravelerDetails),
+              travelers: [],
               currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);

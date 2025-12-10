@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv';
 import pLimit from 'p-limit';
 const Amadeus = require('amadeus');
 
+
 const ENV_FILE = '/.env.amadeus.local';
 
 const AMADEUS_PROD = (process.env.AMADEUS_PROD === "true");
@@ -16,8 +17,9 @@ const MAX_AIRPORTS_TEST = 4; // Limit the number of sequential requests allowed 
 const MAX_AIRPORTS_PROD = 8 // Limit the number of airports in general. Runs in parallel by default
 
 // Function to intentionally limit parallel execution if necessary
+type Callback = () => Promise<any[] | null>;
 const limit = (AMADEUS_PROD)
-  ? ((callback) => { return Promise.resolve(callback()) })
+  ? ((callback: Callback) => { return Promise.resolve(callback()) })
   : pLimit(MAX_AIRPORTS_PARALLEL)
 
 // Represents a generic response from the Amadeus API
@@ -154,6 +156,7 @@ export default class AmadeusAPI implements SkyboundAPI {
 
   private processTravelers(travelers: Traveler[]): any[] {
     const DEFAULT_TRAVELER = {
+      id: "1",
       travelerType: "ADULT",
       nationality: "US",
       dateOfBirth: "2002-01-01",

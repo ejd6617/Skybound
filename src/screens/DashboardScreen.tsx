@@ -173,12 +173,7 @@ export default function DashboardScreen() {
         flexibleAirports: destAirports,
         flexibleDates: true,
         date: futureDate,
-        travelers: [
-          {
-            dateOfBirth: new Date("2000-01-03"),
-            travelerType: "ADULT",
-          }
-        ],
+        travelers: [],
         currencyCode: "USD"
       };
       const responseData = await skyboundRequest("searchFlightsOneWay", params);
