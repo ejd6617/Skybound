@@ -5,6 +5,7 @@ import pLimit from 'p-limit';
 const Amadeus = require('amadeus');
 
 
+
 const ENV_FILE = '/.env.amadeus.local';
 
 const AMADEUS_PROD = (process.env.AMADEUS_PROD === "true");
@@ -14,7 +15,7 @@ const MAX_AIRPORTS_PARALLEL = 1; // Limit the number of parallel requests allowe
 const MAX_AIRPORTS_TEST = 4; // Limit the number of sequential requests allowed when running a flexible airports query
 
 // Limits for the production environment
-const MAX_AIRPORTS_PROD = 8 // Limit the number of airports in general. Runs in parallel by default
+const MAX_AIRPORTS_PROD = 20 // Limit the number of airports in general. Runs in parallel by default
 
 // Function to intentionally limit parallel execution if necessary
 type Callback = () => Promise<any[] | null>;

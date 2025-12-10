@@ -339,7 +339,7 @@ export default function FlightResultsScreen() {
 
   useEffect(() => {
     setBaseFlights(toUIFlights(reviveDates(searchResults)));
-    setVisibleCount(3);
+    setVisibleCount(10);
   }, [searchResults]);
 
   useEffect(() => {
@@ -777,7 +777,7 @@ export default function FlightResultsScreen() {
                   !canLoadMore && { opacity: 0.5 }
                 ]}
                 disabled={!canLoadMore}
-                onPress={() => setVisibleCount(prev => Math.min(prev + 4, flights.length))}
+                onPress={() => setVisibleCount(prev => Math.min(prev + 10, flights.length))}
               >
                 <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFFFFF' }}>
                   {canLoadMore ? 'Load More Flights' : 'No More Flights'}

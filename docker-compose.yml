@@ -16,7 +16,7 @@ services:
       - /etc/letsencrypt:/certs:ro
     ports:
       # - 5050:5050 # Extra
-      - 6060:6060 # HTTP
+      # - 6060:6060 # HTTP
       - 7070:7070 # HTTPS
     environment:
       # - USE_HTTP=true

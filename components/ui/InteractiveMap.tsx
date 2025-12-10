@@ -36,6 +36,10 @@ export default function InteractiveMap({
   const [location, setLocation] = useState<LatLng | null>(propLocation || { latitude: 37.78825, longitude: -122.4324 });
   const [radius, setRadius] = useState(initialRadius || 10000);
   const [nearbyAirports, setNearbyAirports] = useState<any[]>([]);
+  
+  // Keeps track of airports within the max search range of the current location
+  // Optimize nearby airport search by limiting the dataset size
+  const [localAirportData, setLocalAirportData] = useState<any[]>([]) ;
 
   const handleMapPress = (e: MapPressEvent) => {
     const coord = e.nativeEvent.coordinate;
@@ -46,13 +50,18 @@ export default function InteractiveMap({
     setRadius(value);
   };
 
-  function findNearbyAirports(center: LatLng, range: number) {
-    return airportData.filter((airport) => {
+  function findNearbyAirports(dataset, center: LatLng, range: number) {
+    return dataset.filter((airport) => {
       if (!airport.lat || !airport.lon) return false;
       const distance = getDistance(center, { latitude: airport.lat, longitude: airport.lon });
       return distance <= range;
     });
   }
+  
+  // Update localAirportData (the set of airports within the maximum radius) on location change
+  useEffect(() => {
+    setLocalAirportData(findNearbyAirports(airportData, location, maxRadius));
+  }, [location]);
 
   // Center map when propLocation changes
   useEffect(() => {
@@ -79,7 +88,7 @@ export default function InteractiveMap({
     const computeAirports = () => {
       if (hasRun) return;
       hasRun = true;
-      const nearby = findNearbyAirports(location, radius);
+      const nearby = findNearbyAirports(localAirportData, location, radius);
       setNearbyAirports(nearby);
       onChange?.(nearby);
     };
