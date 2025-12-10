@@ -73,11 +73,8 @@ const SkyboundFlashDeal: React.FC<SkyboundFlashDealProps> = ({
 
 
                     <View style={styles.middleRowHolder}>
-                        <View style={styles.priceHolder}>
-                            <SkyboundText accessabilityLabel={'Original Price: ' + originalPrice} variant='secondary' style={{textDecorationLine: 'line-through'}}>{originalPrice}</SkyboundText>
-
+                        <View>
                             <SkyboundText accessabilityLabel={'New Price: ' + newPrice} variant='blue' style={{fontWeight: 'bold'}}>{newPrice}</SkyboundText>
-
                         </View>
 
                         <View style={styles.cheaperThanUsual}>
@@ -114,14 +111,19 @@ const styles = StyleSheet.create({
     flashDeal: {
         backgroundColor: '#EF4444',
         borderRadius: 9999,
-        padding: 4
+        paddingTop: 3,
+        paddingBottom: 3,
+        paddingLeft: 6,
+        paddingRight: 6,
     },
 
     cheaperThanUsual: {
         backgroundColor: '#F97316',
         borderRadius: 9999,
-        padding: 4
-
+        paddingTop: 3,
+        paddingBottom: 3,
+        paddingLeft: 6,
+        paddingRight: 6,
     },
 
     subHolder: {

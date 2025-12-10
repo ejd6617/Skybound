@@ -479,7 +479,8 @@ export default function FlightSearchScreen() {
       navigation.navigate('FlightResults', {
         searchResults: searchResults,
         tripType: tripType,
-        fromCode: fromAirport?.iata,
+        multipleSourceAirports: (flexibleAirports.length > 1),
+        fromCode: (flexibleAirports.length == 0) ? fromAirport?.iata : undefined,
         toCode: toAirport?.iata,
         departureDate: normalizeDateValue(departureDate),
         returnDate: normalizeDateValue(returnDate),

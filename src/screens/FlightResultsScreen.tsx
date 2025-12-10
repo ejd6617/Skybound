@@ -309,6 +309,7 @@ export default function FlightResultsScreen() {
   const {
     searchResults,
     tripType,
+    multipleSourceAirports,
     fromCode,
     toCode,
     departureDate,
@@ -320,7 +321,7 @@ export default function FlightResultsScreen() {
     selections = [],
     filters: incomingFilters,
     silentTransition,
-  } = route.params as SearchDetails & { searchResults: Flight[]; searchLegs?: PlannedLeg[]; legIndex?: number; selections?: UIFlight[]; filters?: FlightFilters };
+  } = route.params as SearchDetails & { searchResults: Flight[]; searchLegs?: PlannedLeg[]; legIndex?: number; selections?: UIFlight[]; filters?: FlightFilters; multipleSourceAirports?: boolean; };
 
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -397,10 +398,11 @@ export default function FlightResultsScreen() {
   };
   
   const generateTitle = () => {
-    return (flights[0] === undefined)
-      ? "No flights found"
-      : `Outbound: ${flights[0].departureCode} to ${flights[0].arrivalCode}`;
+    if (flights[0] === undefined) return "No flights found"
+    if (multipleSourceAirports) return `Outbound: to ${toCode}`
+    return `Outbound: ${flights[0].departureCode} to ${toCode}`;
   }
+
   const formattedDateRange = useMemo<string>(() => {
     const formatDate = (value?: Date | string | null) => {
       if (!value) return '';
