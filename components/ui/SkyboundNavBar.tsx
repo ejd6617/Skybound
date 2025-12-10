@@ -91,7 +91,7 @@ const SkyboundNavBar: React.FC<SkyboundNavBarProps> = ({
                     
                     { showFilter
                         && <TouchableOpacity onPress={() => {
-                                navigation.navigate("FilterScreen", { filters: route.params?.filters })
+                                navigation.navigate("FilterScreen", { filters: route.params?.filters, availableFlights: route.params?.availableFlights })
                             }}>
                             <Ionicons name="filter" size={iconSize} color={accentIconColor} />
                         </TouchableOpacity>

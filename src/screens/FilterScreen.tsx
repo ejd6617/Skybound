@@ -1,11 +1,12 @@
 import { useColors } from '@constants/theme';
 import Slider from '@react-native-community/slider';
 import type { RouteProp } from '@react-navigation/native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { CommonActions, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@src/nav/RootNavigator';
-import type { FlightFilters } from '@src/screens/FlightResultsScreen';
-import React, { useState } from 'react';
+import type { FlightFilters, UIFlight } from '@src/screens/FlightResultsScreen';
+import { applyFilters } from '@src/screens/FlightResultsScreen';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -15,18 +16,9 @@ const CloseIcon = ({ color = '#000' }) => (
   </Svg>
 );
 
-const AIRLINE_CODE_MAP: Record<string, string> = {
-  delta: 'DL',
-  united: 'UA',
-  american: 'AA',
-  southwest: 'WN',
-  'air-canada': 'AC',
-  jetblue: 'B6',
-};
-
 const DEFAULT_FILTERS: FlightFilters = {
   stops: undefined,
-  maxPrice: 2000,
+  maxPrice: undefined,
   departureTimes: [],
   arrivalTimes: [],
   cabinClass: undefined,
@@ -34,22 +26,74 @@ const DEFAULT_FILTERS: FlightFilters = {
   airlines: [],
 };
 
+const ALLIANCE_AIRLINES: Record<string, string[]> = {
+  'star-alliance': ['AC', 'AD', 'A3', 'AI', 'AV', 'BR', 'CA', 'CM', 'ET', 'LH', 'LO', 'NH', 'NZ', 'OS', 'OU', 'OZ', 'SK', 'SQ', 'SN', 'TP', 'TG', 'TK', 'UA'],
+  skyteam: ['AF', 'AM', 'AR', 'AZ', 'CI', 'CZ', 'DL', 'GA', 'KE', 'KQ', 'KL', 'MEA', 'MF', 'MU', 'OK', 'RO', 'SU', 'VN', 'WS', 'XY'],
+  oneworld: ['AS', 'AA', 'BA', 'CX', 'FJ', 'AY', 'IB', 'JL', 'MH', 'WY', 'QF', 'QR', 'AT', 'RJ', 'UL'],
+};
+
+const formatAirlineName = (value?: string, fallback = '') => {
+  const safeValue = value?.trim() ?? fallback;
+  if (!safeValue) {
+    return '';
+  }
+
+  return safeValue
+    .toLowerCase()
+    .split(/([\s-]+)/)
+    .map(part => (/^[a-z]/.test(part) ? part.charAt(0).toUpperCase() + part.slice(1) : part))
+    .join('');
+};
+
 export default function FilterScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'FilterScreen'>>();
   const colors = useColors();
 
-    const initialFilters = route.params?.filters ?? DEFAULT_FILTERS;
+  const availableFlights = route.params?.availableFlights ?? [] as UIFlight[];
+  const priceCeilingFromResults = useMemo(
+    () => Math.max(...availableFlights.map(f => Math.floor(f.price)), 0),
+    [availableFlights]
+  );
+  const priceCeiling = priceCeilingFromResults > 0 ? priceCeilingFromResults : 2000;
+  const initialFilters = route.params?.filters ?? DEFAULT_FILTERS;
+
+  const availableAirlines = useMemo(() => {
+    const map = new Map<string, string>();
+    availableFlights.forEach(flight => {
+      map.set(flight.airlineCode, formatAirlineName(flight.airline, flight.airlineCode));
+    });
+    return Array.from(map.entries())
+      .map(([code, name]) => ({ code, name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [availableFlights]);
+
+  const allAvailableCodes = useMemo(() => availableAirlines.map(a => a.code), [availableAirlines]);
+  const initialAirlines = initialFilters.airlines?.length ? initialFilters.airlines : allAvailableCodes;
 
   const [stops, setStops] = useState<'nonstop' | '1-stop' | '2plus' | 'any'>(initialFilters.stops ?? 'any');
-  const [priceRange, setPriceRange] = useState(initialFilters.maxPrice ?? 2000);
+  const [priceRange, setPriceRange] = useState(initialFilters.maxPrice ?? priceCeiling);
   const [departureTime, setDepartureTime] = useState<string[]>(initialFilters.departureTimes ?? []);
   const [arrivalTime, setArrivalTime] = useState<string[]>(initialFilters.arrivalTimes ?? []);
   const [cabinClass, setCabinClass] = useState(initialFilters.cabinClass ?? 'any');
-  const [flexibleDates, setFlexibleDates] = useState(false);
   const [duration, setDuration] = useState(initialFilters.maxDurationHours ?? 24);
   const [alliance, setAlliance] = useState<string[]>([]);
-  const [airlines, setAirlines] = useState<string[]>(initialFilters.airlines ?? []);
+  const [airlines, setAirlines] = useState<string[]>(initialAirlines);
+  const [selectAllAirlines, setSelectAllAirlines] = useState(initialAirlines.length === allAvailableCodes.length && allAvailableCodes.length > 0);
+
+  useEffect(() => {
+    if (priceRange > priceCeiling) {
+      setPriceRange(priceCeiling);
+    }
+  }, [priceCeiling, priceRange]);
+
+  useEffect(() => {
+    if (airlines.length === allAvailableCodes.length && allAvailableCodes.length > 0) {
+      setSelectAllAirlines(true);
+    } else if (selectAllAirlines && airlines.length !== allAvailableCodes.length) {
+      setSelectAllAirlines(false);
+    }
+  }, [airlines, allAvailableCodes, selectAllAirlines]);
 
   const toggleTimeSlot = (list: string[], setList: (val: string[]) => void, value: string) => {
     if (list.includes(value)) {
@@ -59,27 +103,30 @@ export default function FilterScreen() {
     }
   };
 
-  const toggleAirline = (airlineKey: string) => {
-    const code = AIRLINE_CODE_MAP[airlineKey] ?? airlineKey.toUpperCase();
-    if (airlines.includes(code)) {
-      setAirlines(airlines.filter(a => a !== code));
-    } else {
-      setAirlines([...airlines, code]);
-    }
+  const toggleAirline = (code: string) => {
+    setSelectAllAirlines(false);
+    setAirlines(prev => prev.includes(code) ? prev.filter(a => a !== code) : [...prev, code]);
   };
 
   const toggleAlliance = (value: string) => {
-    if (alliance.includes(value)) {
-      setAlliance(alliance.filter(a => a !== value));
-    } else {
-      setAlliance([...alliance, value]);
-    }
+    const isSelected = alliance.includes(value);
+    const allianceMembers = (ALLIANCE_AIRLINES[value] ?? []).filter(code => allAvailableCodes.includes(code));
+
+    setAlliance(prev => isSelected ? prev.filter(a => a !== value) : [...prev, value]);
+    setSelectAllAirlines(false);
+    setAirlines(prev => {
+      if (isSelected) {
+        return prev.filter(code => !allianceMembers.includes(code));
+      }
+      const merged = new Set([...prev, ...allianceMembers]);
+      return Array.from(merged);
+    });
   };
 
   const handleApply = () => {
     const applied: FlightFilters = {
       stops: stops === 'any' ? undefined : stops,
-      maxPrice: priceRange >= 2000 ? undefined : priceRange,
+      maxPrice: priceRange >= priceCeiling ? undefined : priceRange,
       departureTimes: departureTime,
       arrivalTimes: arrivalTime,
       cabinClass: cabinClass === 'any' ? undefined : cabinClass,
@@ -87,20 +134,33 @@ export default function FilterScreen() {
       airlines,
     };
 
-    navigation.navigate({ name: 'FlightResults', params: { filters: applied }, merge: true } as any);
+    const state = navigation.getState();
+    const previousRoute = state.routes[state.index - 1];
+
+    if (previousRoute?.key) {
+      navigation.dispatch({
+        ...CommonActions.setParams({
+          filters: applied,
+          availableFlights,
+        }),
+        source: previousRoute.key,
+        target: state.key,
+      });
+    }
+
     navigation.goBack();
   };
 
   const handleReset = () => {
     setStops('any');
-    setPriceRange(2000);
+    setPriceRange(priceCeiling);
     setDepartureTime([]);
     setArrivalTime([]);
     setCabinClass('any');
-    setFlexibleDates(false);
     setDuration(24);
     setAlliance([]);
-    setAirlines([]);
+    setAirlines(allAvailableCodes);
+    setSelectAllAirlines(true);
   };
 
   const handleStopPress = (value: 'nonstop' | '1-stop' | '2plus') => {
@@ -111,15 +171,32 @@ export default function FilterScreen() {
     setCabinClass(prev => (prev === value ? 'any' : value));
   };
 
+  const previewFilters: FlightFilters = useMemo(() => ({
+    stops: stops === 'any' ? undefined : stops,
+    maxPrice: priceRange >= priceCeiling ? undefined : priceRange,
+    departureTimes: departureTime,
+    arrivalTimes: arrivalTime,
+    cabinClass: cabinClass === 'any' ? undefined : cabinClass,
+    maxDurationHours: duration >= 24 ? undefined : duration,
+    airlines,
+  }), [airlines, arrivalTime, cabinClass, departureTime, duration, priceCeiling, priceRange, stops]);
+
+  const matchingFlightsCount = useMemo(
+    () => applyFilters(availableFlights, previewFilters).length,
+    [availableFlights, previewFilters]
+  );
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}> 
       <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.divider }]}> 
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <CloseIcon color={colors.primary} />
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.sideButton}>
+          <CloseIcon color="#0071E2" />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.primary }]}>Filters</Text>
-        <TouchableOpacity onPress={handleReset}>
-          <Text style={[styles.resetButton, { color: colors.primary }]}>Reset</Text>
+        <View style={styles.headerTitleContainer}>
+          <Text style={[styles.headerTitle, { color: '#0071E2' }]}>Filters</Text>
+        </View>
+        <TouchableOpacity onPress={handleReset} style={[styles.sideButton, styles.resetButtonContainer]}>
+          <Text style={[styles.resetButton, { color: '#0071E2' }]}>Reset</Text>
         </TouchableOpacity>
       </View>
 
@@ -154,8 +231,8 @@ export default function FilterScreen() {
           <Slider
             style={styles.slider}
             minimumValue={0}
-            maximumValue={2000}
-            step={50}
+            maximumValue={priceCeiling}
+            step={1}
             value={priceRange}
             onValueChange={setPriceRange}
             minimumTrackTintColor="#0075FF"
@@ -164,7 +241,7 @@ export default function FilterScreen() {
           />
           <View style={styles.sliderLabels}>
             <Text style={[styles.sliderLabel, { color: colors.text }]}>$0</Text>
-            <Text style={[styles.sliderLabel, { color: colors.text }]}>${priceRange === 2000 ? '2000+' : priceRange}</Text>
+            <Text style={[styles.sliderLabel, { color: colors.text }]}>${priceRange >= priceCeiling ? `${priceCeiling}+` : priceRange}</Text>
           </View>
         </View>
 
@@ -286,21 +363,6 @@ export default function FilterScreen() {
         </View>
 
         <View style={styles.section}>
-          <View style={styles.flexibilityRow}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Date Flexibility</Text>
-            <TouchableOpacity
-              style={[styles.toggle, flexibleDates && styles.toggleOn]}
-              onPress={() => setFlexibleDates(!flexibleDates)}
-            >
-              <View style={[styles.toggleThumb, flexibleDates && styles.toggleThumbOn]} />
-            </TouchableOpacity>
-          </View>
-          <Text style={[styles.flexibilitySubtext, { color: colors.subText }]}> 
-            Show flexible dates
-          </Text>
-        </View>
-
-        <View style={styles.section}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>Duration</Text>
           <Slider
             style={styles.slider}
@@ -342,27 +404,40 @@ export default function FilterScreen() {
         </View>
 
         <View style={[styles.section, styles.lastSection]}>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>Airlines</Text>
-          {[
-            { value: 'delta', label: 'Delta' },
-            { value: 'united', label: 'United' },
-            { value: 'american', label: 'American' },
-            { value: 'southwest', label: 'Southwest' },
-            { value: 'air-canada', label: 'Air Canada' },
-            { value: 'jetblue', label: 'JetBlue' },
-          ].map(item => {
-            const code = AIRLINE_CODE_MAP[item.value] ?? item.value.toUpperCase();
-            const selected = airlines.includes(code);
+          <View style={styles.airlinesHeaderRow}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Airlines</Text>
+            <View style={styles.selectAllRow}>
+              <Text style={[styles.selectAllLabel, { color: colors.text }]}>Select all</Text>
+              <TouchableOpacity
+                style={[styles.toggle, selectAllAirlines && styles.toggleOn]}
+                onPress={() => {
+                  if (selectAllAirlines) {
+                    setAirlines([]);
+                    setAlliance([]);
+                    setSelectAllAirlines(false);
+                  } else {
+                    setAirlines(allAvailableCodes);
+                    setAlliance([]);
+                    setSelectAllAirlines(true);
+                  }
+                }}
+              >
+                <View style={[styles.toggleThumb, selectAllAirlines && styles.toggleThumbOn]} />
+              </TouchableOpacity>
+            </View>
+          </View>
+          {availableAirlines.map(item => {
+            const selected = airlines.includes(item.code);
             return (
               <TouchableOpacity
-                key={item.value}
+                key={item.code}
                 style={styles.checkboxRow}
-                onPress={() => toggleAirline(item.value)}
+                onPress={() => toggleAirline(item.code)}
               >
                 <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
                   {selected && <Text style={styles.checkmark}>✓</Text>}
                 </View>
-                <Text style={[styles.checkboxLabel, { color: colors.text }]}>{item.label}</Text>
+                <Text style={[styles.checkboxLabel, { color: colors.text }]}>{item.name}</Text>
               </TouchableOpacity>
             );
           })}
@@ -374,7 +449,7 @@ export default function FilterScreen() {
           style={styles.applyButton}
           onPress={handleApply}
         >
-          <Text style={styles.applyButtonText}>Show Flights</Text>
+          <Text style={styles.applyButtonText}>Show {matchingFlightsCount} flights</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -393,17 +468,27 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
   },
-  closeButton: {
-    padding: 8,
+  sideButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    width: 64,
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '600',
     fontFamily: 'SemiBold',
   },
+  resetButtonContainer: {
+    alignItems: 'flex-end',
+  },
   resetButton: {
     color: '#0071E2',
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '500',
     fontFamily: 'Medium',
   },
@@ -411,10 +496,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 100,
+    paddingBottom: 5,
   },
   section: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
     paddingVertical: 20,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -542,6 +627,20 @@ const styles = StyleSheet.create({
   flexibilitySubtext: {
     marginTop: 8,
     fontSize: 12,
+  },
+  airlinesHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  selectAllRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  selectAllLabel: {
+    fontSize: 14,
+    fontFamily: 'Regular',
   },
   footer: {
     paddingHorizontal: 16,

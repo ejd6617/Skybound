@@ -33,6 +33,7 @@ import FlightResultsScreen, {
   ItineraryPayload,
   PlannedLeg,
   SearchDetails,
+  UIFlight,
 } from "@src/screens/FlightResultsScreen";
 import FlightSearchScreen from "@src/screens/FlightSearchScreen";
 import FlightSummaryScreen from "@src/screens/FlightSummaryScreen";
@@ -62,7 +63,7 @@ export type AuthSwitchNavigatorParamList = {
 export type FlightStackParamList = {
   Dashboard: undefined;
   FlashDeals: { deals?: Flight[] } | undefined;
-  FilterScreen: { filters?: FlightFilters } | undefined;
+  FilterScreen: { filters?: FlightFilters; availableFlights?: UIFlight[] } | undefined;
   FlightConfirmation: { itinerary: ItineraryPayload };
   FlightResults: {
     flightsByLeg?: Flight[][];
@@ -72,6 +73,13 @@ export type FlightStackParamList = {
     filters?: FlightFilters;
     searchLegs?: PlannedLeg[];
     silentTransition?: boolean;
+    availableFlights?: UIFlight[];
+    queryContext?: {
+      flexibleAirports?: string[];
+      flexibleDates?: boolean;
+      travelers?: any[];
+      currencyCode?: string;
+    };
   } | undefined;
   FlightSearch: {searchResults?: Flight[]; prefillDestinationCode?: string} | undefined;
   FlightSummary: { itinerary: ItineraryPayload };
