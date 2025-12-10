@@ -501,7 +501,7 @@ export default function FlightSearchScreen() {
 
   return (
     <View style={[basicStyles.background, { backgroundColor: colors.background }]}>
-      <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: 30 }}>
+      <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: 5 }}>
         <Modal
         animationType="slide"
         transparent={true}
@@ -571,8 +571,6 @@ export default function FlightSearchScreen() {
                   </>
                   )}
 
-                  <View style={{ height: 0 }} />
-
                   <AirportAutocomplete
                     label="To"
                     value={to}
@@ -586,8 +584,6 @@ export default function FlightSearchScreen() {
                   />
 
                   <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='primary'>{flexibleAiportsVisible}</SkyboundText>
-
-                  <View style={{ height: 8 }} />
 
                   <DateSelector
                     label="Depart Date"

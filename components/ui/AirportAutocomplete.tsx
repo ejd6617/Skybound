@@ -34,27 +34,38 @@ const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
   const [suggestions, setSuggestions] = useState<Airport[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+  const [hasSelected, setHasSelected] = useState(false);
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [inputH, setInputH] = useState(62);
   const [inputY, setInputY] = useState(0);
+  const [inputX, setInputX] = useState(0);
+  const [inputW, setInputW] = useState(0);
 
-  const inputRef = useRef<View>(null);  
+  const inputRef = useRef<View>(null);
   const [absoluteY, setAbsoluteY] = useState(0);
+  const [absoluteX, setAbsoluteX] = useState(0);
 
   const measureInput = () => {
-    inputRef.current?.measureInWindow((x, y) => {
+    inputRef.current?.measureInWindow((x, y, width) => {
       setAbsoluteY(y);
+      setAbsoluteX(x);
+      setInputW(Math.round(width || 0));
     });
   };
 
   const onInputLayout = (e: LayoutChangeEvent) => {
-    const { height, y } = e.nativeEvent.layout;
+    const { height, width, x, y } = e.nativeEvent.layout;
     setInputH(Math.round(height || 62));
     setInputY(y);
+    setInputX(x);
+    setInputW(Math.round(width || 0));
   };
 
   useEffect(() => {
     setInputValue(value);
+    if (!value) {
+      setHasSelected(false);
+    }
   }, [value]);
 
   const searchAirports = (query: string): Airport[] => {
@@ -62,31 +73,50 @@ const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
 
     const lowerQuery = query.toLowerCase();
 
-    return airports
-      .filter((airport) => {
-        const iataMatch = airport.iata.toLowerCase().includes(lowerQuery);
-        const cityMatch = airport.city.toLowerCase().includes(lowerQuery);
-        const nameMatch = airport.name.toLowerCase().includes(lowerQuery);
-        return iataMatch || cityMatch || nameMatch;
+    const matches = airports.filter((airport) => {
+      const iata = airport.iata.toLowerCase();
+      const city = airport.city.toLowerCase();
+      const name = airport.name.toLowerCase();
+
+      return (
+        iata.startsWith(lowerQuery) ||
+        city.startsWith(lowerQuery) ||
+        name.startsWith(lowerQuery)
+      );
+    });
+
+    const ranked = matches
+      .map((airport) => {
+        const iata = airport.iata.toLowerCase();
+        const city = airport.city.toLowerCase();
+        const name = airport.name.toLowerCase();
+
+        const rank = (() => {
+          if (iata === lowerQuery) return 0; // exact IATA
+          if (iata.startsWith(lowerQuery)) return 1; // IATA prefix
+          if (city === lowerQuery) return 2; // exact city
+          if (city.startsWith(lowerQuery)) return 3; // city prefix
+          if (name === lowerQuery) return 4; // exact airport name
+          if (name.startsWith(lowerQuery)) return 5; // airport name prefix
+          return 6;
+        })();
+
+        return { airport, rank };
       })
       .sort((a, b) => {
-        const aExact = a.iata.toLowerCase() === lowerQuery;
-        const bExact = b.iata.toLowerCase() === lowerQuery;
-        if (aExact && !bExact) return -1;
-        if (!aExact && bExact) return 1;
+        if (a.rank !== b.rank) return a.rank - b.rank;
+        if (a.airport.iata !== b.airport.iata) {
+          return a.airport.iata.localeCompare(b.airport.iata);
+        }
+        return a.airport.name.localeCompare(b.airport.name);
+      });
 
-        const aStarts = a.iata.toLowerCase().startsWith(lowerQuery);
-        const bStarts = b.iata.toLowerCase().startsWith(lowerQuery);
-        if (aStarts && !bStarts) return -1;
-        if (!aStarts && bStarts) return 1;
-
-        return 0;
-      })
-      .slice(0, 6);
+    return ranked.slice(0, 6).map((item) => item.airport);
   };
 
   const handleInputChange = (text: string) => {
     setInputValue(text);
+    setHasSelected(false);
 
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
@@ -103,6 +133,7 @@ const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
     onSelect(airport);
     setShowSuggestions(false);
     setSuggestions([]);
+    setHasSelected(true);
     Keyboard.dismiss();
   };
 
@@ -122,8 +153,10 @@ const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
     );
   };
 
+  const isDropdownVisible = showSuggestions && suggestions.length > 0;
+
   return (
-    <View    style={[styles.container, { position: 'relative' }]}>
+    <View style={[styles.container, { position: 'relative' }]}> 
 
       <SkyboundText variant="primary" size={14} accessabilityLabel={label} style={{ marginBottom: 8 }}>
         {label}
@@ -137,6 +170,8 @@ const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
           {
             borderColor: error ? '#DC2626' : (isFocused ? '#0071E2' : colors.divider),
             backgroundColor: colors.card,
+            borderBottomLeftRadius: isDropdownVisible ? 0 : 12,
+            borderBottomRightRadius: isDropdownVisible ? 0 : 12,
           },
         ]}
       >
@@ -152,7 +187,7 @@ const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
           onFocus={() => {
             measureInput();
             setIsFocused(true);
-            if (inputValue.length >= 2) {
+            if (inputValue.length >= 2 && !hasSelected) {
               const results = searchAirports(inputValue);
               setSuggestions(results);
               setShowSuggestions(results.length > 0);
@@ -182,19 +217,22 @@ const AirportAutocomplete: React.FC<AirportAutocompleteProps> = ({
       )}
 
       {/* portal for suggestions*/}
-      {showSuggestions && suggestions.length > 0 && (
+      {isDropdownVisible && (
         <Portal>
           <View
             style={[
               styles.suggestionsContainer,
               {
                 position: "absolute",
-                left: 0,
-                right: 0,
-                top: absoluteY + inputH + 8,   // below the input
+                left: absoluteX || inputX,
+                top: absoluteY + inputH,
+                width: inputW,
                 backgroundColor: colors.card,
                 borderColor: colors.divider,
                 zIndex: 9999,
+                borderTopLeftRadius: 0,
+                borderTopRightRadius: 0,
+                borderTopWidth: 0,
               }
             ]}
           >
@@ -260,11 +298,11 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   suggestionMain: {
-    fontSize: 16,
+    fontSize: 15,
     fontFamily: 'Medium',
   },
   suggestionSecondary: {
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: 'Regular',
   },
 });
