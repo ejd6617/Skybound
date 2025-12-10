@@ -64,7 +64,7 @@ export default function InteractiveMap({
   location: propLocation,
   initialRadius,
   minRadius = 1000,
-  maxRadius = 1000000,
+  maxRadius = 250000,
   onChange,
   mapWidth,
   mapHeight,
