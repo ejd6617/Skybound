@@ -3,7 +3,7 @@ import { Flight, FlightLeg, TravelClass } from "@/skyboundTypes/SkyboundAPI";
 import SkyboundText from "@components/ui/SkyboundText";
 import { useColors } from "@constants/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { StackActions, useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { getURL, reviveDates, skyboundRequest } from "@src/api/SkyboundUtils";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
@@ -11,6 +11,7 @@ import LoadingScreen from "@src/screens/LoadingScreen";
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
+  Alert,
   Animated,
   Dimensions,
   Easing,
@@ -21,6 +22,7 @@ import {
   StyleSheet,
   View
 } from "react-native";
+import airportsData from "../../airports.json";
 
 export interface SearchDetails {
   tripType?: 'one-way' | 'round-trip' | 'multi-city';
@@ -68,6 +70,37 @@ const bgWithAlpha = (hex: string, a: number) => {
   return `rgba(${r},${g},${b},${a})`;
 };
 
+type SerializableLeg = FlightLeg & {
+  date: Date | string;
+  departureTime: Date | string;
+  arrivalTime: Date | string;
+};
+
+type AirportRecord = { code: string; city: string; name: string };
+
+const airportCodeLookup: Map<string, string> = new Map(
+  (airportsData as AirportRecord[])
+    .filter((airport) => airport.code)
+    .map((airport) => [airport.code.toLowerCase(), airport.code])
+);
+
+const airportCityLookup: Map<string, string> = new Map(
+  (airportsData as AirportRecord[])
+    .filter((airport) => airport.city)
+    .map((airport) => [airport.city.toLowerCase(), airport.code])
+);
+
+const resolveAirportCode = (airport: { iata?: string; city?: string; name?: string }) => {
+  const candidate = airport?.iata || (airport as any)?.code || "";
+  if (candidate && candidate.length === 3) return candidate.toUpperCase();
+
+  const byName = airport?.name ? airportCodeLookup.get(airport.name.toLowerCase()) : undefined;
+  const byCity = airport?.city ? airportCityLookup.get(airport.city.toLowerCase()) : undefined;
+
+  const resolved = byName || byCity || candidate;
+  return resolved ? resolved.toUpperCase() : "";
+};
+
 export interface UIFlight {
   id: string;
   airline: string;
@@ -83,13 +116,15 @@ export interface UIFlight {
   arrivalDate: string;
   departureCode: string;
   arrivalCode: string;
+  departureCity?: string;
+  arrivalCity?: string;
   duration: string;
   totalDurationMinutes?: number;
-  rawDepartureTime?: Date;
-  rawArrivalTime?: Date;
+  rawDepartureTime?: Date | string;
+  rawArrivalTime?: Date | string;
   stops: string;
   hasBaggage?: boolean;
-  legs?: FlightLeg[];
+  legs?: SerializableLeg[];
 }
 
 // output example: 8:30 AM
@@ -114,9 +149,17 @@ function formatDuration(duration: number): string {
   return `${hours}h ${minutes}m`;
 }
 
-function matchesTimeSlot(date: Date | undefined, slots: string[] | undefined) {
-  if (!date || !slots || slots.length === 0) return true;
-  const hour = date.getHours();
+function toDate(value?: Date | string) {
+  if (!value) return undefined;
+  if (value instanceof Date) return value;
+  const maybeDate = new Date(value);
+  return Number.isNaN(maybeDate.getTime()) ? undefined : maybeDate;
+}
+
+function matchesTimeSlot(date: Date | string | undefined, slots: string[] | undefined) {
+  const normalized = toDate(date);
+  if (!normalized || !slots || slots.length === 0) return true;
+  const hour = normalized.getHours();
   const slotForHour = () => {
     if (hour < 6) return 'early-morning';
     if (hour < 12) return 'morning';
@@ -137,8 +180,22 @@ function formatStops(legs: FlightLeg[]): string {
 }
 
 // convert api flights to local flight datatype
-function toUIFlights(data: Flight[]): UIFlight[] {
-  let flights: UIFlight[] = data.map((flight: Flight, index) => {
+function toUIFlights(data?: Flight[] | { flights?: Flight[] } | null): UIFlight[] {
+  const extractList = (value: any): Flight[] | undefined => {
+    if (Array.isArray(value)) return value;
+    if (Array.isArray(value?.flights)) return value.flights;
+    if (Array.isArray(value?.data)) return value.data;
+    if (Array.isArray(value?.data?.flights)) return value.data.flights;
+    return undefined;
+  };
+
+  const list: Flight[] | undefined = extractList(data);
+
+  if (!list || list.length === 0) {
+    return [];
+  }
+
+  let flights: UIFlight[] = list.map((flight: Flight, index) => {
     // Placeholder values for missing fields
     const id = (index + 1).toString();
     const airlineColor = '#1E40AF'; // Placeholder airline color (JetBlue)
@@ -168,6 +225,9 @@ function toUIFlights(data: Flight[]): UIFlight[] {
     }
 
     const travelClass: TravelClass | undefined = findMostCommonTravelClass(flight.outbound);
+
+    const departureCode = resolveAirportCode(firstOutbound.from);
+    const arrivalCode = resolveAirportCode(lastOutbound.to);
     
     // Return the formatted flight object
     return {
@@ -181,9 +241,11 @@ function toUIFlights(data: Flight[]): UIFlight[] {
       departureTime: formatTime(firstOutbound.departureTime),
       arrivalTime: formatTime(lastOutbound.arrivalTime),
       departureDate: formatDate(firstOutbound.departureTime),
-      arrivalDate: formatDate(firstOutbound.arrivalTime),
-      departureCode: firstOutbound.from.iata,
-      arrivalCode: lastOutbound.to.iata,
+      arrivalDate: formatDate(lastOutbound.arrivalTime),
+      departureCode,
+      arrivalCode,
+      departureCity: firstOutbound.from.city,
+      arrivalCity: lastOutbound.to.city,
       duration: formatDuration(totalDuration),
       totalDurationMinutes: totalDuration,
       rawDepartureTime: firstOutbound.departureTime,
@@ -203,7 +265,7 @@ function toUIFlights(data: Flight[]): UIFlight[] {
   return flights;
 };
 
-function applyFilters(list: UIFlight[], filters: FlightFilters): UIFlight[] {
+export function applyFilters(list: UIFlight[], filters: FlightFilters): UIFlight[] {
   return list.filter(flight => {
     if (filters.maxPrice && flight.price > filters.maxPrice) return false;
     if (filters.stops) {
@@ -223,6 +285,43 @@ function applyFilters(list: UIFlight[], filters: FlightFilters): UIFlight[] {
     return true;
   });
 }
+
+function filtersAreEqual(a?: FlightFilters, b?: FlightFilters) {
+  const normalizeArray = (arr?: string[]) => (arr ?? []).slice().sort();
+
+  if (!a && !b) return true;
+  if (!a || !b) return false;
+
+  return (
+    a.stops === b.stops &&
+    a.maxPrice === b.maxPrice &&
+    a.cabinClass === b.cabinClass &&
+    a.maxDurationHours === b.maxDurationHours &&
+    normalizeArray(a.departureTimes).join(',') === normalizeArray(b.departureTimes).join(',') &&
+    normalizeArray(a.arrivalTimes).join(',') === normalizeArray(b.arrivalTimes).join(',') &&
+    normalizeArray(a.airlines).join(',') === normalizeArray(b.airlines).join(',')
+  );
+}
+
+const serializeFlightDates = (flight: UIFlight): UIFlight => ({
+  ...flight,
+  rawDepartureTime: flight.rawDepartureTime instanceof Date
+    ? flight.rawDepartureTime.toISOString()
+    : flight.rawDepartureTime,
+  rawArrivalTime: flight.rawArrivalTime instanceof Date
+    ? flight.rawArrivalTime.toISOString()
+    : flight.rawArrivalTime,
+  legs: flight.legs?.map(leg => ({
+    ...leg,
+    date: leg.date instanceof Date ? leg.date.toISOString() : leg.date,
+    departureTime: leg.departureTime instanceof Date
+      ? leg.departureTime.toISOString()
+      : leg.departureTime,
+    arrivalTime: leg.arrivalTime instanceof Date
+      ? leg.arrivalTime.toISOString()
+      : leg.arrivalTime,
+  })) as SerializableLeg[] | undefined,
+});
 
 function sortFlights(list: UIFlight[], criteria: 'recommended'|'price'|'duration'|'stops', direction: 'asc'|'desc') {
   const sorted = [...list].sort((a, b) => {
@@ -321,7 +420,8 @@ export default function FlightResultsScreen() {
     selections = [],
     filters: incomingFilters,
     silentTransition,
-  } = route.params as SearchDetails & { searchResults: Flight[]; searchLegs?: PlannedLeg[]; legIndex?: number; selections?: UIFlight[]; filters?: FlightFilters; multipleSourceAirports?: boolean; };
+    queryContext,
+  } = route.params as SearchDetails & { searchResults: Flight[]; searchLegs?: PlannedLeg[]; legIndex?: number; selections?: UIFlight[]; filters?: FlightFilters };
 
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -344,31 +444,39 @@ export default function FlightResultsScreen() {
   }, [searchResults]);
 
   useEffect(() => {
-    if (incomingFilters) {
-      setAppliedFilters(incomingFilters);
+    const nextFilters = incomingFilters ?? ({} as FlightFilters);
+    if (!filtersAreEqual(nextFilters, appliedFilters)) {
+      setAppliedFilters(nextFilters);
     }
-  }, [incomingFilters]);
+  }, [incomingFilters, appliedFilters, legIndex, searchResults]);
 
   const filteredFlights = useMemo(() => applyFilters(baseFlights, appliedFilters), [appliedFilters, baseFlights]);
   const sortedFlights = useMemo(() => sortFlights(filteredFlights, sortBy, sortDirection), [filteredFlights, sortBy, sortDirection]);
   const flights = sortedFlights;
   const canLoadMore = visibleCount < flights.length;
 
+  useEffect(() => {
+    navigation.setParams({
+      filters: appliedFilters,
+      availableFlights: baseFlights.map(serializeFlightDates),
+    });
+  }, [navigation, appliedFilters, baseFlights]);
+
   const overlayOp = React.useRef(new Animated.Value(0)).current;
-  const sheetY = React.useRef(new Animated.Value(40)).current;
+  const sheetY = React.useRef(new Animated.Value(360)).current;
 
   function openSortSheet() {
     setSortModalVisible(true);
     Animated.parallel([
-      Animated.timing(overlayOp, { toValue: 1, duration: 150, useNativeDriver: true, easing: Easing.out(Easing.quad) }),
-      Animated.timing(sheetY,     { toValue: 0, duration: 220, useNativeDriver: true, easing: Easing.out(Easing.cubic) }),
+      Animated.timing(overlayOp, { toValue: 1, duration: 240, useNativeDriver: true, easing: Easing.out(Easing.quad) }),
+      Animated.timing(sheetY,     { toValue: 0, duration: 260, useNativeDriver: true, easing: Easing.out(Easing.cubic) }),
     ]).start();
   }
 
   function closeSortSheet() {
     Animated.parallel([
-      Animated.timing(overlayOp, { toValue: 0, duration: 120, useNativeDriver: true }),
-      Animated.timing(sheetY,     { toValue: 40, duration: 180, useNativeDriver: true }),
+      Animated.timing(overlayOp, { toValue: 0, duration: 220, useNativeDriver: true, easing: Easing.in(Easing.quad) }),
+      Animated.timing(sheetY,     { toValue: 360, duration: 260, useNativeDriver: true, easing: Easing.in(Easing.cubic) }),
     ]).start(() => setSortModalVisible(false));
   }
 
@@ -420,15 +528,31 @@ export default function FlightResultsScreen() {
     return start;
   }, [departureDate, returnDate, tripType]);
 
+  const cityLookup = useMemo(() => {
+    const map = new Map<string, string>();
+    baseFlights.forEach(flight => {
+      if (flight.departureCode && flight.departureCity) map.set(flight.departureCode, flight.departureCity);
+      if (flight.arrivalCode && flight.arrivalCity) map.set(flight.arrivalCode, flight.arrivalCity);
+    });
+    return map;
+  }, [baseFlights]);
+
   const currentLegLabel = useMemo(() => {
-    if (searchLegs?.[legIndex]) {
-      return `${searchLegs[legIndex].fromCode ?? ''} → ${searchLegs[legIndex].toCode ?? ''}`.trim();
-    }
-    if (fromCode && toCode) {
-      return `${fromCode} → ${toCode}`;
+    const plannedLeg = searchLegs?.[legIndex];
+    const fromCodeLabel = plannedLeg?.fromCode ?? fromCode ?? flights[0]?.departureCode;
+    const toCodeLabel = plannedLeg?.toCode ?? toCode ?? flights[0]?.arrivalCode;
+
+    const fromCity = fromCodeLabel ? cityLookup.get(fromCodeLabel) : flights[0]?.departureCity;
+    const toCity = toCodeLabel ? cityLookup.get(toCodeLabel) : flights[0]?.arrivalCity;
+
+    const fromLabel = fromCity || fromCodeLabel || '';
+    const toLabel = toCity || toCodeLabel || '';
+
+    if (fromLabel && toLabel) {
+      return `${fromLabel} → ${toLabel}`;
     }
     return '';
-  }, [fromCode, legIndex, searchLegs, toCode]);
+  }, [cityLookup, flights, fromCode, legIndex, searchLegs, toCode]);
 
   const normalizeDateValue = (value?: Date | string | null) => {
     if (!value) return null;
@@ -526,20 +650,44 @@ export default function FlightResultsScreen() {
 
     const handleChooseFlight = async () => {
       const nextSelections = [...selections, flight];
+      const serializedSelections = nextSelections.map(serializeFlightDates);
       const legsPlan = searchLegs ?? [];
+      const normalizeTraveler = (traveler: any) => ({
+        ...traveler,
+        dateOfBirth: traveler?.dateOfBirth ? new Date(traveler.dateOfBirth) : undefined,
+      });
 
       if (legsPlan.length > 0 && legIndex < legsPlan.length - 1) {
         const nextLeg = legsPlan[legIndex + 1];
         setAdvancingLeg(nextLeg);
+        const normalizedDate = normalizeDateValue(nextLeg.date ?? null);
+        const toAPIDate = (value?: string | Date | null) => {
+          if (!value) return undefined;
+          if (value instanceof Date) return value;
+          const maybeDate = new Date(value);
+          return Number.isNaN(maybeDate.getTime()) ? undefined : maybeDate;
+        };
+
+        if (!nextLeg?.fromCode || !nextLeg?.toCode || !normalizedDate) {
+          Alert.alert('Unable to load flights', 'The next leg is missing origin, destination, or date information.');
+          setAdvancingLeg(null);
+          return;
+        }
         try {
           const nextResults = await skyboundRequest('searchFlightsOneWay', {
             originAirportIATA: nextLeg.fromCode,
             destinationAirportIATA: nextLeg.toCode,
-            date: nextLeg.date,
+            date: toAPIDate(nextLeg.date ?? normalizedDate),
+            flexibleAirports: queryContext?.flexibleAirports ?? [],
+            flexibleDates: queryContext?.flexibleDates ?? false,
+            travelers: (queryContext?.travelers ?? []).map(normalizeTraveler),
+            currencyCode: queryContext?.currencyCode ?? 'USD',
           });
 
-          navigation.dispatch(StackActions.replace('FlightResults', {
-            searchResults: nextResults,
+          const revivedResults = reviveDates(nextResults);
+
+          navigation.push('FlightResults', {
+            searchResults: revivedResults,
             tripType,
             fromCode: nextLeg.fromCode,
             toCode: nextLeg.toCode,
@@ -549,19 +697,21 @@ export default function FlightResultsScreen() {
             legsDates: legsPlan.map(l => l.date ?? null),
             searchLegs: legsPlan,
             legIndex: legIndex + 1,
-            selections: nextSelections,
-            filters: appliedFilters,
+            selections: serializedSelections,
             silentTransition: true,
-          }));
+            queryContext,
+          });
+          setTimeout(() => setAdvancingLeg(null), 400);
         } catch (error) {
           setAdvancingLeg(null);
-          throw error;
+          Alert.alert('Unable to load flights', 'Please try again.');
+          return;
         }
         return;
       }
 
       const itinerary: ItineraryPayload = {
-        flights: nextSelections,
+        flights: serializedSelections,
         searchDetails: {
           tripType,
           fromCode: legsPlan[0]?.fromCode ?? fromCode ?? flight.departureCode,
@@ -649,21 +799,10 @@ export default function FlightResultsScreen() {
                 {flight.arrivalTime}
               </SkyboundText>
               <SkyboundText variant="secondary" size={12} accessabilityLabel={flight.arrivalCode}>
-              {flight.arrivalCode}
+                {flight.arrivalCode}
               </SkyboundText>
             </View>
           </View>
-
-          <Animated.View style={[styles.chooseFlightContainer, slideStyles]}>
-            <Pressable
-              style={[styles.chooseFlightButton, { backgroundColor: colors.link }]}
-              onPress={handleChooseFlight}
-            >
-              <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFFFFF' }}>
-                Choose flight
-              </SkyboundText>
-            </Pressable>
-          </Animated.View>
 
           {flight.hasBaggage && (
             <View style={styles.baggageBanner}>
@@ -673,6 +812,17 @@ export default function FlightResultsScreen() {
               </SkyboundText>
             </View>
           )}
+
+          <Animated.View style={[styles.chooseFlightContainer, slideStyles]}>
+            <Pressable
+              style={[styles.chooseFlightButton, { backgroundColor: colors.link }]}
+              onPress={handleChooseFlight}
+            >
+              <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFFFFF', textAlign: 'center' }}>
+                Choose flight
+              </SkyboundText>
+            </Pressable>
+          </Animated.View>
         </View>
       </Pressable>
     );
@@ -764,9 +914,17 @@ export default function FlightResultsScreen() {
           </View>
 
           <ScrollView contentContainerStyle={styles.scrollContent}>
-            <SkyboundText variant="secondary" size={14} style={{ marginTop: 35, marginBottom: 16 }}>
-              {flights.length} flights found
-            </SkyboundText>
+            <View style={styles.resultsHeader}>
+              <SkyboundText variant="secondary" size={14} style={{ marginTop: 30, marginBottom: 16 }}>
+                {flights.length} flights found
+              </SkyboundText>
+              <Pressable style={[styles.sortButton, { borderColor: colors.divider }]} onPress={openSortSheet}>
+                <SkyboundText variant="primary" size={14} style={{ marginRight: 8 }}>
+                  Sort by
+                </SkyboundText>
+                <Ionicons name="filter" size={18} color={colors.icon} />
+              </Pressable>
+            </View>
 
             {flights.slice(0, visibleCount).map((flight) => (
               <FlightCard key={flight.id} flight={flight} />
@@ -794,10 +952,18 @@ export default function FlightResultsScreen() {
             <View style={{ flex: 1 }}>
               <LoadingScreen />
               <View style={styles.loadingMeta}>
-                <SkyboundText variant="primaryBold" size={18} style={{ marginBottom: 6, textAlign: 'center' }}>
+                <SkyboundText
+                  variant="primaryBold"
+                  size={18}
+                  style={{ marginBottom: 6, textAlign: 'center', color: '#ffffff' }}
+                >
                   Loading next flight
                 </SkyboundText>
-                <SkyboundText variant="secondary" size={14} style={{ textAlign: 'center' }}>
+                <SkyboundText
+                  variant="secondary"
+                  size={14}
+                  style={{ textAlign: 'center', color: '#ffffff' }}
+                >
                   Preparing {advancingLeg.fromCode} → {advancingLeg.toCode}
                 </SkyboundText>
               </View>
@@ -817,32 +983,49 @@ export default function FlightResultsScreen() {
               { transform: [{ translateY: sheetY }] }
             ]}
           >
-            <View style={[styles.sheet, { backgroundColor: colors.card }]}>
-              <SkyboundText variant="primaryBold" size={18} style={{ marginBottom: 16 }}>Sort By</SkyboundText>
+            <View style={styles.sheet}>
+              <SkyboundText variant="primaryBold" size={18} style={{ marginBottom: 16, paddingHorizontal: 5}}>Sort By</SkyboundText>
 
               <Pressable
-                style={styles.sortOption}
+                style={[styles.sortOption, sortBy === 'recommended' && styles.sortOptionSelected]}
                 onPress={() => { setSortBy('recommended'); setSortDirection('asc'); updateSort('recommended','asc'); }}
               >
-                <SkyboundText size={16}>Recommended</SkyboundText>
+                <SkyboundText
+                  size={16}
+                  style={sortBy === 'recommended' ? styles.sortOptionLabelSelected : undefined}
+                >
+                  Recommended
+                </SkyboundText>
               </Pressable>
 
               {(['price','duration','stops'] as const).map(crit => (
                 <Pressable
                   key={crit}
-                  style={styles.sortOption}
-                  onPress={() => { 
+                  style={[styles.sortOption, sortBy === crit && styles.sortOptionSelected]}
+                  onPress={() => {
                     const dir = (sortBy === crit) ? (sortDirection === 'asc' ? 'desc' : 'asc') : 'asc';
                     updateSort(crit, dir);
                   }}
                 >
-                  <SkyboundText size={16} style={{ textTransform:'capitalize' }}>{crit}</SkyboundText>
-                  <Ionicons name={arrowFor(crit)} size={20} color={colors.icon} />
+                  <SkyboundText
+                    size={16}
+                    style={[
+                      { textTransform:'capitalize' },
+                      sortBy === crit ? styles.sortOptionLabelSelected : undefined,
+                    ]}
+                  >
+                    {crit}
+                  </SkyboundText>
+                  <Ionicons
+                    name={arrowFor(crit)}
+                    size={20}
+                    color={sortBy === crit ? '#FFFFFF' : colors.icon}
+                  />
                 </Pressable>
               ))}
 
-              <Pressable style={[styles.closeButton, { backgroundColor: colors.link }]} onPress={closeSortSheet}>
-                <SkyboundText size={16} style={{ color:'#FFF' }}>Close</SkyboundText>
+              <Pressable style={[styles.closeButton, { backgroundColor: '#0071E2' }]} onPress={closeSortSheet}>
+                <SkyboundText size={16} style={{ color:'#FFF' }}>Save</SkyboundText>
               </Pressable>
             </View>
           </Animated.View>
@@ -860,7 +1043,7 @@ const styles = StyleSheet.create({
   mapContainer: {
     margin: 16,
     borderRadius: 16,
-    padding: 16,
+    padding: 0,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden', // lets the fade overlay hug edges nicely
@@ -887,6 +1070,31 @@ const styles = StyleSheet.create({
     right: 0,
     height: 50, // adjust strength of fade
     zIndex: 1,
+  },
+
+  resultsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+  },
+
+  sortOptionSelected: {
+    backgroundColor: '#0071E2',
+    borderRadius: 50,
+  },
+
+  sortOptionLabelSelected: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 
   scrollContent: { padding: 16, paddingTop: 0 },
@@ -1010,9 +1218,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
+    paddingVertical: 15,
     borderBottomColor: '#E5E7EB',
+    paddingHorizontal: 20,
   },
   closeButton: {
     marginTop: 16,
