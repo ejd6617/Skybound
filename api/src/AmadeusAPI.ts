@@ -5,7 +5,20 @@ import pLimit from 'p-limit';
 const Amadeus = require('amadeus');
 
 const ENV_FILE = '/.env.amadeus.local';
-const limit = pLimit(1); // Limit the number of parallel requests allowed when running a multi flight query
+
+const AMADEUS_PROD = (process.env.AMADEUS_PROD === "true");
+
+// Limits for the test environment
+const MAX_AIRPORTS_PARALLEL = 1; // Limit the number of parallel requests allowed when running a flexible airports query
+const MAX_AIRPORTS_TEST = 4; // Limit the number of sequential requests allowed when running a flexible airports query
+
+// Limits for the production environment
+const MAX_AIRPORTS_PROD = 8 // Limit the number of airports in general. Runs in parallel by default
+
+// Function to intentionally limit parallel execution if necessary
+const limit = (AMADEUS_PROD)
+  ? ((callback) => { return Promise.resolve(callback()) })
+  : pLimit(MAX_AIRPORTS_PARALLEL)
 
 // Represents a generic response from the Amadeus API
 export interface AmadeusResponse {
@@ -140,22 +153,23 @@ export default class AmadeusAPI implements SkyboundAPI {
   }
 
   private processTravelers(travelers: Traveler[]): any[] {
+    const DEFAULT_TRAVELER = {
+      travelerType: "ADULT",
+      nationality: "US",
+      dateOfBirth: "2002-01-01",
+    };
+
     if (travelers.length == 0 )
-    {
-      return [{
-        id: "1",
-        travelerType: "ADULT",
-        nationality: "US",
-        dateOfBirth: "2002-01-01",
-      }];
-    }
+      return [DEFAULT_TRAVELER]
 
     return travelers.map((traveler, index) => {
       return {
         id: (index + 1).toString(),
-        dateOfBirth: this.toLocalISOString (new Date(traveler.dateOfBirth)),
-        travelerType: traveler.travelerType,
-        nationality: traveler.nationality,
+        dateOfBirth: (traveler.dateOfBirth)
+          ? this.toLocalISOString (new Date(traveler.dateOfBirth))
+          : DEFAULT_TRAVELER.dateOfBirth ,
+        travelerType: traveler.travelerType || DEFAULT_TRAVELER.travelerType,
+        nationality: traveler.nationality || DEFAULT_TRAVELER.nationality,
       }
     })
   }
@@ -221,6 +235,32 @@ export default class AmadeusAPI implements SkyboundAPI {
     }
   }
 
+  private async flexibleAirportsQuery(amadeusSearchFlights: Function, params: RoundTripQueryParams | OneWayQueryParams): Promise<Flight[]> {
+    // Directly pass params if not using flexible airports
+    if (params.flexibleAirports === undefined || params.flexibleAirports.length == 0)
+      return await amadeusSearchFlights(params)
+
+    const airports = (AMADEUS_PROD)
+      ? params.flexibleAirports.slice(0, MAX_AIRPORTS_PROD)
+      : params.flexibleAirports.slice(0, MAX_AIRPORTS_TEST);
+
+    // Iterate over each airport, search for flights, and collect the results
+    return (await Promise.all(
+      airports.map(iata => limit(() => {
+        params.originAirportIATA = iata;
+        let flights = null;
+        try {
+          flights = amadeusSearchFlights(params);
+        } catch(error) {
+          console.error("There is an error in one of the flexible airports provided");
+          this.logAmadeusError(error);
+          flights = [];
+        }
+        return flights;
+      }))
+    )).flat();
+  }
+
   // Round trip flight search endpoint
   async searchFlightsRoundTrip(params: RoundTripQueryParams): Promise<Flight[]> {
     // Make a singular query to amadeus
@@ -259,24 +299,7 @@ export default class AmadeusAPI implements SkyboundAPI {
       }
     }
 
-    return (params.flexibleAirports !== undefined && params.flexibleAirports.length != 0)
-    // If we have flexible airports, iterate over each airport, search for flights, and collect the results
-    ? (await Promise.all(
-      // HACK: Limit to 4 flexible airports to hopefully not get rate-limited
-      params.flexibleAirports.slice(0,4).map(iata => limit(() => {
-        params.originAirportIATA = iata;
-        let flights = null;
-        try {
-          flights = amadeusSearchFlights(params);
-        } catch(error) {
-          this.logAmadeusError(error);
-          flights = [];
-        }
-        return flights;
-      }
-    )))).flat()
-    // If not using flexible airports, directly pass params
-    : (await amadeusSearchFlights(params));
+    return this.flexibleAirportsQuery(amadeusSearchFlights, params);
   }
 
   // One way flight search endpoint
@@ -309,25 +332,7 @@ export default class AmadeusAPI implements SkyboundAPI {
       }
     }
 
-    return (params.flexibleAirports !== undefined && params.flexibleAirports.length != 0)
-    // If we have flexible airports, iterate over each airport, search for flights, and collect the results
-    ? (await Promise.all(
-      // HACK: Limit to 4 flexible airports to hopefully not get rate-limited
-      params.flexibleAirports.slice(0,4).map(iata => limit(() => {
-        params.originAirportIATA = iata;
-        let flights = null;
-        try {
-          flights = amadeusSearchFlights(params);
-        } catch(error) {
-          console.error("There is an error in one of the flexible airports provided");
-          this.logAmadeusError(error);
-          flights = [];
-        }
-        return flights;
-      }
-    )))).flat()
-    // If not using flexible airports, directly pass params
-    : (await amadeusSearchFlights(params));
+    return this.flexibleAirportsQuery(amadeusSearchFlights, params);
   }
 
   // Multi city flight search endpoint
