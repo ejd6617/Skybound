@@ -396,7 +396,7 @@ function toggleHidePassword1()
                 onChange={setPassword}
                 secureTextEntry={hidePassword1}
                 enableinfoIcon={true}
-                infoIconText='Password must be 7+ characters'
+                infoIconText='Password must be 7+ characters,contain one uppercase letter and one special character.'
                 enableErrorText={passwrodError}
                 errorText={passwordBoxErrorText}
                 icon={<ShowPasswordIcon height={24} width={24}/>}
