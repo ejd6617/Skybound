@@ -163,13 +163,13 @@ export default function LoginScreen() {
           {/* LOGO */}
           <Image
             source={require('@assets/images/skybound-logo-white.png')}
-            style={{ width: 500, height: 70, resizeMode: 'contain', marginTop:25, marginBottom: 10 }}
+            style={{ width: 500, height: 70, resizeMode: 'contain', marginTop:25, marginBottom: 20 }}
           />
 
        
 
           {/* Subtitle */}
-          <SkyboundText variant="primary" accessabilityLabel="Skybound: Your Journey Starts Here" style={{color: '#ffffffff', marginBottom: 33, fontSize: 16}}> 
+          <SkyboundText variant="primary" accessabilityLabel="Skybound: Your Journey Starts Here" style={{color: '#ffffffff', marginBottom: 40, fontSize: 16}}> 
             Your Journey Starts Here
           </SkyboundText>
 

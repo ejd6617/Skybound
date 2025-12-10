@@ -10,7 +10,7 @@ interface LoadingScreenProps {
   status?: "loading" | "success";
 }
 
-export default function LoadingScreen({ message = "Loading...", status = "loading" }: LoadingScreenProps) {
+export default function LoadingScreen({ message, status = "loading" }: LoadingScreenProps) {
   const colors = useColors();
   const isDark = colors.background !== '#FFFFFF';
 
@@ -27,8 +27,13 @@ export default function LoadingScreen({ message = "Loading...", status = "loadin
 
   const spin = spinValue.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] });
 
-  const Content = (
-    <>
+  return (
+    <LinearGradient
+      colors={isDark ? ['#000000', '#2F97FF'] : ['#2F97FF', '#81beffff']} // 🌑 dark & ☀️ light gradients
+      start={{ x: 1, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+    >
       <Image source={require('@assets/images/skybound-logo-white.png')} style={styles.logo} resizeMode="contain" />
       {status === "loading" ? (
         <Animated.View style={[styles.spinnerContainer, { transform: [{ rotate: spin }] }]}>
@@ -43,25 +48,19 @@ export default function LoadingScreen({ message = "Loading...", status = "loadin
           </View>
         </View>
       )}
-      <SkyboundText
-        variant="primary"
-        size={15}
-        style={{ color: '#FFFFFF', marginTop: 16, textAlign: 'center', paddingHorizontal: 20 }}
-        accessabilityLabel={message}
-      >
-        {message}
-      </SkyboundText>
-    </>
-  );
 
-  return (
-    <LinearGradient
-      colors={isDark ? ['#000000', '#2F97FF'] : ['#2F97FF', '#81beffff']} // 🌑 dark & ☀️ light gradients
-      start={{ x: 1, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-    >
-      {Content}
+      {message ? (
+        <View style={styles.bottomMessage}>
+          <SkyboundText
+            variant="primary"
+            size={15}
+            style={{ color: '#FFFFFF', textAlign: 'center', paddingHorizontal: 20 }}
+            accessabilityLabel={message}
+          >
+            {message}
+          </SkyboundText>
+        </View>
+      ) : null}
     </LinearGradient>
   );
 }
@@ -110,5 +109,12 @@ const getStyles = () =>
       shadowOpacity: 0.2,
       shadowRadius: 6,
       elevation: 4,
+    },
+    bottomMessage: {
+      position: 'absolute',
+      bottom: 40,
+      left: 0,
+      right: 0,
+      paddingHorizontal: 20,
     },
   });

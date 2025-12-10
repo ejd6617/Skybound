@@ -470,11 +470,43 @@ export default function FlightSearchScreen() {
       })();
 
       setIsLoading(false);
+      const serializeTravelerForNav = (traveler: ReturnType<typeof extractAPIRelevantTravelerDetails>) => ({
+        ...traveler,
+        dateOfBirth: traveler?.dateOfBirth instanceof Date
+          ? traveler.dateOfBirth.toISOString()
+          : traveler?.dateOfBirth,
+      });
+
+      const queryContext = {
+        flexibleAirports: flexibleAirports.map(airport => airport.code),
+        flexibleDates,
+        travelers: travelers.map(extractAPIRelevantTravelerDetails).map(serializeTravelerForNav),
+        currencyCode: "USD" as const,
+      };
       const normalizeDateValue = (value?: Date | string | null) => {
         if (!value) return null;
         if (typeof value === 'string') return value;
         return value.toISOString();
       };
+
+      const searchLegPlan = (() => {
+        if (tripType === 'multi-city') {
+          return multiCityLegs.map(leg => ({
+            fromCode: leg.from?.iata,
+            toCode: leg.to?.iata,
+            date: normalizeDateValue(leg.date ?? null),
+          }));
+        }
+
+        if (tripType === 'round-trip') {
+          return [
+            { fromCode: fromAirport?.iata, toCode: toAirport?.iata, date: normalizeDateValue(departureDate) },
+            { fromCode: toAirport?.iata, toCode: fromAirport?.iata, date: normalizeDateValue(returnDate) },
+          ];
+        }
+
+        return [{ fromCode: fromAirport?.iata, toCode: toAirport?.iata, date: normalizeDateValue(departureDate) }];
+      })();
 
       navigation.navigate('FlightResults', {
         searchResults: searchResults,
@@ -486,6 +518,8 @@ export default function FlightSearchScreen() {
         returnDate: normalizeDateValue(returnDate),
         legsCount: tripType === 'multi-city' ? multiCityLegs.length : (tripType === 'round-trip' ? 2 : 1),
         legsDates: tripType === 'multi-city' ? multiCityLegs.map(l => normalizeDateValue(l.date)) : undefined,
+        searchLegs: searchLegPlan,
+        queryContext,
       });
     } catch (err) {
       console.error('API call failed', err);
