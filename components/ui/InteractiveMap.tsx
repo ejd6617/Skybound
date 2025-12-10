@@ -1,6 +1,6 @@
 import Slider from '@react-native-community/slider';
 import { getDistance } from 'geolib';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import MapView, { Circle, MapPressEvent, Marker } from 'react-native-maps';
 import airportData from '../../airports.json';
@@ -10,6 +10,45 @@ import SkyboundText from './SkyboundText';
 export type LatLng = { latitude: number; longitude: number };
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
+
+// Utility function for implementing debounce on radius/location change
+// Uses leading-edge debounce so logic executes immediately but subsequent calls are subject to the timeout
+function createLeadingEdgeAirportDebounce(
+  callback: () => void,
+  wait: number
+): { debounced: () => void; cancel: () => void; updateCallback: (newCallback: () => void) => void } {
+  let timeout: NodeJS.Timeout | null = null;
+  let lastCallback = callback;
+
+  function updateCallback(newCallback: () => void) {
+    lastCallback = newCallback;
+  }
+
+  function debounced() {
+    const callNow = !timeout;
+
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    timeout = setTimeout(() => {
+      timeout = null;
+    }, wait);
+
+    if (callNow) {
+      lastCallback();
+    }
+  }
+
+  function cancel() {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = null;
+    }
+  }
+
+  return { debounced, updateCallback, cancel };
+}
 
 interface InteractiveMapProps {
   location?: LatLng;           // <-- new prop
@@ -78,28 +117,29 @@ export default function InteractiveMap({
     }
   }, [propLocation]);
 
-  // detect changes in marker or circle
-  useEffect(() => {
-    if (!location || !radius) return;
+  // Init with placeholder callback
+  const debouncerRef = useRef(
+    createLeadingEdgeAirportDebounce(() => {}, 500)
+  );
 
-    let timeout: NodeJS.Timeout | null = null;
-    let hasRun = false;
-
-    const computeAirports = () => {
-      if (hasRun) return;
-      hasRun = true;
+  // Logic for finding nearby airports
+  // Updates upon change in location, radius, and localAirportData
+  const computeAirports = useCallback(() => {
+      if (!location || !radius) return;
       const nearby = findNearbyAirports(localAirportData, location, radius);
       setNearbyAirports(nearby);
       onChange?.(nearby);
-    };
+  }, [location, radius, localAirportData, onChange]);
 
-    timeout = setTimeout(computeAirports, 500);
-
+  // detect changes in marker or circle
+  useEffect(() => {
+    // Update the callback to use new location, radius, airport data, etc
+    debouncerRef.current.updateCallback(computeAirports);
+    debouncerRef.current.debounced();
     return () => {
-      if (timeout) clearTimeout(timeout);
-      computeAirports();
+      debouncerRef.current.cancel();
     };
-  }, [location, radius]);
+  }, [computeAirports]);
 
   return (
     <SkyboundItemHolder>
