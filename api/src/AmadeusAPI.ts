@@ -166,8 +166,8 @@ export default class AmadeusAPI implements SkyboundAPI {
 
     if (travelers.length == 0 )
       return [{
-        DEFAULT_TRAVELER.id,
-        DEFAULT_TRAVELER.travelerType,
+        id: DEFAULT_TRAVELER.id,
+        travelerType: DEFAULT_TRAVELER.travelerType,
       }]
 
     return travelers.map((traveler, index) => {
