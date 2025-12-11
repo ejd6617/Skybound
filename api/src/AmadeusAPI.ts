@@ -155,7 +155,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     return this.parseFlights(response);
   }
 
-  private processTravelers(travelers: Traveler[]): any[] {
+  private processTravelers(travelers: Traveler[]): any[] | undefined {
     const DEFAULT_TRAVELER = {
       id: "1",
       travelerType: "ADULT",
