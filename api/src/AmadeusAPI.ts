@@ -270,7 +270,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     // Make a singular query to amadeus
     const amadeusSearchFlights = async (params: RoundTripQueryParams): Promise<Flight[]> => {
       try {
-        const travelers = { this.processTravelers(params.travelers) }
+        const travelers = { travelers: this.processTravelers(params.travelers) }
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
