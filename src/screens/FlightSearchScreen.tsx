@@ -18,20 +18,19 @@ import basicStyles from '@constants/BasicComponents';
 import { useColors } from '@constants/theme';
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp, RouteProp } from "@react-navigation/native-stack";
-import { skyboundRequest, parseFriendlyDate } from '@src/api/SkyboundUtils';
+import { parseFriendlyDate, skyboundRequest } from '@src/api/SkyboundUtils';
 import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
 import * as Location from 'expo-location';
-import { addDoc, collection, deleteDoc, limit as fbLimit, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, limit as fbLimit, getDoc, getDocs, orderBy, query, serverTimestamp } from 'firebase/firestore';
 import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import Svg, { Path } from 'react-native-svg';
 import airports from '../../airports.json';
 
-import { getTravelerDetails } from '@src/firestoreFunctions';
 import { getAuth } from 'firebase/auth';
-import { GenderOption, TravelerProfile, TravelerType } from '../types/travelers';
+import { TravelerProfile } from '../types/travelers';
 
 interface ValidationErrors {
   from?: string;
@@ -93,42 +92,43 @@ export default function FlightSearchScreen() {
   const auth = getAuth();
   const user = auth.currentUser?.uid;
 
+  const [hasPro, setHasPro] = useState(false);
+
   //fetches traveler details from firebase
-  const fetchTravelers = async () => {
+  const verifySubsription = async () => {
+    //get the reference to the user
     try {
-      const travelersRef = collection(db, 'Users', user, 'TravelerDetails');
-      const travelersSnap = await getDocs(travelersRef);
-
-      const fetchedTravelers: TravelerProfile[] = [];
-
-      for (const doc of travelersSnap.docs) {
-        const travelerID = doc.id;
-        const travelerDetails = await getTravelerDetails(user, travelerID);
-        if (travelerDetails) {
-          fetchedTravelers.push({
-            id: travelerID,
-            firstName: travelerDetails.FirstName,
-            middleName: travelerDetails.MiddleName || "",
-            lastName: travelerDetails.LastName,
-            birthdate: travelerDetails.Birthday,
-            gender: travelerDetails.Gender as GenderOption,
-            nationality: travelerDetails.Nationality,
-            passportNumber: travelerDetails.PassportNumber,
-            passportExpiry: travelerDetails.PassportExpiration,
-            type: travelerDetails.Type.type as TravelerType
-          });
+      const docRef = doc(db, 'Users', user);
+      const userData = await getDoc(docRef);
+      if(userData.exists())
+      {
+        if(userData.data().subscriptionTier === "free")
+        {
+          setHasPro(false);
+          console.log("Free subscription");
         }
+        else
+        {
+          setHasPro(true);
+          console.log("Paid")
+        }
+        
       }
-
-      setTravelers(fetchedTravelers);
-    } catch (error) {
-      console.error("Error fetching travelers: ", error);
+      else 
+      {
+        throw new Error ("userData does not exist"); 
+      }
     }
-  };
+    catch (error)
+    {
+      console.log("Error fetching pro subscription, " + error)
+    }
+    
+  }
 
- // Fetch traveler details when the screen loads
+ // verify 
   useEffect(() => {
-    fetchTravelers();
+    verifySubsription();
   }, []);
 
   //updates airport codes when airport objects are collected
@@ -681,7 +681,10 @@ export default function FlightSearchScreen() {
                 )}
               </>
             )}
-
+            {/*Conditionally renders the flexible dates and airports button depending on if the user has pro or not */}            
+            {tripType !='multi-city' ? (
+              hasPro ? (
+            <>
             <View style={[styles.flexibleOptionsRow, CARD_W < 380 ? { flexDirection: 'column' } : {}]}>
               <FlexibleChip
                 label="Flexible Dates"
@@ -709,6 +712,29 @@ export default function FlightSearchScreen() {
                 icon={AirportIcon}
               />
             </View>
+            </>
+           ) : (
+            <>
+            {/*user  does not have pro, show text instead */}
+            <View style={{justifyContent: 'center', flexDirection: 'column', gap: 10}}>
+              <SkyboundText variant='primary' accessabilityLabel='For access to flexible dating and aiports, upgrade to SkyboundPro'>For access to flexible dating and aiports, upgrade to SkyboundPro</SkyboundText>
+              <SkyboundButton
+              style={styles.searchButton}
+              textVariant='forceWhite'
+              width={300}
+              height={50}
+              onPress={() => navigation.navigate("Accounts", {
+                screen: "ManageSubscription"
+              })}>Manage Subscription</SkyboundButton>
+            </View>
+            </>
+           )
+          )  : (
+            <>
+            {/* user is on multi-city, render nothing */}
+            </>
+          )}
+
 
             {flexibleDates && (
               <View style={[styles.tooltip, { backgroundColor: colors.surfaceMuted }]}>
