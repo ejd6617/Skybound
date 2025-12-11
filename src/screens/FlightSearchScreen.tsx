@@ -1,7 +1,7 @@
 import { NATIONALITIES_TO_ISO } from '@/assets/data/nationalitiesToISO';
 import InteractiveMap, { LatLng } from '@/components/ui/InteractiveMap';
 import SkyboundItemHolder from '@/components/ui/SkyboundItemHolder';
-import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams, Traveler, TravelerType } from '@/skyboundTypes/SkyboundAPI';
+import { Airport, FlightLeg, MultiCityQueryParams, OneWayQueryParams, QueryLeg, RoundTripQueryParams, Traveler } from '@/skyboundTypes/SkyboundAPI';
 import { db } from '@/src/firebase';
 import AirportIcon from '@assets/images/AirportIcon.svg';
 import ArrivalIcon from '@assets/images/ArrivalIcon.svg';
@@ -18,7 +18,7 @@ import basicStyles from '@constants/BasicComponents';
 import { useColors } from '@constants/theme';
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp, RouteProp } from "@react-navigation/native-stack";
-import { skyboundRequest } from '@src/api/SkyboundUtils';
+import { skyboundRequest, parseFriendlyDate } from '@src/api/SkyboundUtils';
 import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
@@ -31,7 +31,7 @@ import airports from '../../airports.json';
 
 import { getTravelerDetails } from '@src/firestoreFunctions';
 import { getAuth } from 'firebase/auth';
-import { GenderOption, TravelerProfile } from '../types/travelers';
+import { GenderOption, TravelerProfile, TravelerType } from '../types/travelers';
 
 interface ValidationErrors {
   from?: string;
@@ -115,7 +115,7 @@ export default function FlightSearchScreen() {
             nationality: travelerDetails.Nationality,
             passportNumber: travelerDetails.PassportNumber,
             passportExpiry: travelerDetails.PassportExpiration,
-            type: travelerDetails.Type as TravelerType
+            type: travelerDetails.Type.type as TravelerType
           });
         }
       }
@@ -357,9 +357,10 @@ export default function FlightSearchScreen() {
       "Child": "CHILD",
       "Elderly": "SENIOR",
     };
-    
-    console.log(traveler.type.type);
-    console.log(TRAVELER_TYPE_MAP[traveler.type]);
+
+    console.log(traveler.type);
+    console.log(traveler.nationality);
+    console.log(traveler.birthdate);
 
     if (!(traveler.type in TRAVELER_TYPE_MAP)) {
       throw new Error("Invalid traveler type " + traveler.type + " for API query");
@@ -368,13 +369,14 @@ export default function FlightSearchScreen() {
     if (traveler.nationality && !(traveler.nationality in NATIONALITIES_TO_ISO)) {
       throw new Error("Invalid nationality " + traveler.nationality + " for API query");
     }
-    
+
     const nationality = (traveler.nationality)
       ? {nationality: NATIONALITIES_TO_ISO[traveler.nationality]}
       : {};
 
+    console.log(`"${traveler.birthdate}"`);
     return {
-      dateOfBirth: new Date(traveler.birthdate),
+      dateOfBirth: parseFriendlyDate(traveler.birthdate),
       travelerType: TRAVELER_TYPE_MAP[traveler.type],
       ...nationality
     }
@@ -461,9 +463,9 @@ export default function FlightSearchScreen() {
             }
             return await skyboundRequest(endpoint, jsonBody);
           }
-          
+
           default: {
-            throw new Error(`Invalid flight search type "${tripType}"`)          
+            throw new Error(`Invalid flight search type "${tripType}"`)
           }
 
         }

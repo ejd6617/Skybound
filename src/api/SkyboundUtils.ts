@@ -75,3 +75,35 @@ export async function skyboundRequest(endpoint: string, params: object) {
 
   return json;
 }
+
+// Helper to parse "Dec 20, 2000" safely in React Native
+export function parseFriendlyDate(dateStr: string): Date {
+  // 1. Try standard construction first (for safety if format changes later)
+  const directDate = new Date(dateStr);
+  if (!isNaN(directDate.getTime())) return directDate;
+
+  // 2. Manual Parse for "MMM DD, YYYY"
+  const months: { [key: string]: number } = { 
+    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, 
+    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 
+  };
+
+  // Split "Dec 20, 2000" -> ["Dec", "20,", "2000"]
+  const parts = dateStr.split(' ');
+  if (parts.length === 3) {
+    const monthStr = parts[0]; 
+    const dayStr = parts[1].replace(',', '');
+    const yearStr = parts[2];
+
+    const monthIndex = months[monthStr];
+    const day = parseInt(dayStr, 10);
+    const year = parseInt(yearStr, 10);
+
+    if (monthIndex !== undefined && !isNaN(day) && !isNaN(year)) {
+      // Note: Month is 0-indexed in JS Date
+      return new Date(year, monthIndex, day);
+    }
+  }
+
+  throw new Error(`Cannot parse date string: "${dateStr}"`);
+}

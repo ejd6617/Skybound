@@ -164,7 +164,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     };
 
     if (travelers.length == 0 )
-      return [DEFAULT_TRAVELER]
+      return []
 
     return travelers.map((traveler, index) => {
       return {
@@ -270,10 +270,11 @@ export default class AmadeusAPI implements SkyboundAPI {
     // Make a singular query to amadeus
     const amadeusSearchFlights = async (params: RoundTripQueryParams): Promise<Flight[]> => {
       try {
+        const travelers = { this.processTravelers(params.travelers) }
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
-          travelers: this.processTravelers(params.travelers),
+          ...travelers,
           originDestinations: [
             {
               id: "1",
@@ -311,10 +312,11 @@ export default class AmadeusAPI implements SkyboundAPI {
     // Make a singular query to amadeus
     const amadeusSearchFlights = async (params: OneWayQueryParams): Promise<Flight[]> => {
       try {
+        const travelers = { this.processTravelers(params.travelers) }
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
-          travelers: this.processTravelers(params.travelers),
+          ...travelers,
           originDestinations: [
             {
               id: "1",
@@ -341,10 +343,11 @@ export default class AmadeusAPI implements SkyboundAPI {
 
   // Multi city flight search endpoint
   async searchFlightsMultiCity(params: MultiCityQueryParams): Promise<Flight[]> {
+    const travelers = { this.processTravelers(params.travelers) }
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
       ...this.baseFlightOfferParams,
       currencyCode: params.currencyCode,
-      travelers: this.processTravelers(params.travelers),
+      ...travelers,
       originDestinations: params.legs.map((leg, index) => ({
         id: (index + 1).toString(),
         originLocationCode: leg.originAirportIATA,
