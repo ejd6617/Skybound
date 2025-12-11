@@ -164,7 +164,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     };
 
     if (travelers.length == 0 )
-      return []
+      return undefined;
 
     return travelers.map((traveler, index) => {
       return {
