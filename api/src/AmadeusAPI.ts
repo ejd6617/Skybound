@@ -155,7 +155,7 @@ export default class AmadeusAPI implements SkyboundAPI {
     return this.parseFlights(response);
   }
 
-  private processTravelers(travelers: Traveler[]): any[] | undefined {
+  private processTravelers(travelers: Traveler[]): any[] {
     const DEFAULT_TRAVELER = {
       id: "1",
       travelerType: "ADULT",
@@ -163,8 +163,12 @@ export default class AmadeusAPI implements SkyboundAPI {
       dateOfBirth: "2002-01-01",
     };
 
+
     if (travelers.length == 0 )
-      return undefined;
+      return [{
+        DEFAULT_TRAVELER.id,
+        DEFAULT_TRAVELER.travelerType,
+      }]
 
     return travelers.map((traveler, index) => {
       return {
@@ -270,11 +274,10 @@ export default class AmadeusAPI implements SkyboundAPI {
     // Make a singular query to amadeus
     const amadeusSearchFlights = async (params: RoundTripQueryParams): Promise<Flight[]> => {
       try {
-        const travelers = { travelers: this.processTravelers(params.travelers) }
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
-          ...travelers,
+          travelers: this.processTravelers(params.travelers),
           originDestinations: [
             {
               id: "1",
@@ -312,11 +315,10 @@ export default class AmadeusAPI implements SkyboundAPI {
     // Make a singular query to amadeus
     const amadeusSearchFlights = async (params: OneWayQueryParams): Promise<Flight[]> => {
       try {
-        const travelers = { travelers: this.processTravelers(params.travelers) }
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
-          ...travelers,
+          travelers: this.processTravelers(params.travelers),
           originDestinations: [
             {
               id: "1",
@@ -343,11 +345,10 @@ export default class AmadeusAPI implements SkyboundAPI {
 
   // Multi city flight search endpoint
   async searchFlightsMultiCity(params: MultiCityQueryParams): Promise<Flight[]> {
-    const travelers = { travelers: this.processTravelers(params.travelers) }
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
       ...this.baseFlightOfferParams,
       currencyCode: params.currencyCode,
-      ...travelers,
+      travelers: this.processTravelers(params.travelers),
       originDestinations: params.legs.map((leg, index) => ({
         id: (index + 1).toString(),
         originLocationCode: leg.originAirportIATA,
