@@ -29,8 +29,9 @@ import { Alert, Dimensions, Modal, ScrollView, StyleSheet, TouchableOpacity, Vie
 import Svg, { Path } from 'react-native-svg';
 import airports from '../../airports.json';
 
+import { getTravelerDetails } from '@src/firestoreFunctions';
 import { getAuth } from 'firebase/auth';
-import { TravelerProfile } from '../types/travelers';
+import { GenderOption, TravelerProfile, TravelerType } from '../types/travelers';
 
 interface ValidationErrors {
   from?: string;
@@ -69,7 +70,7 @@ export default function FlightSearchScreen() {
   const [tripType, setTripType] = useState<TripType>('one-way');
   const [flexibleDates, setFlexibleDates] = useState(false);
   const [passengerCount, setPassengerCount] = useState(1);
- 
+
 
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -80,22 +81,24 @@ export default function FlightSearchScreen() {
 
   //tracking if the user has flexible airport search enabled
   const [flexibleAirportsEnabled, setFlexibleAirportsEnabled] = useState(false);
-  //tracking if the flexible airport modal is shown 
+  //tracking if the flexible airport modal is shown
   const [flexibleAiportsVisible, setFlexibleAirportsVisible] = useState(false);
 
   //contains the flexible airport objects
   const [flexibleAirports, setFlexibleAirports] = useState<any[]>([]);
   //contains the flexible airport codes
   const [flexibleAirportCodes, setFlexibleAirportCodes] = useState<string[]>([]);
-  
+
   const [travelers, setTravelers] = useState<TravelerProfile[]>([]);
 
   const auth = getAuth();
   const user = auth.currentUser?.uid;
 
+  const [hasPro, setHasPro] = useState(false);
+
   const verifySubscription = async () => {
     try {
-      if (!user) return; // user might be undefined on first render
+      if (!user) return;
       const docRef = doc(db, 'Users', user);
       const userSnap = await getDoc(docRef);
 
@@ -113,36 +116,38 @@ export default function FlightSearchScreen() {
     }
   };
 
-  const [hasPro, setHasPro] = useState(false);
-
-  //fetches traveler details from firebase
-  const getTravelerTypeFromFirestore = (rawType: any): TravelerType | null => { //fix for traveler issue; normalizing type
-    // Case 1: new structure -> { type: "Adult", ... }
+  const getTravelerTypeFromFirestore = (rawType: any): TravelerType | null => {
     if (rawType && typeof rawType === "object" && typeof rawType.type === "string") {
       return rawType.type as TravelerType;
     }
-
-    // Case 2: old structure -> "Adult"
     if (typeof rawType === "string") {
       return rawType as TravelerType;
     }
-
-    // Case 3: missing or invalid -> null
     return null;
   };
 
   const verifySubsription = async () => {
-    //get the reference to the user
     try {
+      if (!user) return;
+
       const travelersRef = collection(db, 'Users', user, 'TravelerDetails');
       const travelersSnap = await getDocs(travelersRef);
 
       const fetchedTravelers: TravelerProfile[] = [];
 
-      for (const doc of travelersSnap.docs) {
-        const travelerID = doc.id;
+      for (const travelerDoc of travelersSnap.docs) {
+        const travelerID = travelerDoc.id;
+
         const travelerDetails = await getTravelerDetails(user, travelerID);
+
         if (travelerDetails) {
+          const normalizedType = getTravelerTypeFromFirestore(travelerDetails.Type);
+
+          if (!normalizedType) {
+            console.warn(`Traveler ${travelerID} missing/invalid Type; skipping`);
+            continue;
+          }
+
           fetchedTravelers.push({
             id: travelerID,
             firstName: travelerDetails.FirstName,
@@ -153,7 +158,7 @@ export default function FlightSearchScreen() {
             nationality: travelerDetails.Nationality,
             passportNumber: travelerDetails.PassportNumber,
             passportExpiry: travelerDetails.PassportExpiration,
-            type: travelerDetails.Type.type as TravelerType
+            type: normalizedType,
           });
         }
       }
@@ -164,7 +169,7 @@ export default function FlightSearchScreen() {
     }
   };
 
- // verify 
+  // verify
   useEffect(() => {
     verifySubscription();
     verifySubsription();
@@ -212,8 +217,6 @@ export default function FlightSearchScreen() {
     };
     setUserLocation(coords);
   };
-
-
 
   const createEmptyAirport = (): Airport => ({
     iata: "",
@@ -285,7 +288,7 @@ export default function FlightSearchScreen() {
       to: airport,
     };
     setMultiCityLegs(newLegs);
-    
+
     if (index < multiCityLegs.length - 1) {
       newLegs[index + 1] = {
         ...newLegs[index + 1],
@@ -310,68 +313,68 @@ export default function FlightSearchScreen() {
 
     if (tripType === 'multi-city') {
       const legErrors: Array<{ from?: string; to?: string; date?: string }> = [];
-      
+
       multiCityLegs.forEach((leg, index) => {
         const legError: { from?: string; to?: string; date?: string } = {};
-        
+
         if (!flexibleAirportsEnabled && !leg.from) {
           legError.from = 'Departure airport is required';
           isValid = false;
         }
-        
+
         if (!leg.to) {
           legError.to = 'Arrival airport is required';
           isValid = false;
         }
-        
+
         if (!flexibleAirportsEnabled && leg.from && leg.to && leg.from === leg.to) {
           legError.to = 'Departure and arrival cannot be the same';
           isValid = false;
         }
-        
+
         if (!leg.date) {
           legError.date = 'Departure date is required';
           isValid = false;
         }
-        
+
         if (index > 0 && leg.date && multiCityLegs[index - 1].date) {
           if (leg.date < multiCityLegs[index - 1].date!) {
             legError.date = 'Date must be on or after previous flight';
             isValid = false;
           }
         }
-        
+
         legErrors.push(legError);
       });
-      
+
       newErrors.legs = legErrors;
     } else {
       if (!flexibleAirportsEnabled && !from) {
         newErrors.from = 'Departure airport is required';
         isValid = false;
       }
-      
+
       if (!to) {
         newErrors.to = 'Arrival airport is required';
         isValid = false;
       }
-      
+
       if (!flexibleAirportsEnabled && from && to && from === to) {
         newErrors.to = 'Departure and arrival cannot be the same';
         isValid = false;
       }
-      
+
       if (!departureDate) {
         newErrors.departureDate = 'Departure date is required';
         isValid = false;
       }
-      
+
       if (tripType === 'round-trip') {
         if (!returnDate) {
           newErrors.returnDate = 'Return date is required';
           isValid = false;
         }
-        
+
         if (departureDate && returnDate && returnDate < departureDate) {
           newErrors.returnDate = 'Return date must be on or after departure date';
           isValid = false;
@@ -382,7 +385,7 @@ export default function FlightSearchScreen() {
     setErrors(newErrors);
     return isValid;
   };
-  
+
   // Convert firebase traveler to API-compatible traveler
   const extractAPIRelevantTravelerDetails = (traveler: TravelerProfile): Traveler => {
     const normalizeTravelerType = (type: TravelerProfile['type'] ): Traveler['travelerType'] => {
@@ -431,10 +434,8 @@ export default function FlightSearchScreen() {
         }
 
         const fallbackParsed = new Date(value);
-        if (!Number.isNaN(fallbackParsed.getTime())) {
+        if (!Number.isNaN(fallbackParsed.getTime())) 
           return fallbackParsed;
-        }
-
         return null;
       };
 
@@ -456,7 +457,7 @@ export default function FlightSearchScreen() {
     }
 
     const nationality = (traveler.nationality)
-      ? {nationality: NATIONALITIES_TO_ISO[traveler.nationality]}
+      ? { nationality: NATIONALITIES_TO_ISO[traveler.nationality] }
       : {};
 
     const travelerName = `${traveler.firstName} ${traveler.lastName}`.trim();
@@ -496,9 +497,7 @@ export default function FlightSearchScreen() {
   }, [fromAirport?.iata, toAirport?.iata, tripType, departureDate, returnDate]);
 
   const handleSearch = async () => {
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     const normalizedTravelers = (() => {
       try {
@@ -508,19 +507,13 @@ export default function FlightSearchScreen() {
         const message = err instanceof Error
           ? err.message
           : 'Please confirm each traveler has a valid birthdate and traveler type before searching.';
-        Alert.alert(
-          'Update traveler info',
-          message
-        );
+        Alert.alert('Update traveler info', message);
         return null;
       }
     })();
 
-    if (!normalizedTravelers) {
-      return;
-    }
+    if (!normalizedTravelers) return;
 
-    console.log("Searching flights...");
     setIsLoading(true);
 
     try {
@@ -534,7 +527,6 @@ export default function FlightSearchScreen() {
               date: departureDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
-              // Intentionally omit traveler details from Amadeus calls for demo purposes
               travelers: [],
               currencyCode: "USD",
             }
@@ -550,7 +542,6 @@ export default function FlightSearchScreen() {
               endDate: returnDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
-              // Intentionally omit traveler details from Amadeus calls for demo purposes
               travelers: [],
               currencyCode: "USD",
             }
@@ -566,21 +557,19 @@ export default function FlightSearchScreen() {
                 destinationAirportIATA: leg.to?.iata,
                 date: leg.date,
               })),
-              // Intentionally omit traveler details from Amadeus calls for demo purposes
               travelers: [],
               currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);
           }
 
-          default: {
+          default:
             throw new Error(`Invalid flight search type "${tripType}"`)
-          }
-
         }
       })();
 
       setIsLoading(false);
+
       const serializeTravelerForNav = (traveler: ReturnType<typeof extractAPIRelevantTravelerDetails>) => ({
         ...traveler,
         dateOfBirth: traveler?.dateOfBirth instanceof Date
@@ -593,11 +582,6 @@ export default function FlightSearchScreen() {
         flexibleDates,
         travelers: normalizedTravelers.map(serializeTravelerForNav),
         currencyCode: "USD" as const,
-      };
-      const normalizeDateValue = (value?: Date | string | null) => {
-        if (!value) return null;
-        if (typeof value === 'string') return value;
-        return value.toISOString();
       };
 
       const searchLegPlan = (() => {
@@ -620,8 +604,8 @@ export default function FlightSearchScreen() {
       })();
 
       navigation.navigate('FlightResults', {
-        searchResults: searchResults,
-        tripType: tripType,
+        searchResults,
+        tripType,
         multipleSourceAirports: (flexibleAirports.length > 1),
         fromCode: (flexibleAirports.length == 0) ? fromAirport?.iata : undefined,
         toCode: toAirport?.iata,
@@ -631,7 +615,7 @@ export default function FlightSearchScreen() {
         legsDates: tripType === 'multi-city' ? multiCityLegs.map(l => normalizeDateValue(l.date)) : undefined,
         searchLegs: searchLegPlan,
         queryContext,
-        passengerCount: passengerCount,
+        passengerCount,
       });
     } catch (err) {
       console.error('API call failed', err);
@@ -641,7 +625,7 @@ export default function FlightSearchScreen() {
 
   useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: !isLoading, 
+      headerShown: !isLoading,
     });
   }, [navigation, isLoading]);
 
@@ -653,39 +637,38 @@ export default function FlightSearchScreen() {
     <View style={[basicStyles.background, { backgroundColor: colors.background }]}>
       <View style={{ flex: 1, backgroundColor: colors.background, paddingTop: 5 }}>
         <Modal
-        animationType="slide"
-        transparent={true}
-        visible={flexibleAiportsVisible} // use your state
-        onRequestClose={() => setFlexibleAirportsVisible(false)}
-      >
-        <View style={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'rgba(0,0,0,0.5)'
-        }}>
-          <SkyboundItemHolder>
-            <SkyboundText accessabilityLabel='Select Location' variant='primary'>Select Location</SkyboundText>
+          animationType="slide"
+          transparent={true}
+          visible={flexibleAiportsVisible}
+          onRequestClose={() => setFlexibleAirportsVisible(false)}
+        >
+          <View style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0,0,0,0.5)'
+          }}>
+            <SkyboundItemHolder>
+              <SkyboundText accessabilityLabel='Select Location' variant='primary'>Select Location</SkyboundText>
 
-            <InteractiveMap
-            mapHeight={500}
-            mapWidth={450}
-            onChange={setFlexibleAirports}
-            location={userLocation}>
+              <InteractiveMap
+                mapHeight={500}
+                mapWidth={450}
+                onChange={setFlexibleAirports}
+                location={userLocation}
+              />
 
-            </InteractiveMap>
-            <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight} width={300} height={50} onPress={() => {setFlexibleAirportsVisible(false);}}>Close</SkyboundButton>
-            <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight} width={300} height={50} onPress={ async () =>  await getUserLocation()}>Use My location</SkyboundButton>
-          </SkyboundItemHolder> 
-        </View>
-      </Modal>
-        <ScrollView 
+              <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight} width={300} height={50} onPress={() => { setFlexibleAirportsVisible(false); }}>Close</SkyboundButton>
+              <SkyboundButton style={basicStyles.skyboundButtonPrimaryLight} width={300} height={50} onPress={async () => await getUserLocation()}>Use My location</SkyboundButton>
+            </SkyboundItemHolder>
+          </View>
+        </Modal>
+
+        <ScrollView
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-         
-        
           <View style={[styles.container, { width: CARD_W }]}>
             <TripTypeSelector
               selectedType={tripType}
@@ -724,9 +707,9 @@ export default function FlightSearchScreen() {
                   </View>
                 </View>
 
-                <View style={{...styles.columnContainer}}>
+                <View style={{ ...styles.columnContainer }}>
                   <View style={styles.fromToContainer}>
-                    <View style={{ flex: 1, gap: 12 }}>
+                    <View style={{ flex: 1 }}>
                       {!flexibleAirportsEnabled && (
                         <AirportAutocomplete
                           label="From"
@@ -737,10 +720,12 @@ export default function FlightSearchScreen() {
                           }}
                           placeholder="Departure airport"
                           error={errors.from}
-                          icon={<DepartureIcon/>}
+                          icon={<DepartureIcon />}
                         />
                       ) || (
-                        <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='secondary'>{"Flexible Airports: " + flexibleAirportCodes}</SkyboundText>
+                        <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='secondary'>
+                          {"Flexible Airports: " + flexibleAirportCodes}
+                        </SkyboundText>
                       )}
 
                       <AirportAutocomplete
@@ -752,13 +737,10 @@ export default function FlightSearchScreen() {
                         }}
                         placeholder="Arrival airport"
                         error={errors.to}
-                        icon={<ArrivalIcon/>}
+                        icon={<ArrivalIcon />}
                       />
                     </View>
-
                   </View>
-
-                  <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='primary'>{flexibleAiportsVisible}</SkyboundText>
 
                   <DateSelector
                     label="Depart Date"
@@ -816,60 +798,58 @@ export default function FlightSearchScreen() {
                 )}
               </>
             )}
-            {/*Conditionally renders the flexible dates and airports button depending on if the user has pro or not */}            
-            {tripType !='multi-city' ? (
-              hasPro ? (
-            <>
-            <View style={[styles.flexibleOptionsRow, CARD_W < 380 ? { flexDirection: 'column' } : {}]}>
-              <FlexibleChip
-                label="Flexible Dates"
-                isActive={flexibleDates}
-                onToggle={() => setFlexibleDates(!flexibleDates)}
-                icon={CalandarIcon}
-              />
-              <FlexibleChip
-                label="Flexible Airports"
-                isActive={flexibleAirportsEnabled}
-                onToggle={() => {
-                  if(!flexibleAirportsEnabled)
-                  {
-                    setFlexibleAirportsEnabled(true);
-                    setFlexibleAirportsVisible(true);
-                  }
-                  else
-                  {
-                    setFlexibleAirportsEnabled(false);
-                    setFlexibleAirports([])
-                    setFlexibleAirportCodes([])
-                  }
-                  
-                }}
-                icon={AirportIcon}
-              />
-            </View>
-            </>
-           ) : (
-            <>
-            {/*user  does not have pro, show text instead */}
-            <View style={{justifyContent: 'center', flexDirection: 'column', gap: 10}}>
-              <SkyboundText variant='primary' accessabilityLabel='For access to flexible dating and aiports, upgrade to SkyboundPro'>For access to flexible dating and aiports, upgrade to SkyboundPro</SkyboundText>
-              <SkyboundButton
-              style={styles.searchButton}
-              textVariant='forceWhite'
-              width={300}
-              height={50}
-              onPress={() => navigation.navigate("Accounts", {
-                screen: "ManageSubscription"
-              })}>Manage Subscription</SkyboundButton>
-            </View>
-            </>
-           )
-          )  : (
-            <>
-            {/* user is on multi-city, render nothing */}
-            </>
-          )}
 
+            {/*Conditionally renders the flexible dates and airports button depending on if the user has pro or not */}
+            {tripType != 'multi-city' ? (
+              hasPro ? (
+                <>
+                  <View style={[styles.flexibleOptionsRow, CARD_W < 380 ? { flexDirection: 'column' } : {}]}>
+                    <FlexibleChip
+                      label="Flexible Dates"
+                      isActive={flexibleDates}
+                      onToggle={() => setFlexibleDates(!flexibleDates)}
+                      icon={CalandarIcon}
+                    />
+                    <FlexibleChip
+                      label="Flexible Airports"
+                      isActive={flexibleAirportsEnabled}
+                      onToggle={() => {
+                        if (!flexibleAirportsEnabled) {
+                          setFlexibleAirportsEnabled(true);
+                          setFlexibleAirportsVisible(true);
+                        } else {
+                          setFlexibleAirportsEnabled(false);
+                          setFlexibleAirports([]);
+                          setFlexibleAirportCodes([]);
+                        }
+                      }}
+                      icon={AirportIcon}
+                    />
+                  </View>
+                </>
+              ) : (
+                <>
+                    <View style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 10 }}>
+                    <SkyboundText variant='primary' style={{ textAlign: 'center', marginTop: 20 }} accessabilityLabel='For access to flexible dates and aiports, upgrade to SkyboundPRO now'>
+                      For access to flexible dating and aiports, upgrade to SkyboundPro
+                    </SkyboundText>
+                    <SkyboundButton
+                      style={[styles.searchButton, { marginTop: 20 }]}
+                      textVariant='forceWhite'
+                      width={300}
+                      height={50}
+                      onPress={() => navigation.navigate("Accounts" as any, {
+                      screen: "ManageSubscription"
+                      } as any)}
+                    >
+                      Manage Subscription
+                    </SkyboundButton>
+                    </View>
+                </>
+              )
+            ) : (
+              <></>
+            )}
 
             {flexibleDates && (
               <View style={[styles.tooltip, { backgroundColor: colors.surfaceMuted }]}>
@@ -898,78 +878,23 @@ export default function FlightSearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    alignItems: 'center',
-    paddingVertical: 18,
-    paddingBottom: 40,
-  },
-  container: {
-    paddingHorizontal: 16,
-  },
-  columnContainer: {
-    flexDirection: 'column',
-  },
-  fromToContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    marginBottom: 16,
-  },
-  flexibleOptionsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-    marginBottom: 0,
-  },
-  passengerSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  passengerCounter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
+  scrollView: { flex: 1 },
+  scrollContent: { alignItems: 'center', paddingVertical: 18, paddingBottom: 40 },
+  container: { paddingHorizontal: 16 },
+  columnContainer: { flexDirection: 'column' },
+  fromToContainer: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, marginBottom: 16 },
+  flexibleOptionsRow: { flexDirection: 'row', gap: 8, marginTop: 12, marginBottom: 0 },
+  passengerSelector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, marginBottom: 18 },
+  passengerCounter: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   passengerButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#CBD5E1',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FFF',
+    width: 36, height: 36, borderRadius: 10, borderWidth: 1, borderColor: '#CBD5E1',
+    alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFF',
   },
-  tooltip: {
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 0,
-  },
+  tooltip: { padding: 12, borderRadius: 8, marginBottom: 0 },
   addLegButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    marginBottom: 16,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 16, borderRadius: 12, borderWidth: 1, borderStyle: 'dashed', marginBottom: 16,
   },
-  searchButtonContainer: {
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  searchButton: {
-    backgroundColor: '#0071E2',
-    borderRadius: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  searchButtonContainer: { alignItems: 'center', marginTop: 24 },
+  searchButton: { backgroundColor: '#0071E2', borderRadius: 100, alignItems: 'center', justifyContent: 'center' },
 });
