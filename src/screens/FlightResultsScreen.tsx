@@ -33,6 +33,7 @@ export interface SearchDetails {
   legsCount?: number;
   legsDates?: (Date | string | null)[];
   silentTransition?: boolean;
+  passengerCount?: number;
 }
 
 export interface FlightFilters {
@@ -54,7 +55,8 @@ export interface PlannedLeg {
 export interface ItineraryPayload {
   flights: UIFlight[];
   searchDetails?: SearchDetails;
-  traveler?: any | null;
+  traveler?: TravelerProfile;
+  travelers?: TravelerProfile[];
   paymentMethodId?: string | null;
   totalPrice?: number;
 }
@@ -421,12 +423,13 @@ export default function FlightResultsScreen() {
     filters: incomingFilters,
     silentTransition,
     queryContext,
+    passengerCount,
   } = route.params as SearchDetails & { searchResults: Flight[]; searchLegs?: PlannedLeg[]; legIndex?: number; selections?: UIFlight[]; filters?: FlightFilters };
 
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [baseFlights, setBaseFlights] = useState<UIFlight[]>(toUIFlights(reviveDates(searchResults)));
-  const [visibleCount, setVisibleCount] = useState(3);
+  const [visibleCount, setVisibleCount] = useState(10);
   const [sortModalVisible, setSortModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<'recommended'|'price'|'duration'|'stops'>('recommended');
   const [sortDirection, setSortDirection] = useState<'asc'|'desc'>('asc');
@@ -506,10 +509,18 @@ export default function FlightResultsScreen() {
   };
   
   const generateTitle = () => {
-    if (flights[0] === undefined) return "No flights found"
-    if (multipleSourceAirports) return `Outbound: to ${toCode}`
-    return `Outbound: ${flights[0].departureCode} to ${toCode}`;
-  }
+    if (flights.length === 0) return 'No flights found';
+
+    const originCity = selectedFlight?.departureCity || selectedFlight?.legs?.[0]?.from?.city;
+    const originCode = selectedFlight?.departureCode || selectedFlight?.legs?.[0]?.from?.iata || fromCode;
+    const destinationCity = selectedFlight?.arrivalCity || selectedFlight?.legs?.[selectedFlight?.legs?.length - 1]?.to?.city;
+    const destinationCode = selectedFlight?.arrivalCode || toCode;
+
+    const originLabel = originCity || originCode || 'Origin';
+    const destinationLabel = destinationCity || destinationCode || 'Destination';
+
+    return `Outbound: ${originLabel} to ${destinationLabel}`;
+  };
 
   const formattedDateRange = useMemo<string>(() => {
     const formatDate = (value?: Date | string | null) => {
@@ -613,8 +624,8 @@ export default function FlightResultsScreen() {
   const arrowFor = (crit: typeof sortBy) => (sortBy === crit && sortDirection === 'desc') ? 'arrow-down' : 'arrow-up';
 
   useEffect(() => {
-    navigation.setOptions({ title: generateTitle()});
-  }, [flights, navigation, colors])
+    navigation.setOptions({ title: generateTitle() });
+  }, [flights, navigation, colors, selectedFlight]);
 
   const FlightCard = ({ flight }: { flight: UIFlight }) => {
     const badge = getCategoryBadge(flight.category);
@@ -700,6 +711,7 @@ export default function FlightResultsScreen() {
             selections: serializedSelections,
             silentTransition: true,
             queryContext,
+            passengerCount,
           });
           setTimeout(() => setAdvancingLeg(null), 400);
         } catch (error) {
@@ -720,6 +732,7 @@ export default function FlightResultsScreen() {
           returnDate: normalizeDateValue(legsPlan[legsPlan.length - 1]?.date ?? returnDate ?? null),
           legsCount: legsPlan.length || legsCount,
           legsDates: (legsPlan.length ? legsPlan.map(l => normalizeDateValue(l.date ?? null)) : legsDates?.map(normalizeDateValue)),
+          passengerCount,
         },
       };
       navigation.navigate('FlightSummary', { itinerary });

@@ -163,6 +163,23 @@ export default class AmadeusAPI implements SkyboundAPI {
       dateOfBirth: "2002-01-01",
     };
 
+    const normalizeTravelerType = (type?: Traveler["travelerType"]): Traveler["travelerType"] => {
+      const allowedTypes = new Set<Traveler["travelerType"]>([
+        "ADULT",
+        "CHILD",
+        "SENIOR",
+        "YOUNG",
+        "STUDENT",
+        "HELD_INFANT",
+        "SEATED_INFANT",
+      ]);
+
+      const normalized = type?.toUpperCase() as Traveler["travelerType"] | undefined;
+      if (normalized && allowedTypes.has(normalized)) {
+        return normalized;
+      }
+      return DEFAULT_TRAVELER.travelerType as Traveler["travelerType"];
+    };
 
     if (travelers.length == 0 )
       return [{
@@ -176,7 +193,7 @@ export default class AmadeusAPI implements SkyboundAPI {
         dateOfBirth: (traveler.dateOfBirth)
           ? this.toLocalISOString (new Date(traveler.dateOfBirth))
           : DEFAULT_TRAVELER.dateOfBirth ,
-        travelerType: traveler.travelerType || DEFAULT_TRAVELER.travelerType,
+        travelerType: normalizeTravelerType(traveler.travelerType),
         nationality: traveler.nationality || DEFAULT_TRAVELER.nationality,
       }
     })
@@ -277,7 +294,6 @@ export default class AmadeusAPI implements SkyboundAPI {
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
-          travelers: this.processTravelers(params.travelers),
           originDestinations: [
             {
               id: "1",
@@ -318,7 +334,6 @@ export default class AmadeusAPI implements SkyboundAPI {
         const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
           ...this.baseFlightOfferParams,
           currencyCode: params.currencyCode,
-          travelers: this.processTravelers(params.travelers),
           originDestinations: [
             {
               id: "1",
@@ -348,7 +363,6 @@ export default class AmadeusAPI implements SkyboundAPI {
     const response: AmadeusResponse | undefined = await this.amadeus.shopping.flightOffersSearch.post({
       ...this.baseFlightOfferParams,
       currencyCode: params.currencyCode,
-      travelers: this.processTravelers(params.travelers),
       originDestinations: params.legs.map((leg, index) => ({
         id: (index + 1).toString(),
         originLocationCode: leg.originAirportIATA,

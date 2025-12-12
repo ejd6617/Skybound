@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import type { RouteProp } from "@react-navigation/native";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { getURL } from "@src/api/SkyboundUtils";
 import { db } from "@src/firebase";
 import { getTravelerDetails } from "@src/firestoreFunctions";
 import type { RootStackParamList } from "@src/nav/RootNavigator";
@@ -13,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { getAuth } from 'firebase/auth';
 import { collection, getDocs } from 'firebase/firestore';
 import React, { useCallback, useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { Alert, Image, Modal, Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 export default function FlightSummaryScreen() {
   const colors = useColors();
@@ -22,7 +23,13 @@ export default function FlightSummaryScreen() {
 
   const { itinerary } = (route.params as { itinerary?: ItineraryPayload }) || {};
   const flights: UIFlight[] = itinerary?.flights ?? [];
-  const [selectedTraveler, setSelectedTraveler] = useState<TravelerProfile | null>(itinerary?.traveler ?? null);
+  const [selectedTravelers, setSelectedTravelers] = useState<TravelerProfile[]>(
+    itinerary?.travelers
+      ? itinerary.travelers as TravelerProfile[]
+      : itinerary?.traveler
+        ? [itinerary.traveler as TravelerProfile]
+        : []
+  );
   const [travelerModalVisible, setTravelerModalVisible] = useState(false);
   const [savedTravelers, setSavedTravelers] = useState<TravelerProfile[]>([]);
 
@@ -31,8 +38,11 @@ export default function FlightSummaryScreen() {
 
   const goToTravelerDetails = useCallback(() => {
     const parent = navigation.getParent();
-    parent?.navigate('Accounts' as never, { screen: 'TravelerDetails' } as never);
-  }, [navigation]);
+    parent?.navigate('Accounts', {
+      screen: 'TravelerDetails',
+      params: { returnToBooking: true, itinerary },
+    });
+  }, [itinerary, navigation]);
 
   const fetchTravelers = useCallback(async () => {
     if (!userId) {
@@ -75,12 +85,36 @@ export default function FlightSummaryScreen() {
 
   useEffect(() => {
     if (itinerary?.traveler) {
-      setSelectedTraveler(itinerary.traveler as TravelerProfile);
+      setSelectedTravelers([itinerary.traveler as TravelerProfile]);
+    } else if (itinerary?.travelers) {
+      setSelectedTravelers(itinerary.travelers as TravelerProfile[]);
     }
-  }, [itinerary?.traveler]);
+  }, [itinerary?.traveler, itinerary?.travelers]);
 
   const searchDetails = itinerary?.searchDetails;
-  const totalPrice = flights.reduce((sum: number, f: UIFlight) => sum + (f?.price || 0), 0);
+  const passengerCount = Math.min(Math.max(searchDetails?.passengerCount ?? 1, 1), 10);
+  const hasInfantOrChild = selectedTravelers.some(
+    t => t.type === 'Infant' || t.type === 'Child'
+  );
+  const hasAdultOrSenior = selectedTravelers.some(
+    t => t.type === 'Adult' || t.type === 'Senior'
+  );
+
+  const passengerSelectionError = (() => {
+    if (!selectedTravelers.length) {
+      return 'Select at least one traveler to continue.';
+    }
+    if (selectedTravelers.length !== passengerCount) {
+      return `Select ${passengerCount} traveler${passengerCount > 1 ? 's' : ''} to match your booking.`;
+    }
+    if (hasInfantOrChild && !hasAdultOrSenior) {
+      return 'Trips with infants or children must include at least one adult traveler.';
+    }
+    return null;
+  })();
+
+  const isCtaDisabled = !!passengerSelectionError || flights.length === 0;
+  const totalPrice = flights.reduce((sum: number, f: UIFlight) => sum + (f?.price || 0), 0) * passengerCount;
   const taxesAndFees = Math.round(totalPrice * 0.12);
   const baseFare = Math.max(totalPrice - taxesAndFees, 0);
 
@@ -117,6 +151,98 @@ export default function FlightSummaryScreen() {
     return `${hours > 0 ? `${hours}h ` : ''}${mins}m layover`;
   }, []);
 
+  const airlinesWithoutCarryOn = ['F9', 'FRONTIER AIRLINES', 'FRONTIER'];
+  const carryOnIncluded = flights.length > 0 && flights.every((f) => {
+    const codeOrName = (f.airlineCode || f.airline || '').toUpperCase();
+    return !airlinesWithoutCarryOn.includes(codeOrName);
+  });
+
+  const hasIncludedBaggage = flights.some((f) => f.hasBaggage) || carryOnIncluded;
+  const baggageBadge = hasIncludedBaggage
+    ? {
+        label: 'Free baggage included',
+        color: '#22C55E',
+        background: 'rgba(34, 197, 94, 0.1)',
+        icon: 'checkmark-circle' as const,
+      }
+    : {
+        label: 'Baggage not included',
+        color: '#EF4444',
+        background: 'rgba(239, 68, 68, 0.08)',
+        icon: 'alert-circle' as const,
+      };
+
+  const includedItems = [
+    {
+      label: 'Checked baggage',
+      icon: 'briefcase' as const,
+      status: flights.some((f) => f.hasBaggage) ? 'Included' : 'Not included',
+      statusColor: flights.some((f) => f.hasBaggage) ? '#22C55E' : '#EF4444',
+    },
+    {
+      label: 'Carry-on bag',
+      icon: 'bag-handle' as const,
+      status: carryOnIncluded ? 'Included' : 'Not included',
+      statusColor: carryOnIncluded ? '#22C55E' : '#EF4444',
+    },
+    {
+      label: 'Seat selection',
+      icon: 'person' as const,
+      status: 'Extra fee',
+      statusColor: '#F97316',
+    },
+    {
+      label: 'Cancellation',
+      icon: 'close-circle' as const,
+      status: 'Non-refundable',
+      statusColor: '#EF4444',
+    },
+  ];
+
+  const renderAirlineBadge = (flight: UIFlight) => {
+    const logoUri = flight.airlineCode ? `${getURL()}/logos/${flight.airlineCode}.png` : undefined;
+
+    return (
+      <View style={[styles.airlineLogo, { backgroundColor: `${flight.airlineColor || '#0071E2'}20` }]}>
+        {logoUri ? (
+          <Image
+            source={{ uri: logoUri }}
+            resizeMode="contain"
+            style={styles.airlineLogoImage}
+          />
+        ) : (
+          <SkyboundText variant="primaryBold" size={12} style={{ color: flight.airlineColor || '#0071E2' }}>
+            {flight.airlineCode || flight.airline?.slice(0, 2) || 'XX'}
+          </SkyboundText>
+        )}
+      </View>
+    );
+  };
+
+  const renderLayoverDetails = (previousLeg: any, currentLeg: any) => {
+    const layoverText = formatLayover(previousLeg?.arrivalTime, currentLeg?.departureTime) || 'Layover';
+    const airportName = previousLeg?.to?.name || 'Connecting airport';
+    const airportCode = previousLeg?.to?.iata || '';
+    const departureLabel = formatTimeLabel(currentLeg?.departureTime);
+
+    return (
+      <View style={[styles.layoverBox, { backgroundColor: '#F5F8FF', borderColor: '#E5EDFF' }]}> 
+        <SkyboundText
+          variant="secondary"
+          size={13}
+          style={{ color: '#1E3A8A', flexShrink: 1, flexWrap: 'wrap' }}
+        >
+          {layoverText} at {airportCode} • {airportName}
+        </SkyboundText>
+        {departureLabel ? (
+          <SkyboundText variant="secondary" size={12} style={{ color: '#475569', marginTop: 4 }}>
+            Next departure at {departureLabel}
+          </SkyboundText>
+        ) : null}
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 100 }}>
@@ -124,11 +250,15 @@ export default function FlightSummaryScreen() {
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View style={styles.cardHeader}>
             <View style={styles.airlineSection}>
-              <View style={[styles.airlineIconBox, { backgroundColor: '#0071E2' }]}>
-                <Ionicons name="airplane" size={14} color="#FFF" />
-              </View>
+              {flights[0] ? (
+                renderAirlineBadge(flights[0])
+              ) : (
+                <View style={[styles.airlineIconBox, { backgroundColor: '#0071E2' }]}>
+                  <Ionicons name="airplane" size={14} color="#FFF" />
+                </View>
+              )}
               <View style={{ flex: 1 }}>
-                <SkyboundText variant="primary" size={16} style={{ fontWeight: '500' }}>
+                <SkyboundText variant="primary" size={16} style={{ fontWeight: '500', flexShrink: 1 }}>
                   {flights[0]?.airline || 'American Airlines'}
                 </SkyboundText>
                 <SkyboundText variant="secondary" size={14}>
@@ -144,10 +274,10 @@ export default function FlightSummaryScreen() {
             </View>
           </View>
 
-          <View style={[styles.baggageBadge, { backgroundColor: 'rgba(34, 197, 94, 0.1)' }]}>
-            <Ionicons name="checkmark-circle" size={14} color="#22C55E" />
-            <SkyboundText variant="primary" size={14} style={{ color: '#22C55E' }}>
-              Free Baggage Included
+          <View style={[styles.baggageBadge, { backgroundColor: baggageBadge.background }]}>
+            <Ionicons name={baggageBadge.icon} size={14} color={baggageBadge.color} />
+            <SkyboundText variant="primary" size={14} style={{ color: baggageBadge.color }}>
+              {baggageBadge.label}
             </SkyboundText>
           </View>
 
@@ -161,36 +291,61 @@ export default function FlightSummaryScreen() {
                 : searchDetails?.returnDate || searchDetails?.legsDates?.[idx];
 
               return (
-                <View key={idx} style={[styles.segment, { borderLeftColor: borderColor }]}>
-                  <View style={styles.segmentHeader}>
-                    <View style={{ flex: 1 }}>
-                      <SkyboundText variant="primaryBold" size={18}>
-                        {flight.departureCode} → {flight.arrivalCode}
-                      </SkyboundText>
-                      <SkyboundText variant="secondary" size={14}>
-                        {flight.departureCode} to {flight.arrivalCode}
-                      </SkyboundText>
+                <View key={idx} style={[styles.segment, { borderLeftColor: borderColor }]}> 
+                  <View style={[styles.segmentHeader, { alignItems: 'center' }]}>
+                    <View style={styles.segmentAirline}>
+                      {renderAirlineBadge(flight)}
+                      <View style={{ flex: 1 }}>
+                        <SkyboundText variant="primaryBold" size={16} style={{ flexShrink: 1 }}>
+                          {flight.airline}
+                        </SkyboundText>
+                        <SkyboundText variant="secondary" size={12} style={{ flexShrink: 1 }}>
+                          {flight.departureCode} → {flight.arrivalCode}
+                        </SkyboundText>
+                      </View>
                     </View>
                     <View style={{ alignItems: 'flex-end' }}>
                       <SkyboundText variant="primary" size={14} style={{ fontWeight: '500' }}>
                         {flight.duration}
                       </SkyboundText>
-                      <SkyboundText variant="secondary" size={14}>
+                      <SkyboundText variant="secondary" size={13}>
                         {flight.stops}
                       </SkyboundText>
                     </View>
                   </View>
+
                   <View style={styles.segmentTimes}>
-                    <SkyboundText variant="secondary" size={14}>
-                      {formatDateLabel(dateValue)} • {flight.departureTime}
+                    <View style={styles.timeBlock}>
+                      <SkyboundText variant="primaryBold" size={18}>
+                        {flight.departureTime}
+                      </SkyboundText>
+                      <SkyboundText variant="secondary" size={12}>
+                        {formatDateLabel(dateValue)} • {flight.departureCode}
+                      </SkyboundText>
+                    </View>
+                    <View style={styles.segmentLine}>
+                      <View style={[styles.pathDot, { backgroundColor: '#CBD5E1' }]} />
+                      <View style={[styles.pathLineBar, { backgroundColor: '#CBD5E1' }]} />
+                      <View style={[styles.pathDot, { backgroundColor: '#CBD5E1' }]} />
+                    </View>
+                    <View style={[styles.timeBlock, { alignItems: 'flex-end' }]}>
+                      <SkyboundText variant="primaryBold" size={18}>
+                        {flight.arrivalTime}
+                      </SkyboundText>
+                      <SkyboundText variant="secondary" size={12}>
+                        {formatDateLabel(dateValue)} • {flight.arrivalCode}
+                      </SkyboundText>
+                    </View>
+                  </View>
+
+                  <View style={styles.flightMetaRow}>
+                    <SkyboundText variant="secondary" size={12} style={{ flexShrink: 1 }}>
+                      Flight {flight.airlineCode}{flight.id}
                     </SkyboundText>
-                    <SkyboundText variant="secondary" size={14}>
-                      {formatDateLabel(dateValue)} • {flight.arrivalTime}
+                    <SkyboundText variant="secondary" size={12}>
+                      {flight.cabinClass}
                     </SkyboundText>
                   </View>
-                  <SkyboundText variant="secondary" size={12}>
-                    Flight {flight.airlineCode}{flight.id} • {flight.cabinClass}
-                  </SkyboundText>
                 </View>
               );
             })}
@@ -241,45 +396,57 @@ export default function FlightSummaryScreen() {
                   </View>
 
                   {legs.map((leg, legIdx) => {
-                    const layoverText = legIdx === 0
-                      ? null
-                      : formatLayover(legs[legIdx - 1].arrivalTime, leg.departureTime);
+                    const previousLeg = legs[legIdx - 1];
 
                     return (
-                      <View key={`${flightIdx}-${legIdx}`} style={{ gap: 8 }}>
-                        {legIdx > 0 && (
-                          <>
-                            <View style={styles.dashedLine} />
-                            <View style={[styles.layoverBox, { backgroundColor: '#F9FAFB' }]}>
-                              <SkyboundText variant="secondary" size={14}>
-                                {layoverText || 'Layover'} at {legs[legIdx - 1].to.iata}
+                      <View key={`${flightIdx}-${legIdx}`} style={{ gap: 12 }}>
+                        {legIdx > 0 && renderLayoverDetails(previousLeg, leg)}
+
+                        <View style={[styles.routeCard, { backgroundColor: colors.card }]}> 
+                          <View style={styles.routeAirlineRow}>
+                            {renderAirlineBadge(flight)}
+                            <View style={{ flex: 1 }}>
+                              <SkyboundText variant="primaryBold" size={15} style={{ flexShrink: 1 }}>
+                                {flight.airline}
+                              </SkyboundText>
+                              <SkyboundText variant="secondary" size={12} style={{ flexShrink: 1 }}>
+                                {flight.airlineCode} {leg.flightNumber || leg.flightId || ''}
                               </SkyboundText>
                             </View>
-                          </>
-                        )}
-                        <View style={styles.routeSegment}>
-                          <View style={styles.routeStop}>
-                            <SkyboundText variant="primary" size={16} style={{ fontWeight: '500' }}>
-                              {formatTimeLabel(leg.departureTime)} - {leg.from.iata}
-                            </SkyboundText>
-                            <SkyboundText variant="secondary" size={14}>
-                              {leg.from.name}
-                            </SkyboundText>
                           </View>
-                          <View style={{ alignItems: 'flex-end' }}>
-                            <SkyboundText variant="secondary" size={14}>
-                              {flight.airlineCode} {leg.flightNumber || leg.flightId || ''}
-                            </SkyboundText>
+
+                          <View style={styles.routeTimesRow}>
+                            <View style={styles.routeStop}>
+                              <SkyboundText variant="primaryBold" size={16}>
+                                {formatTimeLabel(leg.departureTime)}
+                              </SkyboundText>
+                              <SkyboundText variant="secondary" size={13} style={{ flexShrink: 1, flexWrap: 'wrap' }}>
+                                {leg.from.iata} • {leg.from.name}
+                              </SkyboundText>
+                            </View>
+
+                            <View style={styles.routeConnector}>
+                              <View style={[styles.pathDot, { backgroundColor: '#CBD5E1' }]} />
+                              <View style={[styles.pathLineBar, { backgroundColor: '#CBD5E1' }]} />
+                              <View style={[styles.pathDot, { backgroundColor: '#CBD5E1' }]} />
+                              <SkyboundText variant="secondary" size={12} style={{ marginTop: 6 }}>
+                                {leg.duration ? `${Math.floor(leg.duration / 60)}h ${leg.duration % 60}m` : '—'}
+                              </SkyboundText>
+                            </View>
+
+                            <View style={[styles.routeStop, { alignItems: 'flex-start' }]}>
+                              <SkyboundText variant="primaryBold" size={16}>
+                                {formatTimeLabel(leg.arrivalTime)}
+                              </SkyboundText>
+                              <SkyboundText
+                                variant="secondary"
+                                size={13}
+                                style={{ textAlign: 'left', flexShrink: 1, flexWrap: 'wrap' }}
+                              >
+                                {leg.to.iata} • {leg.to.name}
+                              </SkyboundText>
                           </View>
-                        </View>
-                        <View style={styles.dashedLine} />
-                        <View style={styles.routeStop}>
-                          <SkyboundText variant="primary" size={16} style={{ fontWeight: '500' }}>
-                            {formatTimeLabel(leg.arrivalTime)} - {leg.to.iata}
-                          </SkyboundText>
-                          <SkyboundText variant="secondary" size={14}>
-                            {leg.to.name}
-                          </SkyboundText>
+                          </View>
                         </View>
                       </View>
                     );
@@ -301,42 +468,17 @@ export default function FlightSummaryScreen() {
             What's Included
           </SkyboundText>
           <View style={{ gap: 12 }}>
-            <View style={styles.includedRow}>
-              <View style={styles.includedLabel}>
-                <Ionicons name="briefcase" size={16} color="#22C55E" />
-                <SkyboundText variant="primary" size={14}>Checked baggage</SkyboundText>
+            {includedItems.map((item) => (
+              <View style={styles.includedRow} key={item.label}>
+                <View style={styles.includedLabel}>
+                  <Ionicons name={item.icon} size={16} color={item.statusColor} />
+                  <SkyboundText variant="primary" size={14}>{item.label}</SkyboundText>
+                </View>
+                <SkyboundText variant="primary" size={14} style={{ color: item.statusColor }}>
+                  {item.status}
+                </SkyboundText>
               </View>
-              <SkyboundText variant="primary" size={14} style={{ color: '#22C55E' }}>
-                1 x 23kg
-              </SkyboundText>
-            </View>
-            <View style={styles.includedRow}>
-              <View style={styles.includedLabel}>
-                <Ionicons name="bag-handle" size={16} color="#22C55E" />
-                <SkyboundText variant="primary" size={14}>Carry-on bag</SkyboundText>
-              </View>
-              <SkyboundText variant="primary" size={14} style={{ color: '#22C55E' }}>
-                Included
-              </SkyboundText>
-            </View>
-            <View style={styles.includedRow}>
-              <View style={styles.includedLabel}>
-                <Ionicons name="person" size={16} color="#F97316" />
-                <SkyboundText variant="primary" size={14}>Seat selection</SkyboundText>
-              </View>
-              <SkyboundText variant="primary" size={14} style={{ color: '#F97316' }}>
-                Extra fee
-              </SkyboundText>
-            </View>
-            <View style={styles.includedRow}>
-              <View style={styles.includedLabel}>
-                <Ionicons name="close-circle" size={16} color="#EF4444" />
-                <SkyboundText variant="primary" size={14}>Cancellation</SkyboundText>
-              </View>
-              <SkyboundText variant="primary" size={14} style={{ color: '#EF4444' }}>
-                Non-refundable
-              </SkyboundText>
-            </View>
+            ))}
           </View>
           <View style={[styles.infoBox, { backgroundColor: '#EFF6FF' }]}>
             <Ionicons name="information-circle" size={12} color="#1D4ED8" />
@@ -351,7 +493,11 @@ export default function FlightSummaryScreen() {
           <View style={styles.sectionHeader}>
             <SkyboundText variant="primaryBold" size={18}>Traveler</SkyboundText>
             <Pressable
-              onPress={() => savedTravelers.length ? setTravelerModalVisible(true) : goToTravelerDetails()}
+              onPress={() =>
+                savedTravelers.length
+                  ? setTravelerModalVisible(true)
+                  : goToTravelerDetails()
+              }
             >
               <SkyboundText variant="primary" size={14} style={{ color: colors.link }}>
                 {savedTravelers.length ? 'Add traveler' : 'Add profile'}
@@ -359,21 +505,36 @@ export default function FlightSummaryScreen() {
             </Pressable>
           </View>
 
-          {selectedTraveler ? (
-            <View style={styles.passengerRow}>
-              <View style={[styles.avatar, { backgroundColor: colors.link }]}>
-                <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFF' }}>
-                  {`${selectedTraveler.firstName.charAt(0)}${selectedTraveler.lastName.charAt(0)}`}
+          {selectedTravelers.length > 0 ? (
+            <View style={{ gap: 10 }}>
+              {selectedTravelers.map((traveler) => (
+                <View style={styles.passengerRow} key={traveler.id}>
+                  <View style={[styles.avatar, { backgroundColor: colors.link }]}>
+                    <SkyboundText variant="primaryBold" size={16} style={{ color: '#FFF' }}>
+                      {`${traveler.firstName.charAt(0)}${traveler.lastName.charAt(0)}`}
+                    </SkyboundText>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <SkyboundText variant="primary" size={16} style={{ fontWeight: '500' }}>
+                      {traveler.firstName} {traveler.lastName}
+                    </SkyboundText>
+                    <SkyboundText variant="secondary" size={14}>
+                      {traveler.type || 'Traveler'} • {flights[0]?.cabinClass || 'Economy'}
+                    </SkyboundText>
+                  </View>
+                </View>
+              ))}
+
+              <SkyboundText variant="secondary" size={12}>
+                {selectedTravelers.length}/{passengerCount} traveler
+                {passengerCount > 1 ? 's' : ''} selected
+              </SkyboundText>
+
+              {passengerSelectionError && (
+                <SkyboundText variant="secondary" size={12} style={{ color: '#EF4444', marginTop: 4 }}>
+                  {passengerSelectionError}
                 </SkyboundText>
-              </View>
-              <View style={{ flex: 1 }}>
-                <SkyboundText variant="primary" size={16} style={{ fontWeight: '500' }}>
-                  {selectedTraveler.firstName} {selectedTraveler.lastName}
-                </SkyboundText>
-                <SkyboundText variant="secondary" size={14}>
-                  {selectedTraveler.type || 'Traveler'} • {flights[0]?.cabinClass || 'Economy'}
-                </SkyboundText>
-              </View>
+              )}
             </View>
           ) : savedTravelers.length > 0 ? (
             <SkyboundText variant="secondary" size={14}>
@@ -402,6 +563,10 @@ export default function FlightSummaryScreen() {
             Price Breakdown
           </SkyboundText>
           <View style={{ gap: 12 }}>
+            <View style={styles.priceRow}>
+              <SkyboundText variant="secondary" size={14}>Passengers</SkyboundText>
+              <SkyboundText variant="primary" size={14}>{passengerCount}</SkyboundText>
+            </View>
             <View style={styles.priceRow}>
               <SkyboundText variant="secondary" size={14}>Base fare</SkyboundText>
               <SkyboundText variant="primary" size={14}>{formatCurrency(baseFare || totalPrice || 0)}</SkyboundText>
@@ -432,33 +597,50 @@ export default function FlightSummaryScreen() {
               </SkyboundText>
             )}
 
-            {savedTravelers.map(traveler => (
-              <Pressable
-                key={traveler.id}
-                style={styles.travelerOption}
-                onPress={() => {
-                  setSelectedTraveler(traveler);
-                  setTravelerModalVisible(false);
-                }}
-              >
-                <View style={[styles.avatarSmall, { backgroundColor: colors.link }]}>
-                  <SkyboundText variant="primaryBold" size={14} style={{ color: '#FFF' }}>
-                    {`${traveler.firstName.charAt(0)}${traveler.lastName.charAt(0)}`}
-                  </SkyboundText>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <SkyboundText variant="primary" size={16} style={{ fontWeight: '500' }}>
-                    {traveler.firstName} {traveler.lastName}
-                  </SkyboundText>
-                  <SkyboundText variant="secondary" size={13}>
-                    {traveler.type || 'Traveler'} • {traveler.nationality || 'Nationality TBD'}
-                  </SkyboundText>
-                </View>
-                {selectedTraveler?.id === traveler.id && (
-                  <Ionicons name="checkmark-circle" size={20} color={colors.link} />
-                )}
-              </Pressable>
-            ))}
+            {savedTravelers.map(traveler => {
+              const isSelected = selectedTravelers.some(t => t.id === traveler.id);
+
+              return (
+                <Pressable
+                  key={traveler.id}
+                  style={styles.travelerOption}
+                  onPress={() => {
+                    setSelectedTravelers((prev) => {
+                      const already = prev.some(t => t.id === traveler.id);
+                      if (already) {
+                        // Unselect
+                        return prev.filter(t => t.id !== traveler.id);
+                      }
+                      if (prev.length >= passengerCount) {
+                        Alert.alert(
+                          'Passenger limit reached',
+                          `You can select up to ${passengerCount} traveler${passengerCount > 1 ? 's' : ''} for this booking.`
+                        );
+                        return prev;
+                      }
+                      return [...prev, traveler];
+                    });
+                  }}
+                >
+                  <View style={[styles.avatarSmall, { backgroundColor: colors.link }]}>
+                    <SkyboundText variant="primaryBold" size={14} style={{ color: '#FFF' }}>
+                      {`${traveler.firstName.charAt(0)}${traveler.lastName.charAt(0)}`}
+                    </SkyboundText>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <SkyboundText variant="primary" size={16} style={{ fontWeight: '500' }}>
+                      {traveler.firstName} {traveler.lastName}
+                    </SkyboundText>
+                    <SkyboundText variant="secondary" size={13}>
+                      {traveler.type || 'Traveler'} • {traveler.nationality || 'Nationality TBD'}
+                    </SkyboundText>
+                  </View>
+                  {isSelected && (
+                    <Ionicons name="checkmark-circle" size={20} color={colors.link} />
+                  )}
+                </Pressable>
+              );
+            })}
 
             <Pressable
               style={[styles.addTravelerButton, { backgroundColor: colors.link, marginTop: 12 }]}
@@ -477,21 +659,21 @@ export default function FlightSummaryScreen() {
 
       <View style={[styles.bottomBar, { backgroundColor: colors.card, borderTopColor: colors.divider }]}>
         <Pressable
-          style={[
-            styles.ctaButton,
-            (!selectedTraveler || flights.length === 0) && { opacity: 0.5 },
-          ]}
-          disabled={!selectedTraveler || flights.length === 0}
-          onPress={() =>
+          style={[styles.ctaButton, isCtaDisabled && { opacity: 0.5 }]}
+          disabled={isCtaDisabled}
+          onPress={() => {
             navigation.navigate('Payment', {
               itinerary: {
                 ...(itinerary || { flights }),
                 flights,
-                traveler: selectedTraveler,
+                // for backward compatibility, keep first traveler AND full list:
+                traveler: selectedTravelers[0],
+                travelers: selectedTravelers,
               },
-            })
-          }
+            });
+          }}
         >
+
           <LinearGradient
             colors={['#0071E2', '#2F97FF']}
             start={{ x: 0, y: 0 }}
@@ -513,10 +695,10 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 6,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -548,7 +730,16 @@ const styles = StyleSheet.create({
   segment: {
     borderLeftWidth: 2,
     paddingLeft: 18,
-    gap: 8,
+    gap: 12,
+    paddingVertical: 12,
+    paddingRight: 12,
+    borderRadius: 12,
+    backgroundColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 3,
   },
   segmentHeader: {
     flexDirection: 'row',
@@ -556,10 +747,34 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 12,
   },
+  segmentAirline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
   segmentTimes: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
+    alignItems: 'center',
+    marginTop: 6,
+  },
+  timeBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  segmentLine: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    paddingHorizontal: 8,
+    gap: 6,
+  },
+  flightMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
   },
   detailRow: {
     flexDirection: 'row',
@@ -573,6 +788,8 @@ const styles = StyleSheet.create({
   },
   routeStop: {
     gap: 4,
+    flex: 1,
+    minWidth: 140,
   },
   dashedLine: {
     height: 32,
@@ -583,8 +800,14 @@ const styles = StyleSheet.create({
   },
   layoverBox: {
     padding: 12,
-    borderRadius: 8,
-    marginLeft: 8,
+    borderRadius: 12,
+    marginLeft: 0,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
   },
   includedRow: {
     flexDirection: 'row',
@@ -682,5 +905,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
     paddingVertical: 10,
+  },
+  airlineLogo: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  airlineLogoImage: {
+    width: 28,
+    height: 28,
+  },
+  routeCard: {
+    borderRadius: 12,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#E5E7EB',
+    width: '100%',
+  },
+  routeAirlineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 10,
+  },
+  routeTimesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap',
+  },
+  routeConnector: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    flex: 1,
+    minWidth: 82,
   },
 });

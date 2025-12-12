@@ -10,7 +10,7 @@ export interface TravelerProfile {
   nationality?: string;
   passportNumber?: string;
   passportExpiry?: string;
-  type: string;
+  type: TravelerType;
 }
 
-export type TravelerType = 'Elderly' | 'Adult' | 'Child';
+export type TravelerType = 'Infant' | 'Child' | 'Teen' | 'Adult' | 'Senior';

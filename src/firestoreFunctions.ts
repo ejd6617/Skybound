@@ -106,6 +106,7 @@ const setUserData = async (userID: string, name: string, email: string): Promise
     LastName: string;
     Birthday: string;
     Gender: string;
+    Type: TravelerType;
     Nationality?: string;
     PassportNumber?: string;
     PassportExpiration?: string;
@@ -115,23 +116,25 @@ const setUserData = async (userID: string, name: string, email: string): Promise
   const setTravelerDetails = async (
     userID: string,
     traveler: TravelerDetails
-  ): Promise<boolean> => {
+  ): Promise<string | null> => {
     try {
       if (!userID) throw new Error("Invalid userID provided");
-  
+
       const docRef = collection(
         doc(db, "Users", userID), "TravelerDetails"
       );
-  
-      await setDoc(doc(docRef), {
+
+      const newTravelerRef = doc(docRef);
+
+      await setDoc(newTravelerRef, {
         ...traveler,
         DateAdded: serverTimestamp(),
       });
-  
-      return true;
+
+      return newTravelerRef.id;
     } catch (error) {
       console.error("Error adding traveler details:", error);
-      return false;
+      return null;
     }
   };
 

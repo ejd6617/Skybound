@@ -8,7 +8,7 @@ interface SkyboundTextProps {
     style?: StyleProp<TextStyle>;//optinal style override
     size?: number;//size override
     variant: TextVariant //which Skybound text style it is
-    accessabilityLabel: string;
+    accessabilityLabel?: string;
 
 }
 

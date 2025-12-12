@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp, RouteProp } from '@react-navigation/native-stack';
 import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
@@ -9,22 +9,36 @@ import SkyboundScreen from '@components/ui/SkyboundScreen';
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
-import type { GenderOption, TravelerProfile, TravelerType } from '@src/types/travelers';
+import type { GenderOption, TravelerProfile } from '@src/types/travelers';
 
 import { db } from "@src/firebase";
 import { getTravelerDetails } from '@src/firestoreFunctions';
+import type { TravelerType } from '@src/types/travelers';
 import { getAuth } from 'firebase/auth';
 import { collection, getDocs } from 'firebase/firestore';
 
 const TravelerDetails: React.FC = () => {
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProp<RootStackParamList, 'TravelerDetails'>>();
+  const returnToBooking = route.params?.returnToBooking;
+  const itineraryForReturn = route.params?.itinerary;
   const [travelers, setTravelers] = useState<TravelerProfile[]>([]);
 
   const auth = getAuth();
   const user = auth.currentUser?.uid;
 
   //fetches traveler details from firebase
+  const getTravelerTypeFromFirestore = (rawType: any): TravelerType | null => {
+    if (rawType && typeof rawType === "object" && typeof rawType.type === "string") {
+      return rawType.type as TravelerType;
+    }
+    if (typeof rawType === "string") {
+      return rawType as TravelerType;
+    }
+    return null;
+  };
+
   const fetchTravelers = async () => {
     try {
       const travelersRef = collection(db, 'Users', user, 'TravelerDetails');
@@ -36,6 +50,10 @@ const TravelerDetails: React.FC = () => {
         const travelerID = doc.id;
         const travelerDetails = await getTravelerDetails(user, travelerID);
         if (travelerDetails) {
+          const normalizedType = getTravelerTypeFromFirestore(travelerDetails.Type);
+          if (!normalizedType) {
+            console.warn("Traveler has invalid type, defaulting to Adult: ", travelerID, travelerDetails.Type);
+          }
           fetchedTravelers.push({
             id: travelerID,
             firstName: travelerDetails.FirstName,
@@ -46,7 +64,7 @@ const TravelerDetails: React.FC = () => {
             nationality: travelerDetails.Nationality,
             passportNumber: travelerDetails.PassportNumber,
             passportExpiry: travelerDetails.PassportExpiration,
-            type: travelerDetails.Type as TravelerType
+            type: normalizedType ?? "Adult", //adult as default for demo so it doesn't crash
           });
         }
       }
@@ -70,11 +88,11 @@ const TravelerDetails: React.FC = () => {
   );
 
   const handleAddTraveler = () => {
-    navigation.navigate('EditTraveler');
+    navigation.navigate('EditTraveler', { returnToBooking, itinerary: itineraryForReturn });
   };
 
   const handleEditTraveler = (traveler: TravelerProfile) => {
-    navigation.navigate('EditTraveler', { traveler });
+    navigation.navigate('EditTraveler', { traveler, returnToBooking, itinerary: itineraryForReturn });
   };
 
   const travelerCards = useMemo(
@@ -108,7 +126,7 @@ const TravelerDetails: React.FC = () => {
   );
 
   return (
-    <SkyboundScreen title="Traveler Profiles" subtitle="Save traveler details to speed up checkout." showLogo>
+    <SkyboundScreen showLogo>
       {travelers.length > 0 ? (
         travelerCards
       ) : (
@@ -132,34 +150,36 @@ const TravelerDetails: React.FC = () => {
         </SkyboundCard>
       )}
 
+      {travelers.length > 0 && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleAddTraveler}
+          style={({ pressed }) => [styles.addButton, { backgroundColor: colors.link }, pressed && { opacity: 0.8 }]}
+        >
+          <Ionicons name="add" size={20} color="#FFFFFF" />
+          <SkyboundText variant="primaryButton" size={16} accessabilityLabel="Add traveler button">
+            Add Traveler
+          </SkyboundText>
+        </Pressable>
+      )}
+
       <Pressable
+        onPress={() => navigation.goBack()}
         accessibilityRole="button"
-        onPress={handleAddTraveler}
-        style={({ pressed }) => [styles.addButton, pressed && { opacity: 0.8 }]}
+        style={({ pressed }) => [
+          styles.returnButton,
+          { borderColor: colors.link, backgroundColor: '#FFFFFF', opacity: pressed ? 0.9 : 1 },
+        ]}
       >
-        <Ionicons name="add" size={20} color="#FFFFFF" />
-        <SkyboundText variant="primaryButton" size={16} accessabilityLabel="Add traveler button">
-          Add Traveler
+        <SkyboundText
+          variant="primary"
+          size={16}
+          accessabilityLabel="Return to manage subscription"
+          style={{ color: colors.link }}
+        >
+          Back
         </SkyboundText>
       </Pressable>
-
-       {/* Return button */}
-          <Pressable
-            onPress={() => navigation.goBack()}
-            style={({ pressed }) => [
-              styles.returnButton,
-              { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },
-            ]}
-          >
-            <SkyboundText
-              variant="primary"
-              size={16}
-              accessabilityLabel="Return to manage subscription"
-              style={{ color: "white" }}
-            >
-              Back
-            </SkyboundText>
-            </Pressable>
     </SkyboundScreen>
   );
 };
@@ -182,7 +202,6 @@ const styles = StyleSheet.create({
   },
   addButton: {
     marginTop: 8,
-    backgroundColor: '#2F97FF',
     borderRadius: 16,
     paddingVertical: 14,
     flexDirection: 'row',
@@ -213,7 +232,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
     padding: 14,
     borderRadius: 12,
-    alignItems: "center",
+    alignItems: 'center',
+    borderWidth: 1.4,
   },
 });
 

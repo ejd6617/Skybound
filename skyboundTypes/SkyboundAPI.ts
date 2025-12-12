@@ -66,7 +66,14 @@ export interface Airport {
   country: string;
 }
 
-export type TravelerType = "ADULT" | "CHILD" | "SENIOR" | "YOUNG" | "STUDENT";
+export type TravelerType =
+  | "ADULT"
+  | "CHILD"
+  | "SENIOR"
+  | "YOUNG"
+  | "STUDENT"
+  | "HELD_INFANT"
+  | "SEATED_INFANT";
 
 export interface Traveler {
   travelerType: TravelerType,

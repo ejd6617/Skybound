@@ -18,7 +18,7 @@ import basicStyles from '@constants/BasicComponents';
 import { useColors } from '@constants/theme';
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp, RouteProp } from "@react-navigation/native-stack";
-import { parseFriendlyDate, skyboundRequest } from '@src/api/SkyboundUtils';
+import { skyboundRequest } from '@src/api/SkyboundUtils';
 import { RootStackParamList } from "@src/nav/RootNavigator";
 import LoadingScreen from "@src/screens/LoadingScreen";
 import Constants from 'expo-constants';
@@ -68,6 +68,7 @@ export default function FlightSearchScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [tripType, setTripType] = useState<TripType>('one-way');
   const [flexibleDates, setFlexibleDates] = useState(false);
+  const [passengerCount, setPassengerCount] = useState(1);
  
 
   const [from, setFrom] = useState('');
@@ -92,42 +93,80 @@ export default function FlightSearchScreen() {
   const auth = getAuth();
   const user = auth.currentUser?.uid;
 
+  const verifySubscription = async () => {
+    try {
+      if (!user) return; // user might be undefined on first render
+      const docRef = doc(db, 'Users', user);
+      const userSnap = await getDoc(docRef);
+
+      if (userSnap.exists()) {
+        const tier = userSnap.data()?.subscriptionTier;
+        setHasPro(tier !== "free");
+        console.log(tier === "free" ? "Free subscription" : "Paid");
+      } else {
+        console.log("User doc does not exist");
+        setHasPro(false);
+      }
+    } catch (error) {
+      console.log("Error fetching pro subscription, " + error);
+      setHasPro(false);
+    }
+  };
+
   const [hasPro, setHasPro] = useState(false);
 
   //fetches traveler details from firebase
+  const getTravelerTypeFromFirestore = (rawType: any): TravelerType | null => { //fix for traveler issue; normalizing type
+    // Case 1: new structure -> { type: "Adult", ... }
+    if (rawType && typeof rawType === "object" && typeof rawType.type === "string") {
+      return rawType.type as TravelerType;
+    }
+
+    // Case 2: old structure -> "Adult"
+    if (typeof rawType === "string") {
+      return rawType as TravelerType;
+    }
+
+    // Case 3: missing or invalid -> null
+    return null;
+  };
+
   const verifySubsription = async () => {
     //get the reference to the user
     try {
-      const docRef = doc(db, 'Users', user);
-      const userData = await getDoc(docRef);
-      if(userData.exists())
-      {
-        if(userData.data().subscriptionTier === "free")
-        {
-          setHasPro(false);
-          console.log("Free subscription");
+      const travelersRef = collection(db, 'Users', user, 'TravelerDetails');
+      const travelersSnap = await getDocs(travelersRef);
+
+      const fetchedTravelers: TravelerProfile[] = [];
+
+      for (const doc of travelersSnap.docs) {
+        const travelerID = doc.id;
+        const travelerDetails = await getTravelerDetails(user, travelerID);
+        if (travelerDetails) {
+          fetchedTravelers.push({
+            id: travelerID,
+            firstName: travelerDetails.FirstName,
+            middleName: travelerDetails.MiddleName || "",
+            lastName: travelerDetails.LastName,
+            birthdate: travelerDetails.Birthday,
+            gender: travelerDetails.Gender as GenderOption,
+            nationality: travelerDetails.Nationality,
+            passportNumber: travelerDetails.PassportNumber,
+            passportExpiry: travelerDetails.PassportExpiration,
+            type: travelerDetails.Type.type as TravelerType
+          });
         }
-        else
-        {
-          setHasPro(true);
-          console.log("Paid")
-        }
-        
       }
-      else 
-      {
-        throw new Error ("userData does not exist"); 
-      }
+
+      setTravelers(fetchedTravelers);
+    } catch (error) {
+      console.error("Error fetching travelers: ", error);
     }
-    catch (error)
-    {
-      console.log("Error fetching pro subscription, " + error)
-    }
-    
-  }
+  };
 
  // verify 
   useEffect(() => {
+    verifySubscription();
     verifySubsription();
   }, []);
 
@@ -211,15 +250,6 @@ export default function FlightSearchScreen() {
     }
   }, [tripType]);
 
-  const handleSwap = () => {
-    const tempFrom = from;
-    const tempFromAirport = fromAirport;
-    setFrom(to);
-    setFromAirport(toAirport);
-    setTo(tempFrom);
-    setToAirport(tempFromAirport);
-  };
-
   const handleAddLeg = () => {
     if (multiCityLegs.length < 6) {
       const lastLeg = multiCityLegs[multiCityLegs.length - 1];
@@ -235,6 +265,9 @@ export default function FlightSearchScreen() {
       setErrors({ ...errors, legs: newLegErrors });
     }
   };
+
+  const incrementPassengers = () => setPassengerCount((count) => Math.min(count + 1, 10));
+  const decrementPassengers = () => setPassengerCount((count) => Math.max(count - 1, 1));
 
   const handleLegFromChange = (index: number, airport: Airport) => {
     const newLegs = [...multiCityLegs];
@@ -352,19 +385,71 @@ export default function FlightSearchScreen() {
   
   // Convert firebase traveler to API-compatible traveler
   const extractAPIRelevantTravelerDetails = (traveler: TravelerProfile): Traveler => {
-    const TRAVELER_TYPE_MAP = {
-      "Adult": "ADULT",
-      "Child": "CHILD",
-      "Elderly": "SENIOR",
+    const normalizeTravelerType = (type: TravelerProfile['type'] ): Traveler['travelerType'] => {
+      switch (type) {
+        case 'Infant':
+          return 'HELD_INFANT';
+        case 'Child':
+          return 'CHILD';
+        case 'Teen':
+          return 'YOUNG';
+        case 'Adult':
+          return 'ADULT';
+        case 'Senior':
+          return 'SENIOR';
+        default:
+          throw new Error(`Invalid traveler type ${type} for API query`);
+      }
     };
 
-    console.log(traveler.type);
-    console.log(traveler.nationality);
-    console.log(traveler.birthdate);
+    const normalizeBirthdate = (birthdate: string, travelerName: string): Date => {
+      const monthMap: Record<string, number> = {
+        Jan: 0,
+        Feb: 1,
+        Mar: 2,
+        Apr: 3,
+        May: 4,
+        Jun: 5,
+        Jul: 6,
+        Aug: 7,
+        Sep: 8,
+        Oct: 9,
+        Nov: 10,
+        Dec: 11,
+      };
 
-    if (!(traveler.type in TRAVELER_TYPE_MAP)) {
-      throw new Error("Invalid traveler type " + traveler.type + " for API query");
-    }
+      const parseBirthdateString = (value: string): Date | null => {
+        if (!value) return null;
+
+        const formattedMatch = value.match(/([A-Za-z]{3})\s(\d{1,2}),?\s?(\d{4})/);
+        if (formattedMatch) {
+          const [, monthAbbrev, day, year] = formattedMatch;
+          const monthIndex = monthMap[monthAbbrev];
+          if (monthIndex !== undefined) {
+            return new Date(Number(year), monthIndex, Number(day));
+          }
+        }
+
+        const fallbackParsed = new Date(value);
+        if (!Number.isNaN(fallbackParsed.getTime())) {
+          return fallbackParsed;
+        }
+
+        return null;
+      };
+
+      const parsedBirthdate = parseBirthdateString(birthdate);
+      if (!parsedBirthdate) {
+        throw new Error(`Birthdate missing or invalid for ${travelerName}: ${birthdate || 'missing value'}`);
+      }
+
+      const today = new Date();
+      if (parsedBirthdate > today) {
+        throw new Error(`Birthdate is in the future for ${travelerName}: ${birthdate}`);
+      }
+
+      return parsedBirthdate;
+    };
 
     if (traveler.nationality && !(traveler.nationality in NATIONALITIES_TO_ISO)) {
       throw new Error("Invalid nationality " + traveler.nationality + " for API query");
@@ -374,10 +459,11 @@ export default function FlightSearchScreen() {
       ? {nationality: NATIONALITIES_TO_ISO[traveler.nationality]}
       : {};
 
-    console.log(`"${traveler.birthdate}"`);
+    const travelerName = `${traveler.firstName} ${traveler.lastName}`.trim();
+
     return {
-      dateOfBirth: parseFriendlyDate(traveler.birthdate),
-      travelerType: TRAVELER_TYPE_MAP[traveler.type],
+      dateOfBirth: normalizeBirthdate(traveler.birthdate, travelerName),
+      travelerType: normalizeTravelerType(traveler.type),
       ...nationality
     }
   };
@@ -414,6 +500,26 @@ export default function FlightSearchScreen() {
       return;
     }
 
+    const normalizedTravelers = (() => {
+      try {
+        return travelers.map(extractAPIRelevantTravelerDetails);
+      } catch (err) {
+        console.error('Traveler data invalid', err);
+        const message = err instanceof Error
+          ? err.message
+          : 'Please confirm each traveler has a valid birthdate and traveler type before searching.';
+        Alert.alert(
+          'Update traveler info',
+          message
+        );
+        return null;
+      }
+    })();
+
+    if (!normalizedTravelers) {
+      return;
+    }
+
     console.log("Searching flights...");
     setIsLoading(true);
 
@@ -428,6 +534,7 @@ export default function FlightSearchScreen() {
               date: departureDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
+              // Intentionally omit traveler details from Amadeus calls for demo purposes
               travelers: [],
               currencyCode: "USD",
             }
@@ -443,6 +550,7 @@ export default function FlightSearchScreen() {
               endDate: returnDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
+              // Intentionally omit traveler details from Amadeus calls for demo purposes
               travelers: [],
               currencyCode: "USD",
             }
@@ -457,7 +565,8 @@ export default function FlightSearchScreen() {
                 originAirportIATA: leg.from?.iata,
                 destinationAirportIATA: leg.to?.iata,
                 date: leg.date,
-              })), 
+              })),
+              // Intentionally omit traveler details from Amadeus calls for demo purposes
               travelers: [],
               currencyCode: "USD",
             }
@@ -482,7 +591,7 @@ export default function FlightSearchScreen() {
       const queryContext = {
         flexibleAirports: flexibleAirports.map(airport => airport.code),
         flexibleDates,
-        travelers: travelers.map(extractAPIRelevantTravelerDetails).map(serializeTravelerForNav),
+        travelers: normalizedTravelers.map(serializeTravelerForNav),
         currencyCode: "USD" as const,
       };
       const normalizeDateValue = (value?: Date | string | null) => {
@@ -522,6 +631,7 @@ export default function FlightSearchScreen() {
         legsDates: tripType === 'multi-city' ? multiCityLegs.map(l => normalizeDateValue(l.date)) : undefined,
         searchLegs: searchLegPlan,
         queryContext,
+        passengerCount: passengerCount,
       });
     } catch (err) {
       console.error('API call failed', err);
@@ -587,41 +697,66 @@ export default function FlightSearchScreen() {
 
             {tripType !== 'multi-city' ? (
               <>
+                <View style={styles.passengerSelector}>
+                  <SkyboundText variant="primary" size={14} accessabilityLabel="Passengers">
+                    Passengers
+                  </SkyboundText>
+                  <View style={styles.passengerCounter}>
+                    <TouchableOpacity
+                      style={[styles.passengerButton, passengerCount <= 1 ? { opacity: 0.5 } : {}]}
+                      accessibilityLabel="Decrease passengers"
+                      onPress={decrementPassengers}
+                      disabled={passengerCount <= 1}
+                    >
+                      <SkyboundText variant="primary" size={18}>−</SkyboundText>
+                    </TouchableOpacity>
+                    <SkyboundText variant="primary" size={18} style={{ minWidth: 32, textAlign: 'center' }}>
+                      {passengerCount}
+                    </SkyboundText>
+                    <TouchableOpacity
+                      style={[styles.passengerButton, passengerCount >= 10 ? { opacity: 0.5 } : {}]}
+                      accessibilityLabel="Increase passengers"
+                      onPress={incrementPassengers}
+                      disabled={passengerCount >= 10}
+                    >
+                      <SkyboundText variant="primary" size={18}>+</SkyboundText>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
                 <View style={{...styles.columnContainer}}>
-                  {!flexibleAirportsEnabled && (
-                  <>
-                    <AirportAutocomplete
-                      label="From"
-                      value={from}
-                      onSelect={(airport) => {
-                        setFrom(`${airport.city} (${airport.iata})`);
-                        setFromAirport(airport);
-                      }}
-                      placeholder="Departure airport"
-                      error={errors.from}
-                      icon={<DepartureIcon/>}
-                  />
-                  </>
+                  <View style={styles.fromToContainer}>
+                    <View style={{ flex: 1, gap: 12 }}>
+                      {!flexibleAirportsEnabled && (
+                        <AirportAutocomplete
+                          label="From"
+                          value={from}
+                          onSelect={(airport) => {
+                            setFrom(`${airport.city} (${airport.iata})`);
+                            setFromAirport(airport);
+                          }}
+                          placeholder="Departure airport"
+                          error={errors.from}
+                          icon={<DepartureIcon/>}
+                        />
+                      ) || (
+                        <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='secondary'>{"Flexible Airports: " + flexibleAirportCodes}</SkyboundText>
+                      )}
 
-                  ) || (
-                  <>
+                      <AirportAutocomplete
+                        label="To"
+                        value={to}
+                        onSelect={(airport) => {
+                          setTo(`${airport.city} (${airport.iata})`);
+                          setToAirport(airport);
+                        }}
+                        placeholder="Arrival airport"
+                        error={errors.to}
+                        icon={<ArrivalIcon/>}
+                      />
+                    </View>
 
-                  <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='secondary'>{"Flexible Airports: " + flexibleAirportCodes}</SkyboundText>
-
-                  </>
-                  )}
-
-                  <AirportAutocomplete
-                    label="To"
-                    value={to}
-                    onSelect={(airport) => {
-                      setTo(`${airport.city} (${airport.iata})`);
-                      setToAirport(airport);
-                    }}
-                    placeholder="Arrival airport"
-                    error={errors.to}
-                    icon={<ArrivalIcon/>}
-                  />
+                  </View>
 
                   <SkyboundText accessabilityLabel={"Flexible Airports: " + flexibleAirportCodes} variant='primary'>{flexibleAiportsVisible}</SkyboundText>
 
@@ -783,14 +918,33 @@ const styles = StyleSheet.create({
     gap: 8,
     marginBottom: 16,
   },
-  swapContainer: {
-    paddingTop: 32,
-  },
   flexibleOptionsRow: {
     flexDirection: 'row',
     gap: 8,
     marginTop: 12,
     marginBottom: 0,
+  },
+  passengerSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  passengerCounter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  passengerButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#CBD5E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
   },
   tooltip: {
     padding: 12,

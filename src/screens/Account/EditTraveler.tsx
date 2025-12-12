@@ -33,8 +33,6 @@ import { getAuth } from 'firebase/auth';
 
 const genderOptions: GenderOption[] = ['Female', 'Male', 'Non-binary', 'Prefer not to say'];
 
-const travelerType: TravelerType[] = ['Elderly', 'Adult', "Child"];
-
 type CalendarField = 'birthdate' | 'passportExpiry';
 
 type EditTravelerRoute = RouteProp<RootStackParamList, 'EditTraveler'>;
@@ -46,35 +44,98 @@ const formatDate = (date: Date) =>
     year: 'numeric',
   });
 
+const deriveTravelerType = (birthdate: string): TravelerType => {
+  const monthMap: Record<string, number> = {
+    Jan: 0,
+    Feb: 1,
+    Mar: 2,
+    Apr: 3,
+    May: 4,
+    Jun: 5,
+    Jul: 6,
+    Aug: 7,
+    Sep: 8,
+    Oct: 9,
+    Nov: 10,
+    Dec: 11,
+  };
+
+  const match = birthdate.match(/([A-Za-z]{3})\s(\d{1,2}),\s(\d{4})/);
+  const fromFormatted = match
+    ? new Date(Number(match[3]), monthMap[match[1]], Number(match[2]))
+    : null;
+
+  const birthdateValue = birthdate
+    ? fromFormatted ?? new Date(birthdate)
+    : null;
+
+  if (!birthdateValue || Number.isNaN(birthdateValue.getTime())) {
+    return 'Adult';
+  }
+
+  const now = new Date();
+  let age = now.getFullYear() - birthdateValue.getFullYear();
+  const hasHadBirthdayThisYear =
+    now.getMonth() > birthdateValue.getMonth() ||
+    (now.getMonth() === birthdateValue.getMonth() && now.getDate() >= birthdateValue.getDate());
+
+  if (!hasHadBirthdayThisYear) age -= 1;
+
+  if (age < 0) age = 0; // Guard against future dates parsing as adults
+
+  if (age < 2) return 'Infant';
+  if (age <= 11) return 'Child';
+  if (age <= 17) return 'Teen';
+  if (age >= 65) return 'Senior';
+  return 'Adult';
+};
+
 const EditTraveler: React.FC = () => {
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<EditTravelerRoute>();
   const existingTraveler = route.params?.traveler;
+  const returnToBooking = route.params?.returnToBooking;
+  const itineraryForReturn = route.params?.itinerary;
 
   const { width: SCREEN_W } = Dimensions.get("window");
   const CARD_W = Math.min(420, Math.round(SCREEN_W * 0.86));
   const H_PADDING = 18;
   const BTN_W = CARD_W - H_PADDING ;
-  const itemHolderWidth = SCREEN_W * .9;
 
   const [form, setForm] = useState<TravelerProfile>(
-    existingTraveler ?? {
-      id: `temp-${Date.now()}`,
-      firstName: '',
-      middleName: '',
-      lastName: '',
-      birthdate: '',
-      gender: 'Prefer not to say',
-      type: 'Adult',
-      nationality: '',
-      passportNumber: '',
-      passportExpiry: '',
-    }
+    existingTraveler
+      ? { ...existingTraveler, type: deriveTravelerType(existingTraveler.birthdate) }
+      : {
+          id: `temp-${Date.now()}`,
+          firstName: '',
+          middleName: '',
+          lastName: '',
+          birthdate: '',
+          gender: 'Prefer not to say',
+          type: 'Adult',
+          nationality: '',
+          passportNumber: '',
+          passportExpiry: '',
+        }
   );
   const [calendarField, setCalendarField] = useState<CalendarField | null>(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [showReturnToBooking, setShowReturnToBooking] = useState(false);
+  const [lastSavedTraveler, setLastSavedTraveler] = useState<TravelerProfile | null>(
+    existingTraveler ?? null
+  );
+
+  const autoTravelerType = useMemo(() => deriveTravelerType(form.birthdate), [form.birthdate]);
+
+  const travelerGuidance: Record<TravelerType, string> = {
+    Infant: 'Infants (under 2) must ride on an adult’s lap or in their own purchased seat.',
+    Child: 'Children 2–11 may need a paying adult on the same booking; ages 5–14 often use mandatory Unaccompanied Minor service for solo trips.',
+    Teen: 'Teens 12–17 can usually travel alone; ages 15–17 can optionally use UM service on many airlines.',
+    Adult: 'Adults 18+ can travel independently and should carry a valid government ID at check-in.',
+    Senior: 'Travelers 65+ may qualify for priority or accessibility accommodations—add any needs in special requests.',
+  };
 
   const handleInputChange = (field: keyof TravelerProfile, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -86,13 +147,18 @@ const EditTraveler: React.FC = () => {
     if (!date || !calendarField) {
       return;
     }
-    setForm((prev) => ({ ...prev, [calendarField]: formatDate(date) }));
+    const formattedDate = formatDate(date);
+    setForm((prev) => ({
+      ...prev,
+      [calendarField]: formattedDate,
+      type: calendarField === 'birthdate' ? deriveTravelerType(formattedDate) : prev.type,
+    }));
     setCalendarField(null);
   };
 
   const handleSave = () => {
-    if (!form.firstName || !form.lastName || !form.birthdate || !form.type) {
-      Alert.alert('Missing info', 'First name, last name, birthdate, and type are required.');
+    if (!form.firstName || !form.lastName || !form.birthdate) {
+      Alert.alert('Missing info', 'First name, last name, and birthdate are required.');
       return;
     }
     setShowConfirmModal(true);
@@ -107,7 +173,7 @@ const EditTraveler: React.FC = () => {
       LastName: form.lastName,
       Birthday: form.birthdate,
       Gender: form.gender,
-      Type: form,
+      Type: autoTravelerType,
       Nationality: form.nationality,
       PassportNumber: form.passportNumber,
       PassportExpiration: form.passportExpiry,
@@ -120,23 +186,35 @@ const EditTraveler: React.FC = () => {
       if (existingTraveler) {
         // Updates traveler if they already exist
         const success = await updateTravelerDetails(user, existingTraveler.id, travelerData);
-  
+
         if (!success) throw new Error("Failed to update traveler");
-  
+
         Alert.alert("Traveler updated", `${form.firstName}'s info has been updated.`);
-        console.log("Traveler", `${form.firstName}'s info has been updated.`)
+        const updatedProfile: TravelerProfile = { ...form, id: existingTraveler.id };
+        setLastSavedTraveler(updatedProfile);
+
+        if (returnToBooking) {
+          setShowReturnToBooking(true);
+        } else {
+          navigation.goBack();
+        }
       } else {
         // Add new traveler if they don't yet exist
-        const result = await setTravelerDetails(user, travelerData);
-  
-        if (!result) throw new Error("Failed to create traveler");
-  
+        const createdId = await setTravelerDetails(user, travelerData);
+
+        if (!createdId) throw new Error("Failed to create traveler");
+
         Alert.alert("Traveler added", `${form.firstName} is ready for fast checkout.`);
-        console.log("Traveler", `${form.firstName} is ready for fast checkout.`)
+        const createdProfile: TravelerProfile = { ...form, id: createdId };
+        setLastSavedTraveler(createdProfile);
+
+        if (returnToBooking) {
+          setShowReturnToBooking(true);
+        } else {
+          navigation.goBack();
+        }
       }
-  
-      navigation.goBack();
-      
+
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Something went wrong while saving the traveler.");
@@ -160,6 +238,20 @@ const EditTraveler: React.FC = () => {
     }
   };
 
+  const handleReturnToBooking = () => {
+    if (itineraryForReturn) {
+      navigation.navigate('FlightSummary', {
+        itinerary: {
+          ...itineraryForReturn,
+          traveler: lastSavedTraveler || existingTraveler || itineraryForReturn.traveler,
+        },
+      });
+      return;
+    }
+
+    navigation.goBack();
+  };
+
   const calendarTitle = useMemo(() => {
     if (!calendarField) return '';
     return calendarField === 'birthdate' ? 'Select birthdate' : 'Passport expiration date';
@@ -179,11 +271,7 @@ const EditTraveler: React.FC = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       
     >
-      <SkyboundScreen
-        title={existingTraveler ? 'Edit Traveler' : 'Add Traveler'}
-        subtitle="Make sure everything matches the traveler’s passport."
-        showLogo
-      >
+      <SkyboundScreen showLogo>
         <SkyboundItemHolder>
         <SkyboundCard muted elevate={false}>
           <SkyboundText variant="primaryBold" size={16} accessabilityLabel="Warning title">
@@ -199,7 +287,7 @@ const EditTraveler: React.FC = () => {
             <SkyboundLabelledTextBox
             placeholderText='First Name'
             width={BTN_W}
-            label='First Name'
+            label='First Name *'
             height={45}
             text={form.firstName}
             onChange={(text) =>
@@ -229,7 +317,7 @@ const EditTraveler: React.FC = () => {
            <SkyboundLabelledTextBox
             placeholderText='Last Name'
             width={BTN_W}
-            label='Last Name'
+            label='Last Name *'
             height={45}
             text={form.lastName}
             onChange={(text) =>
@@ -288,31 +376,25 @@ const EditTraveler: React.FC = () => {
           </View>
 
           <View style={styles.formField}>
-            <SkyboundText variant="primary" size={15} accessabilityLabel="Gender label">
-              Traveler Type * 
+          <SkyboundText variant="primary" size={15} accessabilityLabel="Traveler type label">
+            Traveler Type
+          </SkyboundText>
+          <View style={[styles.typePill, { borderColor: colors.outline }]}>
+            <SkyboundText variant="primaryBold" size={14} accessabilityLabel="Traveler type value">
+              {autoTravelerType}
             </SkyboundText>
-            <View style={styles.genderRow}>
-              {travelerType.map((option) => (
-                <Pressable
-                  key={option}
-                  accessibilityRole="button"
-                  onPress={() => handleInputChange('type', option)}
-                  style={({ pressed }) => [
-                    styles.genderChip,
-                    form.type === option && { backgroundColor: '#2F97FF' },
-                    pressed && { opacity: 0.85 }
-                  ]}
-                >
-                  <SkyboundText
-                    variant={form.type === option ? 'primaryButton' : 'secondary'}
-                    size={13}
-                    accessabilityLabel={`${option} option`}
-                  >
-                    {option}
-                  </SkyboundText>
-                </Pressable>
-              ))}
-            </View>
+            <SkyboundText variant="secondary" size={12} accessabilityLabel="Traveler type helper" style={{ marginTop: 4 }}>
+              Auto-selected based on birthdate
+            </SkyboundText>
+            <SkyboundText
+              variant="secondary"
+              size={12}
+              style={{ marginTop: 6 }}
+              accessabilityLabel="Traveler guidance copy"
+            >
+              {travelerGuidance[autoTravelerType]}
+            </SkyboundText>
+          </View>
           </View>
 
           <View style={styles.formField}>
@@ -365,21 +447,34 @@ const EditTraveler: React.FC = () => {
         </View>
 
       <SkyboundButton
-      height={50}
-      width={BTN_W / 2}
-      onPress={handleSave}
-      style={BasicComponents.skyboundButtonPrimaryLight}>
+        height={50}
+        width={BTN_W}
+        onPress={handleSave}
+        style={BasicComponents.skyboundButtonPrimaryLight}
+        textSize={16}
+      >
         Save Traveler
       </SkyboundButton>
 
         {existingTraveler && (
           <SkyboundButton
             height={50}
-            width={BTN_W / 2}
+            width={BTN_W}
             onPress={() => {setShowDeleteConfirmModal(true)} }
             style={BasicComponents.skyboundButtonPrimaryError}>
               Delete Traveler
             </SkyboundButton>
+        )}
+
+        {returnToBooking && showReturnToBooking && (
+          <SkyboundButton
+            height={50}
+            width={BTN_W}
+            onPress={handleReturnToBooking}
+            style={BasicComponents.skyboundButtonPrimaryLight}
+          >
+            Go back to booking
+          </SkyboundButton>
         )}
         </SkyboundItemHolder>
       </SkyboundScreen>
@@ -422,7 +517,7 @@ const EditTraveler: React.FC = () => {
                   { label: 'Full name', value: `${form.firstName} ${form.middleName ?? ''} ${form.lastName}`.replace(/\s+/g, ' ').trim() },
                   { label: 'Birthdate', value: form.birthdate },
                   { label: 'Gender', value: form.gender },
-                  { label: 'Type', value: form.type},
+                  { label: 'Type', value: autoTravelerType },
                   { label: 'Nationality', value: form.nationality || 'Not provided' },
                   { label: 'Passport', value: form.passportNumber || 'Not provided' },
                   { label: 'Passport Expiration', value: form.passportExpiry || 'Not provided' },
@@ -583,6 +678,13 @@ const styles = StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  typePill: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
   },
 });
 
