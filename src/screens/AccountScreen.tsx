@@ -52,6 +52,11 @@ export default  function AccountScreen() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showFinalWarning, setShowFinalWarning] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteStatus, setDeleteStatus] = useState<'idle' | 'deleting' | 'done'>('idle');
+
   useEffect(() => {
     if (!user) return;
 
@@ -167,6 +172,67 @@ export default  function AccountScreen() {
     return downloadUrl;
   };
 
+  const handleDeleteAccount = async () => {
+    if (!user || isDeleting) return;
+
+    // Step 1: Start deletion and set status
+    setIsDeleting(true);
+    setDeleteStatus('deleting');
+    setShowFinalWarning(false); // Close the final warning modal
+
+    try {
+      // IMPORTANT: Firebase security rules should be configured to automatically delete
+      // associated data (like Firestore documents) upon user deletion.
+      // For the profile picture in storage, we attempt manual deletion here:
+      if (user.photoURL) {
+        const photoRef = ref(storage, `users/${user.uid}/profilePhoto.jpg`);
+        await deleteObject(photoRef).catch((error) => {
+          console.warn('Could not delete profile photo, might not exist: ', error.message);
+        });
+      }
+
+      // You might need to call a Cloud Function here to delete user data
+      // in Firestore, Stripe, etc., especially for data outside the current user's
+      // 'Users/{uid}' document. If the Firestore security rules are set up correctly
+      // to cascade delete, this part can be omitted or replaced with a more
+      // comprehensive cleanup function.
+
+      // Step 2: Delete the Firebase Authentication user
+      await user.delete();
+
+      // If the deletion succeeds, the onSnapshot listener will stop, and
+      // the app should redirect, but we'll manage the state transition explicitly.
+      console.log('User account and data deleted successfully!');
+      setDeleteStatus('done');
+
+      setTimeout(() => {
+        // Navigate to the login screen after a brief success message
+        rootNavigation?.reset({
+          index: 0,
+          routes: [{ name: 'Login' }],
+        });
+        setDeleteStatus('idle');
+        setIsDeleting(false);
+      }, 1500);
+
+    } catch (error: any) {
+      setIsDeleting(false);
+      setDeleteStatus('idle');
+      console.error('Error deleting account: ' + error.message);
+
+      if (error.code === 'auth/requires-recent-login') {
+        // Special case: User must have recently signed in to delete their account.
+        Alert.alert(
+          'Action Required',
+          'For security, please sign out and sign in again to confirm this action.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        Alert.alert('Error', 'Unable to delete your account. Please try again later.');
+      }
+    }
+  };
+
   const handlePickImage = async (source: 'camera' | 'library') => {
     if (!user) return;
     setUploadingPhoto(true);
@@ -271,15 +337,28 @@ export default  function AccountScreen() {
     }
   };
 
-  if (loadingUser || signOutStatus !== 'idle') {
-    const signingOut = signOutStatus !== 'idle';
-    return (
-      <LoadingScreen
-        message={signingOut ? (signOutStatus === 'done' ? 'Signed out successfully' : 'Signing you out...') : 'Loading your account...'}
-        status={signOutStatus === 'done' ? 'success' : 'loading'}
-      />
-    );
-  }
+  if (loadingUser || signOutStatus !== 'idle' || deleteStatus !== 'idle') {
+      const signingOut = signOutStatus !== 'idle';
+      const deleting = deleteStatus !== 'idle';
+
+      let message = 'Loading your account...';
+      let status: 'loading' | 'success' = 'loading';
+
+      if (signingOut) {
+        message = signOutStatus === 'done' ? 'Signed out successfully' : 'Signing you out...';
+        status = signOutStatus === 'done' ? 'success' : 'loading';
+      } else if (deleting) {
+        message = deleteStatus === 'done' ? 'Account successfully deleted' : 'Deleting your account and data...';
+        status = deleteStatus === 'done' ? 'success' : 'loading';
+      }
+
+      return (
+        <LoadingScreen
+          message={message}
+          status={status}
+        />
+      );
+    }
 
   return (
     <View
@@ -564,6 +643,7 @@ export default  function AccountScreen() {
                 {
                   backgroundColor: colors.card,
                   borderColor: isDark ? 'transparent' : '#FECACA',
+                  marginBottom: 16,
                 },
                 { opacity: pressed ? 0.85 : 1 },
               ]}
@@ -580,14 +660,33 @@ export default  function AccountScreen() {
               </SkyboundText>
             </Pressable>
 
-            <View style={styles.logoContainer}>
-              <Image
-                source={require('@assets/images/skybound-logo-white.png')}
-                style={styles.logo}
-                resizeMode="contain"
+            {/* NEW: Delete Account Button */}
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setShowDeleteConfirm(true)}
+              style={({ pressed }) => [
+                styles.signOutButton, // Reuse sign out button style
+                {
+                  backgroundColor: colors.card,
+                  borderColor: isDark ? 'transparent' : '#FCA5A5',
+                  marginBottom: 0, // No bottom margin for the last element before logo
+                },
+                { opacity: pressed ? 0.85 : 1 },
+              ]}
+            >
+              <Ionicons name="trash-outline" size={20} color="#EF4444" 
               />
-            </View>
+              <SkyboundText
+                variant="primary"
+                size={16}
+                accessabilityLabel="Delete Account"
+                style={{ color: '#EF4444', marginLeft: 8 }}
+              >
+                Delete Account
+              </SkyboundText>
+            </Pressable>
 
+            <View style={styles.logoContainer}></View>
           </ScrollView>
         </View>
       </LinearGradient>
@@ -630,6 +729,73 @@ export default  function AccountScreen() {
               style={({ pressed }) => [styles.modalSecondary, pressed && { opacity: 0.85 }]}
             >
               <SkyboundText variant="primary" size={15} accessabilityLabel="Cancel editing" style={{ color: colors.link }}>
+                Cancel
+              </SkyboundText>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* NEW: Delete Account Confirmation Modal 1 */}
+      <Modal visible={showDeleteConfirm} transparent animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.editProfileCard, { backgroundColor: colors.card, gap: 20, padding: 24 }]}>
+            <SkyboundText variant="primaryBold" size={20} style={{ color: '#EF4444' }}>
+              Delete Account?
+            </SkyboundText>
+            <SkyboundText variant="primary" size={15} style={{ textAlign: 'center' }}>
+              Are you sure you want to permanently delete your account? This action cannot be undone.
+            </SkyboundText>
+            <SkyboundButton
+              height={50}
+              width={280}
+              onPress={() => {
+                setShowDeleteConfirm(false);
+                setShowFinalWarning(true); // Move to the second, final warning
+              }}
+              style={{ backgroundColor: '#EF4444' }}
+            >
+              Yes, I want to delete
+            </SkyboundButton>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setShowDeleteConfirm(false)}
+              style={({ pressed }) => [styles.modalSecondary, pressed && { opacity: 0.85 }]}
+            >
+              <SkyboundText variant="primary" size={15} style={{ color: colors.link }}>
+                Cancel
+              </SkyboundText>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* NEW: Final Delete Account Warning Modal 2 */}
+      <Modal visible={showFinalWarning} transparent animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.editProfileCard, { backgroundColor: colors.card, gap: 20, padding: 24 }]}>
+            <SkyboundText variant="primaryBold" size={20} style={{ color: '#B91C1C' }}>
+              FINAL WARNING
+            </SkyboundText>
+            <SkyboundText variant="primary" size={15} style={{ textAlign: 'center' }}>
+              Deleting your account will immediately remove all associated data, including trip history and profile information.
+              <SkyboundText variant="primaryBold" size={15}> This cannot be recovered.</SkyboundText>
+            </SkyboundText>
+            <SkyboundButton
+              height={50}
+              width={280}
+              onPress={handleDeleteAccount} // Final call to delete the account
+              diasabled={isDeleting}
+              style={{ backgroundColor: '#B91C1C' }}
+            >
+              {isDeleting ? 'Deleting...' : 'PERMANENTLY DELETE'}
+            </SkyboundButton>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setShowFinalWarning(false)}
+              style={({ pressed }) => [styles.modalSecondary, pressed && { opacity: 0.85 }]}
+            >
+              <SkyboundText variant="primary" size={15} style={{ color: colors.link }}>
                 Cancel
               </SkyboundText>
             </Pressable>
