@@ -34,7 +34,7 @@ const FlexibleChip: React.FC<FlexibleChipProps> = ({ label, isActive, onToggle, 
       accessibilityRole="switch"
       accessibilityState={{ checked: isActive }}
     >
-      <Icon color={isActive ? '#49454F' : '#FFFFFF'} />
+      <Icon color={isActive ? '#FFFFFF' : '#000000'} />
       <SkyboundText
         variant={isActive ? 'forceWhite' : 'secondary'}
         size={14}

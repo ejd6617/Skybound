@@ -9,7 +9,7 @@ interface SkyboundTextProps {
     size?: number;//size override
     variant: TextVariant //which Skybound text style it is
     accessabilityLabel?: string;
-
+    numberOfLines?: number;
 }
 
 export type TextVariant = 'primary' | 'secondary' | 'primaryButton'
@@ -21,6 +21,7 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
     style,
     size,
     accessabilityLabel,
+    numberOfLines,
 }) => {
     const normalizeChild = React.useCallback((node: React.ReactNode): React.ReactNode => {
         if (React.isValidElement(node) || typeof node === 'string' || typeof node === 'number') {
@@ -119,6 +120,7 @@ const SkyboundText: React.FC<SkyboundTextProps> = ({
                 style,
             ]}
             accessibilityLabel={accessabilityLabel}
+            numberOfLines={numberOfLines}
         >
             {normalizedChildren}
         </Text>

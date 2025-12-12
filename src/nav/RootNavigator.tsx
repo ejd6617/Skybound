@@ -37,11 +37,11 @@ import FlightResultsScreen, {
 } from "@src/screens/FlightResultsScreen";
 import FlightSearchScreen from "@src/screens/FlightSearchScreen";
 import FlightSummaryScreen from "@src/screens/FlightSummaryScreen";
+import LoadingScreen from "@src/screens/LoadingScreen";
 import LoginScreen from "@src/screens/LoginScreen";
 import NotificationsScreen from "@src/screens/NotificationsScreen";
 import PaymentScreen from "@src/screens/PaymentScreen";
 import SignupScreen from "@src/screens/SignupScreen";
-import LoadingScreen from "@src/screens/LoadingScreen";
 
 // Login listener
 import SkyboundNavBar from "@/components/ui/SkyboundNavBar";
@@ -68,6 +68,14 @@ export type FlightStackParamList = {
   FlightResults: {
     flightsByLeg?: Flight[][];
     searchDetails?: SearchDetails;
+    tripType?: SearchDetails['tripType'];
+    fromCode?: string;
+    toCode?: string;
+    departureDate?: Date | string | null;
+    returnDate?: Date | string | null;
+    legsCount?: number;
+    legsDates?: (Date | string | null)[];
+    passengerCount?: number;
     legIndex?: number;
     selections?: ItineraryPayload["flights"];
     filters?: FlightFilters;
@@ -83,6 +91,16 @@ export type FlightStackParamList = {
   } | undefined;
   FlightSearch: {searchResults?: Flight[]; prefillDestinationCode?: string} | undefined;
   FlightSummary: { itinerary: ItineraryPayload };
+
+  Payment: {
+    itinerary: ItineraryPayload;
+    selectedFlights?: any[];
+    tripType?: string;
+    fromCode?: string;
+    toCode?: string;
+    departureDate?: Date | string | null;
+    returnDate?: Date | string | null;
+  } | undefined;
 };
 
 export type AccountStackParamList = {
@@ -93,7 +111,7 @@ export type AccountStackParamList = {
   Chat: undefined;
   Contact: undefined;
   Currency: undefined;
-  EditTraveler: { traveler?: TravelerProfile } | undefined;
+  EditTraveler: { traveler?: TravelerProfile; returnToBooking?: boolean; itinerary?: ItineraryPayload } | undefined;
   FAQ: undefined;
   FlightInfo: { trip?: TripCardData } | undefined;
   GetHelp: undefined;
@@ -109,7 +127,7 @@ export type AccountStackParamList = {
   } | undefined;
   PaymentDetails: undefined;
   PaymentMethod: undefined;
-  TravelerDetails: undefined;
+  TravelerDetails: { returnToBooking?: boolean; itinerary?: ItineraryPayload } | undefined;
   Trips: undefined;
   ChoosePaymentMethod: { onSelect: (paymentId: string) => void } | undefined;
 };
@@ -215,9 +233,13 @@ function GenerateAccountStack() {
       <AccountStack.Screen name="Currency" component={CurrencyScreen} options={
         accountHeaderOptions("Currency")
       } />
-      <AccountStack.Screen name="EditTraveler" component={EditTraveler} options={
-        accountHeaderOptions("Edit Traveler")
-      } />
+      <AccountStack.Screen
+        name="EditTraveler"
+        component={EditTraveler}
+        options={({ route }) =>
+          accountHeaderOptions(route.params?.traveler ? "Edit Traveler" : "Add Traveler")
+        }
+      />
       <AccountStack.Screen name="FAQ" component={FAQscreen} options={
         accountHeaderOptions("FAQ")
       } />
@@ -299,7 +321,17 @@ function GenerateDrawerRoot() {
       <Drawer.Screen
         name="Accounts"
         component={GenerateAccountStack}
-        options={{ title: 'My Account' }}
+        options={{
+          title: 'My Account',
+          unmountOnBlur: true,
+        }}
+        listeners={({ navigation }) => ({
+          drawerItemPress: (e) => {
+            e.preventDefault();
+            navigation.navigate('Accounts', { screen: 'Account' });
+            navigation.closeDrawer();
+          },
+        })}
       />
 
       <Drawer.Screen

@@ -38,10 +38,10 @@ interface UIFlight {
 
 export default function ConfirmationScreen() {
   const colors = useColors();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const route = useRoute();
-
   const { itinerary } = (route.params as { itinerary?: ItineraryPayload }) || {};
 
   const flightsArray: UIFlight[] = Array.isArray(itinerary?.flights)
@@ -51,71 +51,76 @@ export default function ConfirmationScreen() {
   const traveler = itinerary?.traveler;
   const paymentMethodId = itinerary?.paymentMethodId;
 
+  const travelers =
+    itinerary?.travelers && itinerary.travelers.length > 0
+      ? itinerary.travelers
+      : traveler
+      ? [traveler]
+      : [];
+
   const outboundFlight = flightsArray[0];
   const returnFlight =
     tripType === "round-trip" && flightsArray.length > 1
       ? flightsArray[1]
       : undefined;
 
-  const totalPrice = itinerary?.totalPrice ?? flightsArray.reduce(
-    (sum, f) => sum + (f?.price || 0),
-    0
-  );
+  const totalPrice =
+    itinerary?.totalPrice ??
+    flightsArray.reduce((sum, f) => sum + (f?.price || 0), 0);
 
-  //helper function to recursively clean any object being saved to firestore
-  // Recursively clean any object before saving to Firestore
-function sanitize(value: any): any {
-  if (value === undefined) return null;               // Firestore-safe
-  if (value instanceof Date) return value.toISOString();
-  if (Array.isArray(value)) return value.map(sanitize);
-  if (value !== null && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([k, v]) => [k, sanitize(v)])
-    );
+  function sanitize(value: any): any {
+    if (value === undefined) return null;
+    if (value instanceof Date) return value.toISOString();
+    if (Array.isArray(value)) return value.map(sanitize);
+    if (value !== null && typeof value === "object") {
+      return Object.fromEntries(
+        Object.entries(value).map(([k, v]) => [k, sanitize(v)])
+      );
+    }
+    return value;
   }
-  return value;
-}
 
-  //reference to see if this flight has been booked to prevent duplicate booking
+  // reference to see if this flight has been booked to prevent duplicate booking
   const hasSaved = useRef(false);
-    //use effect to save fligh to firestore
-    useEffect(() => {
-      if (hasSaved.current) return;
-      hasSaved.current = true;
 
-      async function saveTrip() {
-        const user = auth.currentUser;
-        if (!user) return;
+  useEffect(() => {
+    if (!itinerary) return;
+    if (hasSaved.current) return;
+    hasSaved.current = true;
 
-        const tripId = Date.now().toString();
+    async function saveTrip() {
+      const user = auth.currentUser;
+      if (!user) return;
 
-        try {
-          //  sanitize objects before saving to Firestore
-          const safe = sanitize({
-            totalPaid: itinerary.totalPrice,
-            paymentMethodId: itinerary.paymentMethodId,
-            traveler: itinerary.traveler,
-            flights: itinerary.flights,
-            searchDetails: itinerary.searchDetails || null,
-            departureDate: itinerary.searchDetails?.departureDate || null,
-            returnDate: itinerary.searchDetails?.returnDate || null,
-            status: "upcoming",
-          });
+      const tripId = Date.now().toString();
 
-          await setDoc(doc(db, "Users", user.uid, "trips", tripId), {
-            createdAt: Timestamp.now(),
-            ...safe,
-          });
+      try {
+        // sanitize objects before saving to Firestore
+        const safe = sanitize({
+          totalPaid: itinerary.totalPrice,
+          paymentMethodId: itinerary.paymentMethodId,
+          traveler: itinerary.traveler,
+          travelers: itinerary.travelers,
+          flights: itinerary.flights,
+          searchDetails: itinerary.searchDetails || null,
+          departureDate: itinerary.searchDetails?.departureDate || null,
+          returnDate: itinerary.searchDetails?.returnDate || null,
+          status: "upcoming",
+        });
 
-          console.log("Trip Saved to Firestore:", tripId);
+        await setDoc(doc(db, "Users", user.uid, "trips", tripId), {
+          createdAt: Timestamp.now(),
+          ...safe,
+        });
 
-        } catch (error) {
-          console.log("Error saving trip:", error);
-        }
+        console.log("Trip Saved to Firestore:", tripId);
+      } catch (error) {
+        console.log("Error saving trip:", error);
       }
+    }
 
-      saveTrip();
-    }, []);
+    saveTrip();
+  }, [itinerary]);
 
   // Animation refs
   const scale = React.useRef(new Animated.Value(0.6)).current;
@@ -155,10 +160,18 @@ function sanitize(value: any): any {
               <Ionicons name="airplane" size={14} color="#FFF" />
             </View>
             <View style={{ flex: 1 }}>
-              <SkyboundText accessabilityLabel={"Airline" + flight.airline} variant="primaryBold" size={16}>
+              <SkyboundText
+                accessabilityLabel={"Airline" + flight.airline}
+                variant="primaryBold"
+                size={16}
+              >
                 {flight.airline ?? "—"}
               </SkyboundText>
-              <SkyboundText variant="secondary" accessabilityLabel={"Cabin Class: " + flight.cabinClass}size={14}>
+              <SkyboundText
+                variant="secondary"
+                accessabilityLabel={"Cabin Class: " + flight.cabinClass}
+                size={14}
+              >
                 {flight.cabinClass ?? "—"}
               </SkyboundText>
             </View>
@@ -175,13 +188,25 @@ function sanitize(value: any): any {
 
         <View style={styles.routeDisplay}>
           <View style={{ alignItems: "center" }}>
-            <SkyboundText accessabilityLabel={"Departure Code" + flight.departureCode} variant="primaryBold" size={24}>
+            <SkyboundText
+              accessabilityLabel={"Departure Code" + flight.departureCode}
+              variant="primaryBold"
+              size={24}
+            >
               {flight.departureCode ?? "—"}
             </SkyboundText>
-            <SkyboundText variant="secondary" accessabilityLabel={"Departure Code " + flight.departureCode} size={14}>
+            <SkyboundText
+              variant="secondary"
+              accessabilityLabel={"Departure Code " + flight.departureCode}
+              size={14}
+            >
               {flight.departureCode ?? "—"}
             </SkyboundText>
-            <SkyboundText variant="secondary" accessabilityLabel={"Departure Time: " + flight.departureTime} size={14}>
+            <SkyboundText
+              variant="secondary"
+              accessabilityLabel={"Departure Time: " + flight.departureTime}
+              size={14}
+            >
               {flight.departureTime ?? ""}
             </SkyboundText>
           </View>
@@ -193,24 +218,67 @@ function sanitize(value: any): any {
             <View
               style={{ height: 2, width: 43, backgroundColor: "#E5E7EB" }}
             />
-            <SkyboundText variant="secondary" accessabilityLabel={"Flight Duration: " + flight.duration} size={12}>
+            <SkyboundText
+              variant="secondary"
+              accessabilityLabel={"Flight Duration: " + flight.duration}
+              size={12}
+            >
               {flight.duration ?? ""}
             </SkyboundText>
           </View>
           <View style={{ alignItems: "center" }}>
-            <SkyboundText variant="primaryBold" accessabilityLabel={"Arrival Code: " + flight.arrivalCode} size={24}>
+            <SkyboundText
+              variant="primaryBold"
+              accessabilityLabel={"Arrival Code: " + flight.arrivalCode}
+              size={24}
+            >
               {flight.arrivalCode ?? "—"}
             </SkyboundText>
-            <SkyboundText variant="secondary" accessabilityLabel={"Arrival Code: " + flight.arrivalCode} size={14}>
+            <SkyboundText
+              variant="secondary"
+              accessabilityLabel={"Arrival Code: " + flight.arrivalCode}
+              size={14}
+            >
               {flight.arrivalCode ?? "—"}
             </SkyboundText>
-            <SkyboundText variant="secondary" accessabilityLabel={"Arrival Time:" + flight.arrivalTime} size={14}>
+            <SkyboundText
+              variant="secondary"
+              accessabilityLabel={"Arrival Time:" + flight.arrivalTime}
+              size={14}
+            >
               {flight.arrivalTime ?? ""}
             </SkyboundText>
           </View>
         </View>
       </View>
     );
+  };
+
+  const handleCustomerSupport = () => {
+    (navigation as any).navigate("Accounts", {
+      screen: "GetHelp",
+    });
+  };
+
+  // idk why this is not working, please help!
+  const handleCheckFlightStatus = () => {
+    const parent = navigation.getParent();
+    if (parent) {
+      parent.navigate("Accounts", {
+        screen: "FlightInfo",
+        // later we can pass: params: { trip: buildTripFromItinerary(itinerary) }
+      });
+    } else {
+      (navigation as any).navigate("Accounts", {
+        screen: "FlightInfo",
+      });
+    }
+  };
+
+  const handleViewAllBookings = () => {
+    (navigation as any).navigate("Accounts", {
+      screen: "Trips",
+    });
   };
 
   return (
@@ -220,7 +288,6 @@ function sanitize(value: any): any {
       end={colors.gradientEnd}
       style={{ flex: 1 }}
     >
-
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         {/* Success Header */}
         <View style={styles.successHeader}>
@@ -269,17 +336,25 @@ function sanitize(value: any): any {
         {outboundFlight && renderFlightCard(outboundFlight, "Outbound Flight")}
         {returnFlight && renderFlightCard(returnFlight, "Return Flight")}
 
-        {/* Total Price + Email notice */}
+        {/* Total Price + Email notice + Travelers */}
         <View style={[styles.card, { backgroundColor: colors.card }]}>
           <View style={styles.priceSection}>
-            <SkyboundText variant="secondary" size={16} accessabilityLabel="Total Price">
+            <SkyboundText
+              variant="secondary"
+              size={16}
+              accessabilityLabel="Total Price"
+            >
               Total Price
             </SkyboundText>
-            <SkyboundText variant="primaryBold" size={30} accessabilityLabel={totalPrice.toString()}>
+            <SkyboundText
+              variant="primaryBold"
+              size={30}
+              accessabilityLabel={totalPrice?.toString() ?? "0"}
+            >
               $
-              {totalPrice?.toFixed
+              {totalPrice && typeof totalPrice === "number"
                 ? totalPrice.toFixed(2)
-                : totalPrice || "0.00"}
+                : "0.00"}
             </SkyboundText>
           </View>
 
@@ -299,19 +374,42 @@ function sanitize(value: any): any {
               >
                 You will receive your flight ticket by email
               </SkyboundText>
-            </View>
 
-          {traveler && (
-            <SkyboundText variant="secondary" size={14} style={{ marginTop: 8 }} accessabilityLabel={"Traveler: " + traveler.firstName + " " + traveler.lastName}>
-              Traveler: {traveler.firstName} {traveler.lastName}
-            </SkyboundText>
-          )}
-          {paymentMethodId && (
-            <SkyboundText variant="secondary" size={14} style={{ marginTop: 4 }} accessabilityLabel={"Payment Method ID: " + paymentMethodId}>
-              Payment method: {paymentMethodId}
-            </SkyboundText>
-          )}
-        </View>
+              {/* ✅ Show ALL travelers in the reservation */}
+              {travelers.length > 0 && (
+                <View style={{ marginTop: 8 }}>
+                  <SkyboundText
+                    variant="secondary"
+                    size={14}
+                    style={{ marginBottom: 4 }}
+                  >
+                    Travelers
+                  </SkyboundText>
+                  {travelers.map((t: any, index: number) => (
+                    <SkyboundText
+                      key={t.id ?? `${t.firstName}-${t.lastName}-${index}`}
+                      variant="primary"
+                      size={14}
+                      accessabilityLabel={`Traveler: ${t.firstName} ${t.lastName}`}
+                    >
+                      {t.firstName} {t.lastName}
+                    </SkyboundText>
+                  ))}
+                </View>
+              )}
+
+              {paymentMethodId && (
+                <SkyboundText
+                  variant="secondary"
+                  size={14}
+                  style={{ marginTop: 8 }}
+                  accessabilityLabel={"Payment Method ID: " + paymentMethodId}
+                >
+                  Payment method: {paymentMethodId}
+                </SkyboundText>
+              )}
+            </View>
+          </View>
         </View>
 
         {/* Add to Wallet */}
@@ -401,7 +499,9 @@ function sanitize(value: any): any {
           >
             Quick Actions
           </SkyboundText>
-          <Pressable style={styles.actionItem}>
+
+          {/* Check Flight Status */}
+          <Pressable style={styles.actionItem} onPress={handleCheckFlightStatus}>
             <View style={styles.actionContent}>
               <Ionicons name="airplane" size={20} color={colors.link} />
               <SkyboundText
@@ -415,7 +515,9 @@ function sanitize(value: any): any {
             </View>
             <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
           </Pressable>
-          <Pressable style={styles.actionItem}>
+
+          {/* Customer Support */}
+          <Pressable style={styles.actionItem} onPress={handleCustomerSupport}>
             <View style={styles.actionContent}>
               <Ionicons name="headset" size={16} color={colors.link} />
               <SkyboundText
@@ -429,7 +531,9 @@ function sanitize(value: any): any {
             </View>
             <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
           </Pressable>
-          <Pressable style={styles.actionItem}>
+
+          {/* View All Bookings */}
+          <Pressable style={styles.actionItem} onPress={handleViewAllBookings}>
             <View style={styles.actionContent}>
               <Ionicons name="calendar" size={14} color={colors.link} />
               <SkyboundText
@@ -623,4 +727,3 @@ const styles = StyleSheet.create({
     height: 38,
   },
 });
-

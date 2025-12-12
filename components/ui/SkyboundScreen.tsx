@@ -52,7 +52,7 @@ const SkyboundScreen: React.FC<SkyboundScreenProps> = ({
       };
 
   return (
-    <View style={[styles.safeArea, { backgroundColor: colors.background }]}> 
+    <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <LinearGradient
         colors={colors.gradient}
         start={colors.gradientStart}
@@ -116,6 +116,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: 20,
     paddingBottom: 32,
+    paddingTop: 16,
   },
   header: {
     flexDirection: 'row',

@@ -83,7 +83,7 @@ const SkyboundNavBar: React.FC<SkyboundNavBarProps> = ({
 
                     { showUserProfile
                         && <TouchableOpacity onPress={() => {
-                                drawerNavigation?.navigate("Accounts")
+                                drawerNavigation?.navigate("Accounts", { screen: 'Account' })
                             }}>
                             <Ionicons name="person-circle-outline" size={iconSize} color={backIconColor} />
                         </TouchableOpacity>

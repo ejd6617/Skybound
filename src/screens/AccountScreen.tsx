@@ -1,13 +1,17 @@
 import SkyboundText from '@components/ui/SkyboundText';
 import { useColors } from '@constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import * as ImagePicker from 'expo-image-picker';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   Image,
+  Modal,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -15,14 +19,18 @@ import {
 } from 'react-native';
 
 //Components and navigator imports
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 //firebase imports
-import { signOut } from 'firebase/auth';
-import { auth, db } from '../firebase';
+import { signOut, updateEmail, updateProfile } from 'firebase/auth';
+import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { auth, db, storage } from '../firebase';
 
 import { doc, onSnapshot } from 'firebase/firestore';
 import LoadingScreen from './LoadingScreen';
+import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
+import SkyboundButton from '@components/ui/SkyboundButton';
+import BasicComponents from '@constants/BasicComponents';
+import { updateUserData } from '@src/firestoreFunctions';
 
 //Stripe imports
 
@@ -30,13 +38,19 @@ export default  function AccountScreen() {
   const colors = useColors();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const isDark = colors.background !== '#FFFFFF';
-  const insets = useSafeAreaInsets();
   const user = auth.currentUser;
   const rootNavigation = navigation.getParent()?.getParent();
+  const scrollRef = useRef<ScrollView | null>(null);
 
   //load the user data through auth
   const [userData, setUserData] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [profileName, setProfileName] = useState('');
+  const [profileEmail, setProfileEmail] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -51,6 +65,9 @@ export default  function AccountScreen() {
       );
       setUserData(data || null);
       setLoadingUser(false);
+      setProfileName(user?.displayName || data?.Name || data?.fullName || '');
+      setProfileEmail(user?.email || data?.Email || '');
+      setProfilePhoto(user?.photoURL || data?.photoURL || null);
     });
 
     return unsubscribe;
@@ -134,6 +151,126 @@ export default  function AccountScreen() {
     });
   }, [navigation, signOutStatus, loadingUser]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
+
+  const uploadImageAsync = async (uri: string) => {
+    if (!user?.uid) throw new Error('Missing user');
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const photoRef = ref(storage, `users/${user.uid}/profilePhoto.jpg`);
+    await uploadBytes(photoRef, blob);
+    const downloadUrl = await getDownloadURL(photoRef);
+    return downloadUrl;
+  };
+
+  const handlePickImage = async (source: 'camera' | 'library') => {
+    if (!user) return;
+    setUploadingPhoto(true);
+
+    try {
+      const permissionResult =
+        source === 'camera'
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (permissionResult.status !== 'granted') {
+        Alert.alert('Permission needed', 'Please grant camera and photo permissions to update your picture.');
+        setUploadingPhoto(false);
+        return;
+      }
+
+      const result =
+        source === 'camera'
+          ? await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 })
+          : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.8 });
+
+      if (result.canceled) {
+        setUploadingPhoto(false);
+        return;
+      }
+
+      const asset = result.assets?.[0];
+      if (!asset?.uri) {
+        setUploadingPhoto(false);
+        return;
+      }
+
+      const downloadUrl = await uploadImageAsync(asset.uri);
+
+      await updateProfile(user, { displayName: profileName || user.displayName || '', photoURL: downloadUrl });
+      await updateUserData(user.uid, { photoURL: downloadUrl });
+      setProfilePhoto(downloadUrl);
+    } catch (error) {
+      console.error('Error updating profile photo', error);
+      Alert.alert('Error', 'Unable to update your profile photo right now.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!user) return;
+    setUploadingPhoto(true);
+    try {
+      const photoRef = ref(storage, `users/${user.uid}/profilePhoto.jpg`);
+      await deleteObject(photoRef).catch(() => {});
+      await updateProfile(user, { photoURL: null });
+      await updateUserData(user.uid, { photoURL: null });
+      setProfilePhoto(null);
+    } catch (error) {
+      console.error('Error removing profile photo', error);
+      Alert.alert('Error', 'Unable to remove your profile photo.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleChoosePhoto = () => {
+    Alert.alert('Profile photo', 'Update your profile picture', [
+      { text: 'Take Photo', onPress: () => handlePickImage('camera') },
+      { text: 'Choose from Library', onPress: () => handlePickImage('library') },
+      { text: 'Remove Photo', style: 'destructive', onPress: handleRemovePhoto },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    if (!profileName.trim()) {
+      Alert.alert('Missing info', 'Please add your full name.');
+      return;
+    }
+
+    setSavingProfile(true);
+    try {
+      const updates: Record<string, any> = { Name: profileName.trim() };
+
+      await updateProfile(user, { displayName: profileName.trim(), photoURL: profilePhoto ?? null });
+
+      if (profileEmail.trim() && profileEmail.trim() !== user.email) {
+        try {
+          await updateEmail(user, profileEmail.trim());
+          updates.Email = profileEmail.trim();
+        } catch (error) {
+          console.error('Email update failed', error);
+          Alert.alert('Email not updated', 'We could not update your email without a recent login.');
+        }
+      }
+
+      await updateUserData(user.uid, updates);
+      setEditingProfile(false);
+    } catch (error) {
+      console.error('Error updating profile', error);
+      Alert.alert('Error', 'Unable to update your profile right now.');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
   if (loadingUser || signOutStatus !== 'idle') {
     const signingOut = signOutStatus !== 'idle';
     return (
@@ -161,17 +298,27 @@ export default  function AccountScreen() {
           style={{ flex: 1, backgroundColor: 'transparent', marginTop: 10 }}
         >
           <ScrollView
+            ref={scrollRef}
             contentContainerStyle={[styles.scrollContent, { paddingBottom: 0 }]}
             contentInsetAdjustmentBehavior= "automatic"
             >
             {/* User Info Card */}
             <View style={[styles.card, styles.userCard, { backgroundColor: colors.card }]}>
               <View style={styles.userPhotoContainer}>
-                <Ionicons name="person-circle-outline" size={100} color={isDark ? colors.text : colors.link} />
+                {profilePhoto ? (
+                  <Image source={{ uri: profilePhoto }} style={styles.userPhoto} />
+                ) : (
+                  <Ionicons name="person-circle-outline" size={100} color={isDark ? colors.text : colors.link} />
+                )}
+                {uploadingPhoto && (
+                  <View style={styles.photoLoadingOverlay}>
+                    <ActivityIndicator color="#FFFFFF" />
+                  </View>
+                )}
                 {/* Pencil overlay: with 85% gray opacity background */}
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => {}}
+                  onPress={handleChoosePhoto}
                   style={({ pressed }) => [
                     styles.editPhotoButton,
                     { backgroundColor: 'rgba(128,128,128,0.85)', opacity: pressed ? 0.8 : 1 },
@@ -179,16 +326,23 @@ export default  function AccountScreen() {
                 >
                   <Ionicons name="pencil" size={14} color='white' />
                 </Pressable>
+                {profilePhoto && (
+                  <Pressable accessibilityRole="button" onPress={handleRemovePhoto} style={styles.removePhotoButton}>
+                    <SkyboundText variant="secondary" size={11} accessabilityLabel="Remove profile photo" style={{ color: colors.link }}>
+                      Remove photo
+                    </SkyboundText>
+                  </Pressable>
+                )}
               </View>
 
               <View style={styles.userInfoText}>
                 <SkyboundText variant="primaryBold" size={20} accessabilityLabel="User name">
-                  {user?.displayName || userData?.fullName || 'User'}
+                  {profileName || 'User'}
                 </SkyboundText>
                 <SkyboundText variant="primary" size={12} accessabilityLabel="User email" style={{ marginTop: 4 }}>
-                  {user?.email || ""}
+                  {profileEmail || ""}
                 </SkyboundText>
-                <Pressable onPress={() => {}} style={pressableStyle}>
+                <Pressable onPress={() => setEditingProfile(true)} style={pressableStyle}>
                   <SkyboundText
                     variant="blue"
                     size={12}
@@ -440,6 +594,51 @@ export default  function AccountScreen() {
           </ScrollView>
         </View>
       </LinearGradient>
+      <Modal visible={editingProfile} transparent animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.editProfileCard, { backgroundColor: colors.card }]}>
+            <SkyboundText variant="primaryBold" size={18} accessabilityLabel="Edit profile title">
+              Edit profile
+            </SkyboundText>
+            <SkyboundLabelledTextBox
+              label="Full name"
+              placeholderText="Full name"
+              width={280}
+              height={48}
+              text={profileName}
+              onChange={setProfileName}
+            />
+            <SkyboundLabelledTextBox
+              label="Email"
+              placeholderText="Email"
+              width={280}
+              height={48}
+              text={profileEmail}
+              onChange={setProfileEmail}
+            />
+
+            <SkyboundButton
+              height={50}
+              width={280}
+              onPress={handleSaveProfile}
+              diasabled={savingProfile}
+              style={BasicComponents.skyboundButtonPrimaryLight}
+            >
+              {savingProfile ? 'Saving...' : 'Save Changes'}
+            </SkyboundButton>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setEditingProfile(false)}
+              style={({ pressed }) => [styles.modalSecondary, pressed && { opacity: 0.85 }]}
+            >
+              <SkyboundText variant="primary" size={15} accessabilityLabel="Cancel editing" style={{ color: colors.link }}>
+                Cancel
+              </SkyboundText>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -468,6 +667,11 @@ const styles = StyleSheet.create({
     position: 'relative',
     marginRight: 20,
   },
+  userPhoto: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
   editPhotoButton: {
     position: 'absolute',
     bottom: 3,
@@ -479,6 +683,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   userInfoText: { flex: 1, paddingTop: 8 },
+  photoLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 50,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+  removePhotoButton: {
+    marginTop: 6,
+    alignSelf: 'center',
+  },
   subscriptionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -544,4 +763,23 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   logo: { width: 160, height: 40 },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  editProfileCard: {
+    width: 320,
+    borderRadius: 18,
+    padding: 20,
+    alignItems: 'center',
+    gap: 14,
+  },
+  modalSecondary: {
+    marginTop: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
 });
