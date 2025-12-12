@@ -428,7 +428,7 @@ export default function FlightSearchScreen() {
               date: departureDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
-              travelers: [],
+              travelers: travelers,
               currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);
@@ -443,7 +443,7 @@ export default function FlightSearchScreen() {
               endDate: returnDate,
               flexibleDates,
               flexibleAirports: flexibleAirports.map(airport => airport.code),
-              travelers: [],
+              travelers: travelers,
               currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);
@@ -458,7 +458,7 @@ export default function FlightSearchScreen() {
                 destinationAirportIATA: leg.to?.iata,
                 date: leg.date,
               })), 
-              travelers: [],
+              travelers: travelers,
               currencyCode: "USD",
             }
             return await skyboundRequest(endpoint, jsonBody);

@@ -21,5 +21,5 @@ services:
     environment:
       # - USE_HTTP=true
       # - USE_NGROK=true
-      - AMADEUS_PROD=true
+      # - AMADEUS_PROD=true
     command: ["npm", "start"]
