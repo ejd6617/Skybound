@@ -4,8 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@src/nav/RootNavigator';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -25,12 +25,12 @@ import { signOut, updateEmail, updateProfile } from 'firebase/auth';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth, db, storage } from '../firebase';
 
-import { doc, onSnapshot } from 'firebase/firestore';
-import LoadingScreen from './LoadingScreen';
-import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
 import SkyboundButton from '@components/ui/SkyboundButton';
+import SkyboundLabelledTextBox from '@components/ui/SkyboundLabelledTextBox';
 import BasicComponents from '@constants/BasicComponents';
 import { updateUserData } from '@src/firestoreFunctions';
+import { doc, onSnapshot } from 'firebase/firestore';
+import LoadingScreen from './LoadingScreen';
 
 //Stripe imports
 
@@ -315,7 +315,6 @@ export default  function AccountScreen() {
                     <ActivityIndicator color="#FFFFFF" />
                   </View>
                 )}
-                {/* Pencil overlay: with 85% gray opacity background */}
                 <Pressable
                   accessibilityRole="button"
                   onPress={handleChoosePhoto}
@@ -339,7 +338,7 @@ export default  function AccountScreen() {
                 <SkyboundText variant="primaryBold" size={20} accessabilityLabel="User name">
                   {profileName || 'User'}
                 </SkyboundText>
-                <SkyboundText variant="primary" size={12} accessabilityLabel="User email" style={{ marginTop: 4 }}>
+                <SkyboundText variant="primary" size={14} accessabilityLabel="User email" style={{ marginTop: 2, marginBottom: 2 }}>
                   {profileEmail || ""}
                 </SkyboundText>
                 <Pressable onPress={() => setEditingProfile(true)} style={pressableStyle}>
@@ -347,7 +346,7 @@ export default  function AccountScreen() {
                     variant="blue"
                     size={12}
                     accessabilityLabel="Update Info"
-                    style={{ marginTop: 8, fontSize: 12, color: colors.link }}
+                    style={{ marginTop: 8, fontSize: 14, color: colors.link }}
                   >
                     Update Info
                   </SkyboundText>
@@ -357,7 +356,7 @@ export default  function AccountScreen() {
 
            <View style={[styles.card, { backgroundColor: colors.card }]}>
 
-                          {/* Header */}
+            {/* Header */}
             <View style={styles.subscriptionHeader}>
               <SkyboundText
                 variant="primaryBold"
@@ -476,7 +475,7 @@ export default  function AccountScreen() {
               ]}
             >
               <SkyboundText
-                variant="primary"
+                variant="forceWhite"
                 accessabilityLabel="Manage Subscription"
                 size={16}
               >
@@ -576,13 +575,11 @@ export default  function AccountScreen() {
                 size={16}
                 accessabilityLabel="Sign Out"
                 style={{ color: '#DC2626', marginLeft: 8 }}
-
               >
                 Sign Out
               </SkyboundText>
             </Pressable>
 
-            {/* Skybound logo at the bottom (like Version 1) */}
             <View style={styles.logoContainer}>
               <Image
                 source={require('@assets/images/skybound-logo-white.png')}
@@ -760,7 +757,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     alignItems: 'center',
     marginTop: 24,
-    marginBottom: 0,
+    marginBottom: 10,
   },
   logo: { width: 160, height: 40 },
   modalBackdrop: {
