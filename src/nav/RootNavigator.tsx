@@ -101,6 +101,9 @@ export type FlightStackParamList = {
     departureDate?: Date | string | null;
     returnDate?: Date | string | null;
   } | undefined;
+  PaymentMethod: undefined;
+  EditTraveler: { traveler?: TravelerProfile; returnToBooking?: boolean; itinerary?: ItineraryPayload } | undefined;
+  TravelerDetails: { returnToBooking?: boolean; itinerary?: ItineraryPayload } | undefined;
 };
 
 export type AccountStackParamList = {
@@ -136,6 +139,12 @@ export type NotificationStackParamList = {
   Notifications: undefined;
 };
 
+const accountHeaderOptions = (title: string, useBackNavigation = true) =>
+  GenerateSkyboundHeaderOptions(title, {
+    useBackNavigation,
+    showNotifications: false,
+    showUserProfile: false,
+  });
 
 
 const Drawer = createDrawerNavigator();
@@ -194,6 +203,19 @@ function GenerateFlightStack() {
       <FlightStack.Screen name="Payment" component={PaymentScreen} options={
         GenerateSkyboundHeaderOptions("Payment", { ...flightSearchHeaderOptions})
       } />
+      <FlightStack.Screen name="PaymentMethod" component={PaymentMethodScreen} options={
+        accountHeaderOptions("Payment Methods")
+      } />
+      <FlightStack.Screen
+        name="EditTraveler"
+        component={EditTraveler}
+        options={({ route }) =>
+          accountHeaderOptions(route.params?.traveler ? "Edit Traveler" : "Add Traveler")
+        }
+      />
+      <FlightStack.Screen name="TravelerDetails" component={TravelerDetails} options={
+        accountHeaderOptions("Traveler Details")
+      } />
 
     </FlightStack.Navigator>
   );
@@ -201,12 +223,6 @@ function GenerateFlightStack() {
 
 // Stack for account details
 function GenerateAccountStack() {
-  const accountHeaderOptions = (title: string, useBackNavigation = true) =>
-    GenerateSkyboundHeaderOptions(title, {
-      useBackNavigation,
-      showNotifications: false,
-      showUserProfile: false,
-    });
   return (
     <AccountStack.Navigator
       initialRouteName="Account"
