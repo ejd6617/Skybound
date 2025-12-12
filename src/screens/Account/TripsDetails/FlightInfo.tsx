@@ -193,7 +193,7 @@ function formatTime(value: string | Date | null) {
 
         {/* Return button */}
           <Pressable
-            onPress={() => navigation.navigate("Trips")}
+            onPress={() => navigation.goBack()}
             style={({ pressed }) => [
               styles.returnButton,
               { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },

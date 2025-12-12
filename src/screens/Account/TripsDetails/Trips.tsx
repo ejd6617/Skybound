@@ -261,7 +261,7 @@ useEffect(() => {
       {trips.length > 0 ? trips.map(renderTripCard) : renderEmptyState()}
        {/* Return button */}
           <Pressable
-            onPress={() => navigation.navigate("Account")}
+            onPress={() => navigation.goBack()}
             style={({ pressed }) => [
               styles.returnButton,
               { opacity: pressed ? 0.9 : 1, backgroundColor: "#6B7280" },
