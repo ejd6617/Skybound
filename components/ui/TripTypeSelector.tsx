@@ -17,7 +17,7 @@ const TripTypeSelector: React.FC<TripTypeSelectorProps> = ({ selectedType, onTyp
   const tabs = [
     { type: 'one-way' as TripType, label: 'One Way' },
     { type: 'round-trip' as TripType, label: 'Round Trip' },
-    { type: 'multi-city' as TripType, label: 'Multi-City' },
+    { type: 'multi-city' as TripType, label: 'Multi City' },
   ];
 
   return (
@@ -44,7 +44,7 @@ const TripTypeSelector: React.FC<TripTypeSelectorProps> = ({ selectedType, onTyp
           >
             <SkyboundText
               variant={isSelected ? 'forceWhite' : 'primary'}
-              size={14}
+              size={15}
               accessabilityLabel={tab.label}
               style={{ color: isSelected ? '#FFFFFF' : SKYBOUND_BLUE, textAlign: 'center', }}
             >
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
     paddingBottom: 25
   },
   tab: {

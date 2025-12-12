@@ -272,7 +272,7 @@ export default function ManageSubscription() {
 
           {/* Return Button */}
           <Pressable
-            onPress={() => navigation.navigate("Account")}
+            onPress={() => navigation.goBack()}
             style={({ pressed }) => [
               styles.returnButton,
               { opacity: pressed ? 0.9 : 1 },
@@ -281,10 +281,10 @@ export default function ManageSubscription() {
             <SkyboundText
               variant="primaryButton"
               size={16}
-              accessabilityLabel="Return to account page"
+              accessabilityLabel="Go back"
               style={{ color: "white" }}
             >
-              Return to Account
+              Go back
             </SkyboundText>
           </Pressable>
         </ScrollView>
