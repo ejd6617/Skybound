@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React, { useMemo, useState } from 'react';
+import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
 import SkyboundScreen from '@components/ui/SkyboundScreen';
@@ -52,7 +52,7 @@ const FAQscreen: React.FC = () => {
   };
 
   return (
-    <SkyboundScreen title="FAQs" subtitle="Search our knowledge base for quick answers." showLogo>
+    <SkyboundScreen showLogo>
       <SkyboundCard>
         <View style={[styles.searchBar, { borderColor: colors.outline }]}> 
           <Ionicons name="search" size={18} color={colors.icon} />

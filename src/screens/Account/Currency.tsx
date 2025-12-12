@@ -1,6 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
 import SkyboundScreen from '@components/ui/SkyboundScreen';
@@ -42,10 +42,15 @@ const CurrencyScreen: React.FC = () => {
 
   return (
     <SkyboundScreen
-      title="Currency"
-      subtitle="Choose your preferred currency for flight prices."
+      subtitle=""
       showLogo
     >
+      <SkyboundCard muted elevate={false}>
+        <SkyboundText variant="secondary" size={13} accessabilityLabel="Preference description">
+          Choose your preferred currency for flight prices.
+        </SkyboundText>
+      </SkyboundCard>
+
       <SkyboundCard>
         {currencyOptions.map((currency) => (
           <Pressable

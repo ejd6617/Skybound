@@ -350,42 +350,14 @@ useEffect(() => {
             {/* Header Section */}
             <View style={{ marginBottom: 24 }}>
               <SkyboundText
-                variant="primaryBold"
-                size={24}
-                accessabilityLabel="Payment Methods Title"
-              >
-                Payment Methods
-              </SkyboundText>
-              <SkyboundText
                 variant="secondary"
-                size={14}
+                size={16}
                 accessabilityLabel="Payment Methods Subtitle"
-                style={{ marginTop: 6, color: colors.icon }}
+                style={{ marginTop: 20, color: colors.card, textAlign: 'center' }}
               >
                 Manage your saved cards & payment options.
               </SkyboundText>
             </View>
-
-            {/* Add Payment Method Button */}
-            <Pressable
-              onPress={handleAddPaymentMethod}
-              style={({ pressed }) => [
-                styles.addButton,
-                { backgroundColor: colors.link, opacity: pressed ? 0.8 : 1 },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel="Add Payment Method"
-            >
-              <Ionicons name="add" size={20} color="white" />
-              <SkyboundText
-                variant="primaryButton"
-                size={14}
-                accessabilityLabel="Add Payment Method Button Text"
-                style={{ color: 'white', marginLeft: 8 }}
-              >
-                Add Payment Method
-              </SkyboundText>
-            </Pressable>
 
             {/* Payment Methods List or Empty State */}
             {paymentMethods?.length === 0 || paymentMethods === undefined ? (
@@ -589,6 +561,27 @@ useEffect(() => {
                 ))}
               </View>
             )}
+
+            {/* Add Payment Method Button */}
+            <Pressable
+              onPress={handleAddPaymentMethod}
+              style={({ pressed }) => [
+                styles.addButton,
+                { backgroundColor: colors.link, opacity: pressed ? 0.8 : 1, marginTop: 10},
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel="Add Payment Method"
+            >
+              <Ionicons name="add" size={20} color="white" />
+              <SkyboundText
+                variant="primaryButton"
+                size={14}
+                accessabilityLabel="Add Payment Method Button Text"
+                style={{ color: 'white', marginLeft: 8 }}
+              >
+                Add Payment Method
+              </SkyboundText>
+            </Pressable>
 
             {/* Return button */}
           <Pressable

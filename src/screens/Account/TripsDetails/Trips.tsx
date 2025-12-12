@@ -17,7 +17,7 @@ import { collection, getDocs } from "firebase/firestore";
 
 
 const statusColors: Record<string, { background: string; text: string }> = {
-  Confirmed: { background: 'rgba(34,197,94,0.15)', text: '#22C55E' },
+  Confirmed: { background: 'rgba(137, 212, 255, 0.15)', text: '#22C55E' },
   Delayed: { background: 'rgba(248,113,113,0.18)', text: '#DC2626' },
   'Boarding Soon': { background: 'rgba(251,191,36,0.15)', text: '#D97706' },
   Boarding: { background: 'rgba(59,130,246,0.18)', text: '#2563EB' },
@@ -231,14 +231,14 @@ useEffect(() => {
   //loading state
   if (loading) {
   return (
-    <SkyboundScreen title="Your Trips" subtitle="Keep tabs on every journey in one place.">
+    <SkyboundScreen>
       <SkyboundText variant="primary" accessabilityLabel='loading Trips...'>Loading trips...</SkyboundText>
     </SkyboundScreen>
   );
 }
 
   return (
-    <SkyboundScreen title="Your Trips" subtitle="Keep tabs on every journey in one place." showLogo>
+    <SkyboundScreen>
       <View style={[styles.tabWrapper, { borderColor: colors.outline }]}> 
         {(['upcoming', 'past'] as const).map((tab) => (
           <Pressable
@@ -248,7 +248,7 @@ useEffect(() => {
             style={[styles.tabButton, activeTab === tab && { backgroundColor: colors.card }]}
           >
             <SkyboundText
-              variant={activeTab === tab ? 'primaryBold' : 'secondary'}
+              variant={activeTab === tab ? 'blue' : 'primary'}
               size={14}
               accessabilityLabel={`${tab} tab`}
             >

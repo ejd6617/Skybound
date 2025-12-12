@@ -1,3 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
@@ -11,9 +13,7 @@ import {
   UIManager,
   View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 
 import SkyboundText from '@components/ui/SkyboundText';
 
@@ -142,9 +142,6 @@ const ChatScreen: React.FC = () => {
         <View style={styles.header}>
           <SkyboundText variant="primaryBold" size={24} accessabilityLabel="Skybound AI title">
             Skybound AI
-          </SkyboundText>
-          <SkyboundText variant="secondary" size={13} accessabilityLabel="Skybound AI subtitle">
-            Calm skies, instant answers.
           </SkyboundText>
         </View>
         <FlatList

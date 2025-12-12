@@ -199,16 +199,18 @@ const AirportPreference: React.FC = () => {
   );
 
   return (
-    <SkyboundScreen
-      title="Airport Preferences"
-      subtitle="Set your favorite departure and arrival airports for smarter deal alerts."
-      showLogo
-    >
+    <SkyboundScreen>
+      <SkyboundCard muted elevate={false}>
+        <SkyboundText variant="secondary" size={13} accessabilityLabel="Preference description">
+          Set your favorite departure and arrival airports for smarter deal alerts.
+        </SkyboundText>
+      </SkyboundCard>
+
       {renderSection('Preferred Departure Airports', departures, setDepartures, 'departures', 'Add Departure Airport')}
       {renderSection('Preferred Arrival Airports', arrivals, setArrivals, 'arrivals', 'Add Arrival Airport')}
       
       <SkyboundCard muted elevate={false}>
-        <SkyboundText variant="secondary" size={13} accessabilityLabel="Preference description">
+        <SkyboundText variant="secondary" size={13} accessabilityLabel="Preference description plus">
           We use these airports to send personalized deal notifications on the dashboard and in your inbox. Adjust them anytime.
         </SkyboundText>
       </SkyboundCard>
@@ -299,7 +301,6 @@ const AirportPreference: React.FC = () => {
           </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>
-
     </SkyboundScreen>
   );
 };

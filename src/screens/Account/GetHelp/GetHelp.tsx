@@ -1,8 +1,8 @@
-import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import SkyboundCard from '@components/ui/SkyboundCard';
 import SkyboundScreen from '@components/ui/SkyboundScreen';
@@ -37,7 +37,6 @@ const GetHelp: React.FC = () => {
 
   return (
     <SkyboundScreen
-      title="Get Help"
       subtitle="We want to help you. Choose the best way to reach us."
       showLogo
     >
