@@ -46,7 +46,7 @@ For a faster overview, **[watch the short highlight video](docs/screenshots/Skyb
 | Flight API | Team-developed Node.js / Express API that queries the Amadeus flight service |
 | Hosting and tooling | Oracle Cloud-hosted backend, Docker configuration, Git / GitHub |
 
-\`\`\`mermaid
+```mermaid
 flowchart LR
     UI["React Native / TypeScript app"]
     AUTH["Firebase Authentication"]
@@ -57,7 +57,7 @@ flowchart LR
     UI -->|"User and traveler CRUD"| DB
     UI -->|"Authenticated flight searches"| API
     API -->|"Flight queries"| FLIGHTS
-\`\`\`
+```
 
 The mobile app interacts with Firebase for user data and sends authenticated requests to the team's backend, which integrates the third-party flight API. These are separate responsibilities within the overall team project.
 
@@ -86,12 +86,12 @@ This repository preserves the source and setup used for the original project. **
 
 Prerequisites: Git, Node.js/npm, and Expo-compatible tooling.
 
-\`\`\`bash
+```bash
 git clone https://github.com/ejd6617/Skybound.git
 cd Skybound
 npm install
 npm start
-\`\`\`
+```
 
 The Expo development server displays instructions / a QR code for opening the app on a compatible device. The client is configured to talk to an external API; starting Expo alone does **not** guarantee working flight searches.
 
@@ -99,20 +99,20 @@ The Expo development server displays instructions / a QR code for opening the ap
 
 The repository includes a [Docker Compose configuration](docker-compose.yml) for the team-developed API. To reproduce that setup, the original project expected local credential files such as:
 
-\`\`\`text
+```text
 .env.amadeus.local
 .env.firebase-backend.local
 .env.ngrok.local
 .env.test.local
-\`\`\`
+```
 
 A sanitized [.env.example](.env.example) documents public-facing configuration names. **Do not commit real API keys, Firebase service accounts, or other secrets.**
 
 With appropriate credentials and compatible infrastructure, the original backend command was:
 
-\`\`\`bash
+```bash
 docker compose up --build
-\`\`\`
+```
 
 The original deployment also referenced HTTPS certificates and a hosted API address. Those resources may no longer be available; these instructions are retained for code exploration rather than as a promise of a live demo.
 
